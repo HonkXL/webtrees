@@ -17,38 +17,38 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\GedcomCode;
+namespace Fisharebest\Webtrees\Module;
 
+use Fisharebest\Webtrees\Contracts\ElementInterface;
+use Fisharebest\Webtrees\Elements\CustomElement;
 use Fisharebest\Webtrees\I18N;
 
 /**
- * Class GedcomCodeAdop - Functions and logic for GEDCOM "ADOP" codes
+ * Class CustomTagsPAF
  */
-class GedcomCodeAdop
+class CustomTagsPersonalAncestralFile extends AbstractModule implements ModuleConfigInterface, ModuleCustomTagsInterface
 {
+    use ModuleConfigTrait;
+    use ModuleCustomTagsTrait;
+
     /**
-     * Translate a code, for an (optional) record
+     * @return array<string,ElementInterface>
      *
-     * @param string $type
-     *
-     * @return string
+     * @see http://wiki-de.genealogy.net/GEDCOM/_Nutzerdef-Tag
      */
-    public static function getValue(string $type): string
+    public function customTags(): array
     {
-        return self::getValues()[$type] ?? e($type);
+        return [
+        ];
     }
 
     /**
-     * A list of all possible values for PEDI
+     * The application for which we are supporting custom tags.
      *
-     * @return array<string>
+     * @return string
      */
-    public static function getValues(): array
+    public function customTagApplication(): string
     {
-        return [
-            'BOTH' => I18N::translate('Adopted by both parents'),
-            'HUSB' => I18N::translate('Adopted by father'),
-            'WIFE' => I18N::translate('Adopted by mother'),
-        ];
+        return 'Personal Ancestral File™';
     }
 }

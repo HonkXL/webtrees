@@ -19,24 +19,18 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
-use Fisharebest\Webtrees\Auth;
-use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\I18N;
-use Fisharebest\Webtrees\Registry;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Module\ModuleCustomTagsInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
-use function assert;
+use function view;
 
 /**
- * Add a new individual name.
+ * Show a list of modules.
  */
-class AddName implements RequestHandlerInterface
+class ModulesCustomTagsPage extends AbstractModuleComponentPage
 {
-    use ViewResponseTrait;
-
     /**
      * @param ServerRequestInterface $request
      *
@@ -44,25 +38,10 @@ class AddName implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $xref = $request->getQueryParams()['xref'];
-
-        $individual = Registry::individualFactory()->make($xref, $tree);
-        $individual = Auth::checkIndividualAccess($individual, true);
-
-        $title = $individual->fullName() . ' — ' . I18N::translate('Add a name');
-
-        return $this->viewResponse('edit/new-individual', [
-            'next_action' => EditFactAction::class,
-            'tree'        => $tree,
-            'title'       => $title,
-            'individual'  => $individual,
-            'family'      => null,
-            'name_fact'   => null,
-            'famtag'      => '',
-            'gender'      => $individual->sex(),
-        ]);
+        return $this->listComponents(
+            ModuleCustomTagsInterface::class,
+            view('icons/chart') . I18N::translate('Custom tags'),
+            ''
+        );
     }
 }

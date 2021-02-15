@@ -17,24 +17,38 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\GedcomCode;
+namespace Fisharebest\Webtrees\Module;
 
-use Fisharebest\Webtrees\TestCase;
+use Fisharebest\Webtrees\Contracts\ElementInterface;
+use Fisharebest\Webtrees\Elements\AddressEmail;
+use Fisharebest\Webtrees\Elements\CustomElement;
+use Fisharebest\Webtrees\Elements\XrefIndividual;
+use Fisharebest\Webtrees\I18N;
 
 /**
- * Test harness for the class GedcomCodeAdop
- *
- * @covers \Fisharebest\Webtrees\GedcomCode\GedcomCodeAdop
+ * Class CustomTagsWebtrees
  */
-class GedcomCodeAdopTest extends TestCase
+class CustomTagsWebtrees extends AbstractModule implements ModuleConfigInterface, ModuleCustomTagsInterface
 {
+    use ModuleConfigTrait;
+    use ModuleCustomTagsTrait;
+
     /**
-     * Test that the class exists
-     *
-     * @return void
+     * @return array<string,ElementInterface>
      */
-    public function testClassExists(): void
+    public function customTags(): array
     {
-        self::assertTrue(class_exists(GedcomCodeAdop::class));
+        return [
+        ];
+    }
+
+    /**
+     * The application for which we are supporting custom tags.
+     *
+     * @return string
+     */
+    public function customTagApplication(): string
+    {
+        return 'webtrees™';
     }
 }

@@ -17,24 +17,38 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\GedcomCode;
+namespace Fisharebest\Webtrees\Module;
 
-use Fisharebest\Webtrees\TestCase;
+use Fisharebest\Webtrees\Contracts\ElementInterface;
+use Fisharebest\Webtrees\Elements\CustomElement;
+use Fisharebest\Webtrees\Elements\DateValue;
+use Fisharebest\Webtrees\Elements\PlaceName;
+use Fisharebest\Webtrees\I18N;
 
 /**
- * Test harness for the class GedcomCodePedi
- *
- * @covers \Fisharebest\Webtrees\GedcomCode\GedcomCodePedi
+ * Class CustomTagsFTB
  */
-class GedcomCodePediTest extends TestCase
+class CustomTagsFamilyTreeBuilder extends AbstractModule implements ModuleConfigInterface, ModuleCustomTagsInterface
 {
+    use ModuleConfigTrait;
+    use ModuleCustomTagsTrait;
+
     /**
-     * Test that the class exists
-     *
-     * @return void
+     * @return array<string,ElementInterface>
      */
-    public function testClassExists(): void
+    public function customTags(): array
     {
-        self::assertTrue(class_exists(GedcomCodePedi::class));
+        return [
+        ];
+    }
+
+    /**
+     * The application for which we are supporting custom tags.
+     *
+     * @return string
+     */
+    public function customTagApplication(): string
+    {
+        return 'Family Tree Builder™';
     }
 }

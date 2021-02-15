@@ -40,6 +40,7 @@ use function addcslashes;
 use function app;
 use function array_combine;
 use function array_unshift;
+use function asort;
 use function assert;
 use function dirname;
 use function max;

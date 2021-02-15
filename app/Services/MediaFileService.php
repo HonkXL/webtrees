@@ -20,7 +20,6 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Services;
 
 use Fisharebest\Webtrees\FlashMessages;
-use Fisharebest\Webtrees\GedcomTag;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Tree;
@@ -116,20 +115,6 @@ class MediaFileService
             default:
                 return $number;
         }
-    }
-
-    /**
-     * A list of key/value options for media types.
-     *
-     * @param string $current
-     *
-     * @return array<int|string,string>
-     *
-     * @deprecated - Will be removed in 2.1.0 - use Registry::elementFactory()->make('OBJE:FILE:FORM:TYPE')->values()
-     */
-    public function mediaTypes($current = ''): array
-    {
-        return Registry::elementFactory()->make('OBJE:FILE:FORM:TYPE')->values();
     }
 
     /**
@@ -387,6 +372,10 @@ class MediaFileService
 
     /**
      * Some special media folders were created by earlier versions of webtrees.
+     *
+     * @param string $path
+     *
+     * @return bool
      */
     private function isLegacyFolder(string $path): bool
     {

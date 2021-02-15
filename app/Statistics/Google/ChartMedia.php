@@ -19,25 +19,21 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Statistics\Google;
 
-use Fisharebest\Webtrees\GedcomTag;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Module\ModuleThemeInterface;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Statistics\Service\ColorService;
+use Fisharebest\Webtrees\Tree;
 
 use function app;
 use function count;
+use function strip_tags;
 
 /**
  * A chart showing the top used media types.
  */
 class ChartMedia
 {
-    /**
-     * @var ModuleThemeInterface
-     */
-    private $theme;
-
     /**
      * @var ColorService
      */
@@ -48,29 +44,21 @@ class ChartMedia
      */
     public function __construct()
     {
-        $this->theme         = app(ModuleThemeInterface::class);
         $this->color_service = new ColorService();
     }
 
     /**
      * Create a chart of media types.
      *
-     * @param array<string,int> $media      The list of media types to display
-     * @param string|null       $color_from
-     * @param string|null       $color_to
+     * @param array<string,int> $media The list of media types to display
+     * @param string            $color_from
+     * @param string            $color_to
+     * @param Tree              $tree
      *
      * @return string
      */
-    public function chartMedia(
-        array $media,
-        string $color_from = null,
-        string $color_to = null
-    ): string {
-        $chart_color1 = (string) $this->theme->parameter('distribution-chart-no-values');
-        $chart_color2 = (string) $this->theme->parameter('distribution-chart-high-values');
-        $color_from   = $color_from ?? $chart_color1;
-        $color_to     = $color_to   ?? $chart_color2;
-
+    public function chartMedia(array $media, string $color_from, string $color_to, Tree $tree): string
+    {
         $data = [
             [
                 I18N::translate('Type'),
@@ -78,11 +66,11 @@ class ChartMedia
             ],
         ];
 
-        $values = Registry::elementFactory()->make('OBJE:FILE:FORM:TYPE')->values();
+        $element = Registry::elementFactory()->make('OBJE:FILE:FORM:TYPE');
 
         foreach ($media as $type => $count) {
             $data[] = [
-                $values[$type] ?? $type,
+                strip_tags($element->value($type, $tree)),
                 $count
             ];
         }

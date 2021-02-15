@@ -17,24 +17,24 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\GedcomCode;
+namespace Fisharebest\Webtrees\Module;
 
-use Fisharebest\Webtrees\TestCase;
+use Fisharebest\Webtrees\Contracts\ElementInterface;
 
 /**
- * Test harness for the class GedcomCodeStat
- *
- * @covers \Fisharebest\Webtrees\GedcomCode\GedcomCodeStat
+ * Interface ModuleCustomTagsInterface
  */
-class GedcomCodeStatTest extends TestCase
+interface ModuleCustomTagsInterface extends ModuleInterface
 {
     /**
-     * Test that the class exists
-     *
-     * @return void
+     * @return array<string,ElementInterface>
      */
-    public function testClassExists(): void
-    {
-        self::assertTrue(class_exists(GedcomCodeStat::class));
-    }
+    public function customTags(): array;
+
+    /**
+     * The application for which we are supporting custom tags.
+     *
+     * @return string
+     */
+    public function customTagApplication(): string;
 }

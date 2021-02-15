@@ -19,33 +19,20 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
-use Fisharebest\Webtrees\Services\GedcomEditService;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\FlashMessages;
+use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Module\ModuleCustomTagsInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
-use function assert;
 use function redirect;
+use function route;
 
 /**
- * Create a new unlinked individual.
+ * Update a list of modules.
  */
-class AddUnlinkedAction implements RequestHandlerInterface
+class ModulesCustomTagsAction extends AbstractModuleComponentAction
 {
-    /** @var GedcomEditService */
-    private $gedcom_edit_service;
-
-    /**
-     * AddChildToFamilyAction constructor.
-     *
-     * @param GedcomEditService $gedcom_edit_service
-     */
-    public function __construct(GedcomEditService $gedcom_edit_service)
-    {
-        $this->gedcom_edit_service = $gedcom_edit_service;
-    }
-
     /**
      * @param ServerRequestInterface $request
      *
@@ -53,19 +40,11 @@ class AddUnlinkedAction implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
+        $this->updateStatus(ModuleCustomTagsInterface::class, $request);
+        $this->updateAccessLevel(ModuleCustomTagsInterface::class, $request);
 
-        $params = (array) $request->getParsedBody();
+        FlashMessages::addMessage(I18N::translate('The website preferences have been updated.'), 'success');
 
-        $levels = $params['ilevels'] ?? [];
-        $tags   = $params['itags'] ?? [];
-        $values = $params['ivalues'] ?? [];
-
-        $gedcom = $this->gedcom_edit_service->editLinesToGedcom('INDI', $levels, $tags, $values);
-
-        $individual = $tree->createIndividual("0 @@ INDI\n" . $gedcom);
-
-        return redirect($params['url'] ?? $individual->url());
+        return redirect(route(ControlPanel::class));
     }
 }

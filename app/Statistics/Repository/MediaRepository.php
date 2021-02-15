@@ -20,12 +20,14 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Statistics\Repository;
 
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Module\ModuleThemeInterface;
 use Fisharebest\Webtrees\Statistics\Google\ChartMedia;
 use Fisharebest\Webtrees\Statistics\Repository\Interfaces\MediaRepositoryInterface;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
 
+use function app;
 use function array_slice;
 use function count;
 use function in_array;
@@ -362,10 +364,15 @@ class MediaRepository implements MediaRepositoryInterface
      */
     public function chartMedia(string $color_from = null, string $color_to = null): string
     {
+        $theme = app(ModuleThemeInterface::class);
+
+        $color_from = $color_from ?? $theme->parameter('distribution-chart-no-values');
+        $color_to   = $color_to ?? (string) $theme->parameter('distribution-chart-high-values');
+
         $tot   = $this->totalMediaTypeQuery(self::MEDIA_TYPE_ALL);
         $media = $this->getSortedMediaTypeList($tot);
 
         return (new ChartMedia())
-            ->chartMedia($media, $color_from, $color_to);
+            ->chartMedia($media, $color_from, $color_to, $this->tree);
     }
 }
