@@ -90,6 +90,17 @@ class Migration44 implements MigrationInterface
                     ]);
             }
 
+            // The existing data may have placenames that only differ after the first 120 chars.
+            // Need to remove the constraint before we truncate/merge them.
+            try {
+                DB::schema()->table('placelocation', static function (Blueprint $table): void {
+                    $table->dropUnique(['pl_parent_id', 'pl_place']);
+                });
+            } catch (PDOException $ex) {
+                throw $ex;
+                // Already deleted, or does not exist;
+            }
+
             DB::table('placelocation')
                 ->update([
                     'pl_place' => new Expression('SUBSTR(pl_place, 1, 120)'),
