@@ -60,7 +60,7 @@ class NoteStructure extends AbstractElement
         $xref_note      = new XrefNote('');
 
         // Existing shared note.
-        if (preg_match('/@' . Gedcom::REGEX_XREF . '@/', $value)) {
+        if (preg_match('/^@' . Gedcom::REGEX_XREF . '@$/', $value)) {
             return $xref_note->edit($id, $name, $value, $tree);
         }
 
@@ -70,8 +70,8 @@ class NoteStructure extends AbstractElement
         }
 
         $options = [
-            'inline' => I18N::translate('Add a note'),
-            'shared' => I18N::translate('Add a shared note'),
+            'inline' => I18N::translate('inline note'),
+            'shared' => I18N::translate('shared note'),
         ];
 
         // New note - either inline or shared

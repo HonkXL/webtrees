@@ -27,8 +27,6 @@ use League\CommonMark\HtmlElement;
 
 /**
  * Class ResponsiveTableRenderer - wrap markdown tables in a responsive DIV element.
- *
- * @package Fisharebest\Webtrees\CommonMark
  */
 class ResponsiveTableRenderer implements BlockRendererInterface
 {
@@ -36,8 +34,7 @@ class ResponsiveTableRenderer implements BlockRendererInterface
     private const WRAP_ELEMENT    = 'div';
     private const WRAP_ATTRIBUTES = ['class' => 'table-responsive'];
 
-    /** @var TableRenderer */
-    private $table_renderer;
+    private TableRenderer $table_renderer;
 
     /**
      * ResponsiveTableRenderer constructor.

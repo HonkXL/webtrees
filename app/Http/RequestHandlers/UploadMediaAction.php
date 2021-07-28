@@ -33,7 +33,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Throwable;
 
 use function assert;
 use function e;
@@ -51,8 +50,7 @@ use const UPLOAD_ERR_OK;
  */
 class UploadMediaAction implements RequestHandlerInterface
 {
-    /** @var MediaFileService */
-    private $media_file_service;
+    private MediaFileService $media_file_service;
 
     /**
      * MediaController constructor.

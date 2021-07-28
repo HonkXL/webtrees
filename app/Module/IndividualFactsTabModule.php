@@ -29,7 +29,12 @@ use Fisharebest\Webtrees\Services\ClipboardService;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Illuminate\Support\Collection;
 
+use function explode;
+use function preg_match;
+use function preg_replace;
 use function str_contains;
+use function str_replace;
+use function view;
 
 /**
  * Class IndividualFactsTabModule
@@ -38,11 +43,9 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
 {
     use ModuleTabTrait;
 
-    /** @var ModuleService */
-    private $module_service;
+    private ModuleService $module_service;
 
-    /** @var ClipboardService */
-    private $clipboard_service;
+    private ClipboardService $clipboard_service;
 
     /**
      * IndividualFactsTabModule constructor.
@@ -117,61 +120,105 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         // Which facts and events are handled by other modules?
         $sidebar_facts = $this->module_service
             ->findByComponent(ModuleSidebarInterface::class, $individual->tree(), Auth::user())
-            ->map(static function (ModuleSidebarInterface $sidebar): Collection {
-                return $sidebar->supportedFacts();
-            });
+            ->map(fn (ModuleSidebarInterface $sidebar): Collection => $sidebar->supportedFacts());
 
         $tab_facts = $this->module_service
             ->findByComponent(ModuleTabInterface::class, $individual->tree(), Auth::user())
-            ->map(static function (ModuleTabInterface $sidebar): Collection {
-                return $sidebar->supportedFacts();
-            });
+            ->map(fn (ModuleTabInterface $tab): Collection => $tab->supportedFacts());
 
         $exclude_facts = $sidebar_facts->merge($tab_facts)->flatten();
 
         // The individual’s own facts
-        $indifacts = $individual->facts()
-            ->filter(static function (Fact $fact) use ($exclude_facts): bool {
-                return !$exclude_facts->contains($fact->getTag());
-            });
+        $individual_facts = $individual->facts()
+            ->filter(fn (Fact $fact): bool => !$exclude_facts->contains($fact->tag()));
+
+        $relative_facts = new Collection();
 
         // Add spouse-family facts
         foreach ($individual->spouseFamilies() as $family) {
             foreach ($family->facts() as $fact) {
-                if (!$exclude_facts->contains($fact->getTag()) && $fact->getTag() !== 'CHAN') {
-                    $indifacts->push($fact);
+                if (!$exclude_facts->contains($fact->tag()) && $fact->tag() !== 'FAM:CHAN') {
+                    $relative_facts->push($fact);
                 }
             }
 
             $spouse = $family->spouse($individual);
 
             if ($spouse instanceof Individual) {
-                $spouse_facts = $this->spouseFacts($individual, $spouse, $min_date, $max_date);
-                $indifacts    = $indifacts->merge($spouse_facts);
+                $spouse_facts   = $this->spouseFacts($individual, $spouse, $min_date, $max_date);
+                $relative_facts = $relative_facts->merge($spouse_facts);
             }
 
-            $child_facts = $this->childFacts($individual, $family, '_CHIL', '', $min_date, $max_date);
-            $indifacts   = $indifacts->merge($child_facts);
+            $child_facts    = $this->childFacts($individual, $family, '_CHIL', '', $min_date, $max_date);
+            $relative_facts = $relative_facts->merge($child_facts);
         }
 
-        $parent_facts     = $this->parentFacts($individual, 1, $min_date, $max_date);
-        $associate_facts  = $this->associateFacts($individual);
-        $historical_facts = $this->historicalFacts($individual);
+        $parent_facts    = $this->parentFacts($individual, 1, $min_date, $max_date);
+        $relative_facts  = $relative_facts->merge($parent_facts);
+        $associate_facts = $this->associateFacts($individual);
+        $historic_facts  = $this->historicFacts($individual);
 
-        $indifacts = $indifacts
-            ->merge($parent_facts)
+        $individual_facts = $individual_facts
             ->merge($associate_facts)
-            ->merge($historical_facts);
+            ->merge($historic_facts)
+            ->merge($relative_facts);
 
-        $indifacts = Fact::sortFacts($indifacts);
+        $individual_facts = Fact::sortFacts($individual_facts);
 
         return view('modules/personal_facts/tab', [
-            'can_edit'             => $individual->canEdit(),
-            'clipboard_facts'      => $this->clipboard_service->pastableFacts($individual, new Collection()),
-            'has_historical_facts' => $historical_facts !== [],
-            'individual'           => $individual,
-            'facts'                => $indifacts,
+            'can_edit'            => $individual->canEdit(),
+            'clipboard_facts'     => $this->clipboard_service->pastableFacts($individual),
+            'has_associate_facts' => $associate_facts->isNotEmpty(),
+            'has_historic_facts'  => $historic_facts->isNotEmpty(),
+            'has_relative_facts'  => $relative_facts->isNotEmpty(),
+            'individual'          => $individual,
+            'facts'               => $individual_facts,
         ]);
+    }
+
+    /**
+     * Spouse facts that are shown on an individual’s page.
+     *
+     * @param Individual $individual Show events that occured during the lifetime of this individual
+     * @param Individual $spouse     Show events of this individual
+     * @param Date       $min_date
+     * @param Date       $max_date
+     *
+     * @return Collection<Fact>
+     */
+    private function spouseFacts(Individual $individual, Individual $spouse, Date $min_date, Date $max_date): Collection
+    {
+        $SHOW_RELATIVES_EVENTS = $individual->tree()->getPreference('SHOW_RELATIVES_EVENTS');
+
+        $death_of_a_spouse = [
+            'INDI:DEAT' => [
+                'M' => I18N::translate('Death of a husband'),
+                'F' => I18N::translate('Death of a wife'),
+                'U' => I18N::translate('Death of a spouse'),
+            ],
+            'INDI:BURI' => [
+                'M' => I18N::translate('Burial of a husband'),
+                'F' => I18N::translate('Burial of a wife'),
+                'U' => I18N::translate('Burial of a spouse'),
+            ],
+            'INDI:CREM' => [
+                'M' => I18N::translate('Cremation of a husband'),
+                'F' => I18N::translate('Cremation of a wife'),
+                'U' => I18N::translate('Cremation of a spouse'),
+            ],
+        ];
+
+        $facts = new Collection();
+
+        if (str_contains($SHOW_RELATIVES_EVENTS, '_DEAT_SPOU')) {
+            foreach ($spouse->facts(['DEAT', 'BURI', 'CREM']) as $fact) {
+                if ($this->includeFact($fact, $min_date, $max_date)) {
+                    $facts[] = $this->convertEvent($fact, $death_of_a_spouse[$fact->tag()][$fact->record()->sex()]);
+                }
+            }
+        }
+
+        return $facts;
     }
 
     /**
@@ -188,28 +235,6 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         $fact_date = $fact->date();
 
         return $fact_date->isOK() && Date::compare($min_date, $fact_date) <= 0 && Date::compare($fact_date, $max_date) <= 0;
-    }
-
-    /**
-     * Is this tab empty? If so, we don't always need to display it.
-     *
-     * @param Individual $individual
-     *
-     * @return bool
-     */
-    public function hasTabContent(Individual $individual): bool
-    {
-        return true;
-    }
-
-    /**
-     * Can this tab load asynchronously?
-     *
-     * @return bool
-     */
-    public function canLoadAjax(): bool
-    {
-        return false;
     }
 
     /**
@@ -240,51 +265,6 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
     }
 
     /**
-     * Spouse facts that are shown on an individual’s page.
-     *
-     * @param Individual $individual Show events that occured during the lifetime of this individual
-     * @param Individual $spouse     Show events of this individual
-     * @param Date       $min_date
-     * @param Date       $max_date
-     *
-     * @return Fact[]
-     */
-    private function spouseFacts(Individual $individual, Individual $spouse, Date $min_date, Date $max_date): array
-    {
-        $SHOW_RELATIVES_EVENTS = $individual->tree()->getPreference('SHOW_RELATIVES_EVENTS');
-
-        $death_of_a_spouse = [
-            'DEAT' => [
-                'M' => I18N::translate('Death of a husband'),
-                'F' => I18N::translate('Death of a wife'),
-                'U' => I18N::translate('Death of a spouse'),
-            ],
-            'BURI' => [
-                'M' => I18N::translate('Burial of a husband'),
-                'F' => I18N::translate('Burial of a wife'),
-                'U' => I18N::translate('Burial of a spouse'),
-            ],
-            'CREM' => [
-                'M' => I18N::translate('Cremation of a husband'),
-                'F' => I18N::translate('Cremation of a wife'),
-                'U' => I18N::translate('Cremation of a spouse'),
-            ],
-        ];
-
-        $facts = [];
-
-        if (str_contains($SHOW_RELATIVES_EVENTS, '_DEAT_SPOU')) {
-            foreach ($spouse->facts(['DEAT', 'BURI', 'CREM']) as $fact) {
-                if ($this->includeFact($fact, $min_date, $max_date)) {
-                    $facts[] = $this->convertEvent($fact, $death_of_a_spouse[$fact->getTag()][$fact->record()->sex()]);
-                }
-            }
-        }
-
-        return $facts;
-    }
-
-    /**
      * Get the events of children and grandchildren.
      *
      * @param Individual $person
@@ -294,29 +274,29 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
      * @param Date       $min_date
      * @param Date       $max_date
      *
-     * @return Fact[]
+     * @return Collection<Fact>
      */
-    private function childFacts(Individual $person, Family $family, string $option, string $relation, Date $min_date, Date $max_date): array
+    private function childFacts(Individual $person, Family $family, string $option, string $relation, Date $min_date, Date $max_date): Collection
     {
         $SHOW_RELATIVES_EVENTS = $person->tree()->getPreference('SHOW_RELATIVES_EVENTS');
 
         $birth_of_a_child = [
-            'BIRT' => [
+            'INDI:BIRT' => [
                 'M' => I18N::translate('Birth of a son'),
                 'F' => I18N::translate('Birth of a daughter'),
                 'U' => I18N::translate('Birth of a child'),
             ],
-            'CHR' => [
+            'INDI:CHR'  => [
                 'M' => I18N::translate('Christening of a son'),
                 'F' => I18N::translate('Christening of a daughter'),
                 'U' => I18N::translate('Christening of a child'),
             ],
-            'BAPM' => [
+            'INDI:BAPM' => [
                 'M' => I18N::translate('Baptism of a son'),
                 'F' => I18N::translate('Baptism of a daughter'),
                 'U' => I18N::translate('Baptism of a child'),
             ],
-            'ADOP' => [
+            'INDI:ADOP' => [
                 'M' => I18N::translate('Adoption of a son'),
                 'F' => I18N::translate('Adoption of a daughter'),
                 'U' => I18N::translate('Adoption of a child'),
@@ -324,22 +304,22 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $birth_of_a_sibling = [
-            'BIRT' => [
+            'INDI:BIRT' => [
                 'M' => I18N::translate('Birth of a brother'),
                 'F' => I18N::translate('Birth of a sister'),
                 'U' => I18N::translate('Birth of a sibling'),
             ],
-            'CHR' => [
+            'INDI:CHR'  => [
                 'M' => I18N::translate('Christening of a brother'),
                 'F' => I18N::translate('Christening of a sister'),
                 'U' => I18N::translate('Christening of a sibling'),
             ],
-            'BAPM' => [
+            'INDI:BAPM' => [
                 'M' => I18N::translate('Baptism of a brother'),
                 'F' => I18N::translate('Baptism of a sister'),
                 'U' => I18N::translate('Baptism of a sibling'),
             ],
-            'ADOP' => [
+            'INDI:ADOP' => [
                 'M' => I18N::translate('Adoption of a brother'),
                 'F' => I18N::translate('Adoption of a sister'),
                 'U' => I18N::translate('Adoption of a sibling'),
@@ -347,22 +327,22 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $birth_of_a_half_sibling = [
-            'BIRT' => [
+            'INDI:BIRT' => [
                 'M' => I18N::translate('Birth of a half-brother'),
                 'F' => I18N::translate('Birth of a half-sister'),
                 'U' => I18N::translate('Birth of a half-sibling'),
             ],
-            'CHR' => [
+            'INDI:CHR'  => [
                 'M' => I18N::translate('Christening of a half-brother'),
                 'F' => I18N::translate('Christening of a half-sister'),
                 'U' => I18N::translate('Christening of a half-sibling'),
             ],
-            'BAPM' => [
+            'INDI:BAPM' => [
                 'M' => I18N::translate('Baptism of a half-brother'),
                 'F' => I18N::translate('Baptism of a half-sister'),
                 'U' => I18N::translate('Baptism of a half-sibling'),
             ],
-            'ADOP' => [
+            'INDI:ADOP' => [
                 'M' => I18N::translate('Adoption of a half-brother'),
                 'F' => I18N::translate('Adoption of a half-sister'),
                 'U' => I18N::translate('Adoption of a half-sibling'),
@@ -370,22 +350,22 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $birth_of_a_grandchild = [
-            'BIRT' => [
+            'INDI:BIRT' => [
                 'M' => I18N::translate('Birth of a grandson'),
                 'F' => I18N::translate('Birth of a granddaughter'),
                 'U' => I18N::translate('Birth of a grandchild'),
             ],
-            'CHR' => [
+            'INDI:CHR'  => [
                 'M' => I18N::translate('Christening of a grandson'),
                 'F' => I18N::translate('Christening of a granddaughter'),
                 'U' => I18N::translate('Christening of a grandchild'),
             ],
-            'BAPM' => [
+            'INDI:BAPM' => [
                 'M' => I18N::translate('Baptism of a grandson'),
                 'F' => I18N::translate('Baptism of a granddaughter'),
                 'U' => I18N::translate('Baptism of a grandchild'),
             ],
-            'ADOP' => [
+            'INDI:ADOP' => [
                 'M' => I18N::translate('Adoption of a grandson'),
                 'F' => I18N::translate('Adoption of a granddaughter'),
                 'U' => I18N::translate('Adoption of a grandchild'),
@@ -393,22 +373,22 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $birth_of_a_grandchild1 = [
-            'BIRT' => [
+            'INDI:BIRT' => [
                 'M' => I18N::translateContext('daughter’s son', 'Birth of a grandson'),
                 'F' => I18N::translateContext('daughter’s daughter', 'Birth of a granddaughter'),
                 'U' => I18N::translate('Birth of a grandchild'),
             ],
-            'CHR' => [
+            'INDI:CHR'  => [
                 'M' => I18N::translateContext('daughter’s son', 'Christening of a grandson'),
                 'F' => I18N::translateContext('daughter’s daughter', 'Christening of a granddaughter'),
                 'U' => I18N::translate('Christening of a grandchild'),
             ],
-            'BAPM' => [
+            'INDI:BAPM' => [
                 'M' => I18N::translateContext('daughter’s son', 'Baptism of a grandson'),
                 'F' => I18N::translateContext('daughter’s daughter', 'Baptism of a granddaughter'),
                 'U' => I18N::translate('Baptism of a grandchild'),
             ],
-            'ADOP' => [
+            'INDI:ADOP' => [
                 'M' => I18N::translateContext('daughter’s son', 'Adoption of a grandson'),
                 'F' => I18N::translateContext('daughter’s daughter', 'Adoption of a granddaughter'),
                 'U' => I18N::translate('Adoption of a grandchild'),
@@ -416,22 +396,22 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $birth_of_a_grandchild2 = [
-            'BIRT' => [
+            'INDI:BIRT' => [
                 'M' => I18N::translateContext('son’s son', 'Birth of a grandson'),
                 'F' => I18N::translateContext('son’s daughter', 'Birth of a granddaughter'),
                 'U' => I18N::translate('Birth of a grandchild'),
             ],
-            'CHR' => [
+            'INDI:CHR'  => [
                 'M' => I18N::translateContext('son’s son', 'Christening of a grandson'),
                 'F' => I18N::translateContext('son’s daughter', 'Christening of a granddaughter'),
                 'U' => I18N::translate('Christening of a grandchild'),
             ],
-            'BAPM' => [
+            'INDI:BAPM' => [
                 'M' => I18N::translateContext('son’s son', 'Baptism of a grandson'),
                 'F' => I18N::translateContext('son’s daughter', 'Baptism of a granddaughter'),
                 'U' => I18N::translate('Baptism of a grandchild'),
             ],
-            'ADOP' => [
+            'INDI:ADOP' => [
                 'M' => I18N::translateContext('son’s son', 'Adoption of a grandson'),
                 'F' => I18N::translateContext('son’s daughter', 'Adoption of a granddaughter'),
                 'U' => I18N::translate('Adoption of a grandchild'),
@@ -439,17 +419,17 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $death_of_a_child = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translate('Death of a son'),
                 'F' => I18N::translate('Death of a daughter'),
                 'U' => I18N::translate('Death of a child'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translate('Burial of a son'),
                 'F' => I18N::translate('Burial of a daughter'),
                 'U' => I18N::translate('Burial of a child'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translate('Cremation of a son'),
                 'F' => I18N::translate('Cremation of a daughter'),
                 'U' => I18N::translate('Cremation of a child'),
@@ -457,17 +437,17 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $death_of_a_sibling = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translate('Death of a brother'),
                 'F' => I18N::translate('Death of a sister'),
                 'U' => I18N::translate('Death of a sibling'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translate('Burial of a brother'),
                 'F' => I18N::translate('Burial of a sister'),
                 'U' => I18N::translate('Burial of a sibling'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translate('Cremation of a brother'),
                 'F' => I18N::translate('Cremation of a sister'),
                 'U' => I18N::translate('Cremation of a sibling'),
@@ -475,17 +455,17 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $death_of_a_half_sibling = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translate('Death of a half-brother'),
                 'F' => I18N::translate('Death of a half-sister'),
                 'U' => I18N::translate('Death of a half-sibling'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translate('Burial of a half-brother'),
                 'F' => I18N::translate('Burial of a half-sister'),
                 'U' => I18N::translate('Burial of a half-sibling'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translate('Cremation of a half-brother'),
                 'F' => I18N::translate('Cremation of a half-sister'),
                 'U' => I18N::translate('Cremation of a half-sibling'),
@@ -493,17 +473,17 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $death_of_a_grandchild = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translate('Death of a grandson'),
                 'F' => I18N::translate('Death of a granddaughter'),
                 'U' => I18N::translate('Death of a grandchild'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translate('Burial of a grandson'),
                 'F' => I18N::translate('Burial of a granddaughter'),
                 'U' => I18N::translate('Burial of a grandchild'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translate('Cremation of a grandson'),
                 'F' => I18N::translate('Cremation of a granddaughter'),
                 'U' => I18N::translate('Baptism of a grandchild'),
@@ -511,17 +491,17 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $death_of_a_grandchild1 = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translateContext('daughter’s son', 'Death of a grandson'),
                 'F' => I18N::translateContext('daughter’s daughter', 'Death of a granddaughter'),
                 'U' => I18N::translate('Death of a grandchild'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translateContext('daughter’s son', 'Burial of a grandson'),
                 'F' => I18N::translateContext('daughter’s daughter', 'Burial of a granddaughter'),
                 'U' => I18N::translate('Burial of a grandchild'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translateContext('daughter’s son', 'Cremation of a grandson'),
                 'F' => I18N::translateContext('daughter’s daughter', 'Cremation of a granddaughter'),
                 'U' => I18N::translate('Baptism of a grandchild'),
@@ -529,17 +509,17 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $death_of_a_grandchild2 = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translateContext('son’s son', 'Death of a grandson'),
                 'F' => I18N::translateContext('son’s daughter', 'Death of a granddaughter'),
                 'U' => I18N::translate('Death of a grandchild'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translateContext('son’s son', 'Burial of a grandson'),
                 'F' => I18N::translateContext('son’s daughter', 'Burial of a granddaughter'),
                 'U' => I18N::translate('Burial of a grandchild'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translateContext('son’s son', 'Cremation of a grandson'),
                 'F' => I18N::translateContext('son’s daughter', 'Cremation of a granddaughter'),
                 'U' => I18N::translate('Cremation of a grandchild'),
@@ -582,7 +562,7 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
             'U' => I18N::translate('Marriage of a half-sibling'),
         ];
 
-        $facts = [];
+        $facts = new Collection();
 
         // Deal with recursion.
         switch ($option) {
@@ -627,24 +607,24 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
                             case '_GCHI':
                                 switch ($relation) {
                                     case 'dau':
-                                        $facts[] = $this->convertEvent($fact, $birth_of_a_grandchild1[$fact->getTag()][$fact->record()->sex()]);
+                                        $facts[] = $this->convertEvent($fact, $birth_of_a_grandchild1[$fact->tag()][$fact->record()->sex()]);
                                         break;
                                     case 'son':
-                                        $facts[] = $this->convertEvent($fact, $birth_of_a_grandchild2[$fact->getTag()][$fact->record()->sex()]);
+                                        $facts[] = $this->convertEvent($fact, $birth_of_a_grandchild2[$fact->tag()][$fact->record()->sex()]);
                                         break;
                                     case 'chil':
-                                        $facts[] = $this->convertEvent($fact, $birth_of_a_grandchild[$fact->getTag()][$fact->record()->sex()]);
+                                        $facts[] = $this->convertEvent($fact, $birth_of_a_grandchild[$fact->tag()][$fact->record()->sex()]);
                                         break;
                                 }
                                 break;
                             case '_SIBL':
-                                $facts[] = $this->convertEvent($fact, $birth_of_a_sibling[$fact->getTag()][$fact->record()->sex()]);
+                                $facts[] = $this->convertEvent($fact, $birth_of_a_sibling[$fact->tag()][$fact->record()->sex()]);
                                 break;
                             case '_HSIB':
-                                $facts[] = $this->convertEvent($fact, $birth_of_a_half_sibling[$fact->getTag()][$fact->record()->sex()]);
+                                $facts[] = $this->convertEvent($fact, $birth_of_a_half_sibling[$fact->tag()][$fact->record()->sex()]);
                                 break;
                             case '_CHIL':
-                                $facts[] = $this->convertEvent($fact, $birth_of_a_child[$fact->getTag()][$fact->record()->sex()]);
+                                $facts[] = $this->convertEvent($fact, $birth_of_a_child[$fact->tag()][$fact->record()->sex()]);
                                 break;
                         }
                     }
@@ -658,24 +638,24 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
                             case '_GCHI':
                                 switch ($relation) {
                                     case 'dau':
-                                        $facts[] = $this->convertEvent($fact, $death_of_a_grandchild1[$fact->getTag()][$fact->record()->sex()]);
+                                        $facts[] = $this->convertEvent($fact, $death_of_a_grandchild1[$fact->tag()][$fact->record()->sex()]);
                                         break;
                                     case 'son':
-                                        $facts[] = $this->convertEvent($fact, $death_of_a_grandchild2[$fact->getTag()][$fact->record()->sex()]);
+                                        $facts[] = $this->convertEvent($fact, $death_of_a_grandchild2[$fact->tag()][$fact->record()->sex()]);
                                         break;
                                     case 'chi':
-                                        $facts[] = $this->convertEvent($fact, $death_of_a_grandchild[$fact->getTag()][$fact->record()->sex()]);
+                                        $facts[] = $this->convertEvent($fact, $death_of_a_grandchild[$fact->tag()][$fact->record()->sex()]);
                                         break;
                                 }
                                 break;
                             case '_SIBL':
-                                $facts[] = $this->convertEvent($fact, $death_of_a_sibling[$fact->getTag()][$fact->record()->sex()]);
+                                $facts[] = $this->convertEvent($fact, $death_of_a_sibling[$fact->tag()][$fact->record()->sex()]);
                                 break;
                             case '_HSIB':
-                                $facts[] = $this->convertEvent($fact, $death_of_a_half_sibling[$fact->getTag()][$fact->record()->sex()]);
+                                $facts[] = $this->convertEvent($fact, $death_of_a_half_sibling[$fact->tag()][$fact->record()->sex()]);
                                 break;
                             case '_CHIL':
-                                $facts[] = $this->convertEvent($fact, $death_of_a_child[$fact->getTag()][$fact->record()->sex()]);
+                                $facts[] = $this->convertEvent($fact, $death_of_a_child[$fact->tag()][$fact->record()->sex()]);
                                 break;
                         }
                     }
@@ -728,24 +708,24 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
      * @param Date       $min_date
      * @param Date       $max_date
      *
-     * @return Fact[]
+     * @return Collection<Fact>
      */
-    private function parentFacts(Individual $person, int $sosa, Date $min_date, Date $max_date): array
+    private function parentFacts(Individual $person, int $sosa, Date $min_date, Date $max_date): Collection
     {
         $SHOW_RELATIVES_EVENTS = $person->tree()->getPreference('SHOW_RELATIVES_EVENTS');
 
         $death_of_a_parent = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translate('Death of a father'),
                 'F' => I18N::translate('Death of a mother'),
                 'U' => I18N::translate('Death of a parent'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translate('Burial of a father'),
                 'F' => I18N::translate('Burial of a mother'),
                 'U' => I18N::translate('Burial of a parent'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translate('Cremation of a father'),
                 'F' => I18N::translate('Cremation of a mother'),
                 'U' => I18N::translate('Cremation of a parent'),
@@ -753,17 +733,17 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $death_of_a_grandparent = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translate('Death of a grandfather'),
                 'F' => I18N::translate('Death of a grandmother'),
                 'U' => I18N::translate('Death of a grandparent'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translate('Burial of a grandfather'),
                 'F' => I18N::translate('Burial of a grandmother'),
                 'U' => I18N::translate('Burial of a grandparent'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translate('Cremation of a grandfather'),
                 'F' => I18N::translate('Cremation of a grandmother'),
                 'U' => I18N::translate('Cremation of a grandparent'),
@@ -771,17 +751,17 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $death_of_a_maternal_grandparent = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translate('Death of a maternal grandfather'),
                 'F' => I18N::translate('Death of a maternal grandmother'),
                 'U' => I18N::translate('Death of a grandparent'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translate('Burial of a maternal grandfather'),
                 'F' => I18N::translate('Burial of a maternal grandmother'),
                 'U' => I18N::translate('Burial of a grandparent'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translate('Cremation of a maternal grandfather'),
                 'F' => I18N::translate('Cremation of a maternal grandmother'),
                 'U' => I18N::translate('Cremation of a grandparent'),
@@ -789,17 +769,17 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
         ];
 
         $death_of_a_paternal_grandparent = [
-            'DEAT' => [
+            'INDI:DEAT' => [
                 'M' => I18N::translate('Death of a paternal grandfather'),
                 'F' => I18N::translate('Death of a paternal grandmother'),
                 'U' => I18N::translate('Death of a grandparent'),
             ],
-            'BURI' => [
+            'INDI:BURI' => [
                 'M' => I18N::translate('Burial of a paternal grandfather'),
                 'F' => I18N::translate('Burial of a paternal grandmother'),
                 'U' => I18N::translate('Burial of a grandparent'),
             ],
-            'CREM' => [
+            'INDI:CREM' => [
                 'M' => I18N::translate('Cremation of a paternal grandfather'),
                 'F' => I18N::translate('Cremation of a paternal grandmother'),
                 'U' => I18N::translate('Cremation of a grandparent'),
@@ -812,7 +792,7 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
             'U' => I18N::translate('Marriage of a parent'),
         ];
 
-        $facts = [];
+        $facts = new Collection();
 
         if ($sosa === 1) {
             foreach ($person->childFamilies() as $family) {
@@ -865,19 +845,19 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
                         if ($sosa === 1 && Date::compare($fact->date(), $min_date) < 0 || $this->includeFact($fact, $min_date, $max_date)) {
                             switch ($sosa) {
                                 case 1:
-                                    $facts[] = $this->convertEvent($fact, $death_of_a_parent[$fact->getTag()][$fact->record()->sex()]);
+                                    $facts[] = $this->convertEvent($fact, $death_of_a_parent[$fact->tag()][$fact->record()->sex()]);
                                     break;
                                 case 2:
                                 case 3:
                                     switch ($person->sex()) {
                                         case 'M':
-                                            $facts[] = $this->convertEvent($fact, $death_of_a_paternal_grandparent[$fact->getTag()][$fact->record()->sex()]);
+                                            $facts[] = $this->convertEvent($fact, $death_of_a_paternal_grandparent[$fact->tag()][$fact->record()->sex()]);
                                             break;
                                         case 'F':
-                                            $facts[] = $this->convertEvent($fact, $death_of_a_maternal_grandparent[$fact->getTag()][$fact->record()->sex()]);
+                                            $facts[] = $this->convertEvent($fact, $death_of_a_maternal_grandparent[$fact->tag()][$fact->record()->sex()]);
                                             break;
                                         default:
-                                            $facts[] = $this->convertEvent($fact, $death_of_a_grandparent[$fact->getTag()][$fact->record()->sex()]);
+                                            $facts[] = $this->convertEvent($fact, $death_of_a_grandparent[$fact->tag()][$fact->record()->sex()]);
                                             break;
                                     }
                             }
@@ -891,30 +871,13 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
     }
 
     /**
-     * Get any historical events.
-     *
-     * @param Individual $individual
-     *
-     * @return Fact[]
-     */
-    private function historicalFacts(Individual $individual): array
-    {
-        return $this->module_service->findByInterface(ModuleHistoricEventsInterface::class)
-            ->map(static function (ModuleHistoricEventsInterface $module) use ($individual): Collection {
-                return $module->historicEventsForIndividual($individual);
-            })
-            ->flatten()
-            ->all();
-    }
-
-    /**
      * Get the events of associates.
      *
      * @param Individual $person
      *
-     * @return Fact[]
+     * @return Collection<Fact>
      */
-    private function associateFacts(Individual $person): array
+    private function associateFacts(Individual $person): Collection
     {
         $facts = [];
 
@@ -930,7 +893,7 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
             foreach ($associate->facts() as $fact) {
                 if (preg_match('/\n\d _?ASSO @' . $person->xref() . '@/', $fact->gedcom())) {
                     // Extract the important details from the fact
-                    $factrec = '1 ' . $fact->getTag();
+                    $factrec = explode("\n", $fact->gedcom(), 2)[0];
                     if (preg_match('/\n2 DATE .*/', $fact->gedcom(), $match)) {
                         $factrec .= $match[0];
                     }
@@ -949,7 +912,45 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
             }
         }
 
-        return $facts;
+        return new Collection($facts);
+    }
+
+    /**
+     * Get any historical events.
+     *
+     * @param Individual $individual
+     *
+     * @return Collection<Fact>
+     */
+    private function historicFacts(Individual $individual): Collection
+    {
+        return $this->module_service->findByInterface(ModuleHistoricEventsInterface::class)
+            ->map(static function (ModuleHistoricEventsInterface $module) use ($individual): Collection {
+                return $module->historicEventsForIndividual($individual);
+            })
+            ->flatten();
+    }
+
+    /**
+     * Is this tab empty? If so, we don't always need to display it.
+     *
+     * @param Individual $individual
+     *
+     * @return bool
+     */
+    public function hasTabContent(Individual $individual): bool
+    {
+        return true;
+    }
+
+    /**
+     * Can this tab load asynchronously?
+     *
+     * @return bool
+     */
+    public function canLoadAjax(): bool
+    {
+        return false;
     }
 
     /**
@@ -961,6 +962,6 @@ class IndividualFactsTabModule extends AbstractModule implements ModuleTabInterf
     {
         // We don't actually displaye these facts, but they are displayed
         // outside the tabs/sidebar systems. This just forces them to be excluded here.
-        return new Collection(['NAME', 'SEX', 'OBJE']);
+        return new Collection(['INDI:NAME', 'INDI:SEX', 'INDI:OBJE']);
     }
 }

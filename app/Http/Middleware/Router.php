@@ -23,18 +23,16 @@ use Aura\Router\RouterContainer;
 use Aura\Router\Rule\Accepts;
 use Aura\Router\Rule\Allows;
 use Fig\Http\Message\StatusCodeInterface;
-use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\Tree;
-use Middleland\Dispatcher;
+use Fisharebest\Webtrees\Webtrees;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 use function app;
-use function array_map;
 use function response;
 use function str_contains;
 
@@ -43,14 +41,11 @@ use function str_contains;
  */
 class Router implements MiddlewareInterface
 {
-    /** @var ModuleService */
-    private $module_service;
+    private ModuleService $module_service;
 
-    /** @var RouterContainer */
-    private $router_container;
+    private RouterContainer $router_container;
 
-    /** @var TreeService */
-    private $tree_service;
+    private TreeService $tree_service;
 
     /**
      * Router constructor.
@@ -59,8 +54,11 @@ class Router implements MiddlewareInterface
      * @param RouterContainer $router_container
      * @param TreeService     $tree_service
      */
-    public function __construct(ModuleService $module_service, RouterContainer $router_container, TreeService $tree_service)
-    {
+    public function __construct(
+        ModuleService $module_service,
+        RouterContainer $router_container,
+        TreeService $tree_service
+    ) {
         $this->module_service   = $module_service;
         $this->router_container = $router_container;
         $this->tree_service     = $tree_service;
@@ -113,17 +111,15 @@ class Router implements MiddlewareInterface
 
         // This middleware cannot run until after the routing, as it needs to know the route.
         $post_routing_middleware = [CheckCsrf::class];
-        $post_routing_middleware = array_map('app', $post_routing_middleware);
 
         // Firstly, apply the route middleware
         $route_middleware = $route->extras['middleware'] ?? [];
-        $route_middleware = array_map('app', $route_middleware);
 
         // Secondly, apply any module middleware
         $module_middleware = $this->module_service->findByInterface(MiddlewareInterface::class)->all();
 
         // Finally, run the handler using middleware
-        $handler_middleware = [new WrapHandler($route->handler)];
+        $handler_middleware = [RequestHandler::class];
 
         $middleware = array_merge(
             $post_routing_middleware,
@@ -147,18 +143,9 @@ class Router implements MiddlewareInterface
             $request = $request->withAttribute((string) $key, $value);
         }
 
-        // Bind the request into the container
+        // Bind the updated request into the container
         app()->instance(ServerRequestInterface::class, $request);
 
-        $dispatcher = new Dispatcher($middleware, app());
-
-        // These are deprecated, and will be removed in webtrees 2.1.0
-        $request = $request
-            ->withAttribute('filesystem.data', Registry::filesystem()->data())
-            ->withAttribute('filesystem.data.name', Registry::filesystem()->dataName())
-            ->withAttribute('filesystem.root', Registry::filesystem()->root())
-            ->withAttribute('filesystem.root.name', Registry::filesystem()->rootName());
-
-        return $dispatcher->dispatch($request);
+        return Webtrees::dispatch($request, $middleware);
     }
 }

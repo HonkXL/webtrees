@@ -20,9 +20,10 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\Auth;
-use Fisharebest\Webtrees\GedcomTag;
+use Fisharebest\Webtrees\Fact;
 use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\Registry;
+use Fisharebest\Webtrees\Services\GedcomEditService;
 use Fisharebest\Webtrees\Tree;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -30,6 +31,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 use function assert;
 use function is_string;
+use function route;
+use function trim;
 
 /**
  * Add a new fact.
@@ -37,6 +40,18 @@ use function is_string;
 class AddNewFact implements RequestHandlerInterface
 {
     use ViewResponseTrait;
+
+    private GedcomEditService $gedcom_edit_service;
+
+    /**
+     * AddNewFact constructor.
+     *
+     * @param GedcomEditService $gedcom_edit_service
+     */
+    public function __construct(GedcomEditService $gedcom_edit_service)
+    {
+        $this->gedcom_edit_service = $gedcom_edit_service;
+    }
 
     /**
      * @param ServerRequestInterface $request
@@ -51,18 +66,38 @@ class AddNewFact implements RequestHandlerInterface
         $xref = $request->getAttribute('xref');
         assert(is_string($xref));
 
-        $fact = $request->getAttribute('fact');
+        $subtag = $request->getAttribute('fact');
 
-        $record = Registry::gedcomRecordFactory()->make($xref, $tree);
-        $record = Auth::checkRecordAccess($record, true);
+        $include_hidden = (bool) ($request->getQueryParams()['include_hidden'] ?? false);
 
-        $title = $record->fullName() . ' - ' . GedcomTag::getLabel($record->tag() . ':' . $fact);
+        $record  = Registry::gedcomRecordFactory()->make($xref, $tree);
+        $record  = Auth::checkRecordAccess($record, true);
+        $element = Registry::elementFactory()->make($record->tag() . ':' . $subtag);
+        $title   = $record->fullName() . ' - ' . $element->label();
+        $fact    = new Fact(trim('1 ' . $subtag . ' ' . $element->default($tree)), $record, 'new');
+        $gedcom  = $this->gedcom_edit_service->insertMissingFactSubtags($fact, $include_hidden);
+        $hidden  = $this->gedcom_edit_service->insertMissingFactSubtags($fact, true);
+        $url     = $record->url();
 
-        return $this->viewResponse('edit/add-fact', [
-            'fact'   => $fact,
-            'record' => $record,
-            'title'  => $title,
-            'tree'   => $tree,
+        if ($gedcom === $hidden) {
+            $hidden_url = '';
+        } else {
+            $hidden_url = route(self::class, [
+                'fact'           => $subtag,
+                'include_hidden' => true,
+                'tree'           => $tree->name(),
+                'xref'           => $xref,
+            ]);
+        }
+
+        return $this->viewResponse('edit/edit-fact', [
+            'can_edit_raw' => false,
+            'fact'         => $fact,
+            'gedcom'       => $gedcom,
+            'hidden_url'   => $hidden_url,
+            'title'        => $title,
+            'tree'         => $tree,
+            'url'          => $url,
         ]);
     }
 }

@@ -26,7 +26,7 @@ use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\Site;
-use League\Flysystem\NotSupportedException;
+use League\Flysystem\FilesystemException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -54,8 +54,7 @@ class HandleExceptions implements MiddlewareInterface, StatusCodeInterface
 {
     use ViewResponseTrait;
 
-    /** @var TreeService */
-    private $tree_service;
+    private TreeService $tree_service;
 
     /**
      * HandleExceptions constructor.
@@ -97,7 +96,7 @@ class HandleExceptions implements MiddlewareInterface, StatusCodeInterface
             }
 
             return $this->httpExceptionResponse($request, $exception);
-        } catch (NotSupportedException $exception) {
+        } catch (FilesystemException $exception) {
             // The router added the tree attribute to the request, and we need it for the error response.
             $request = app(ServerRequestInterface::class) ?? $request;
 

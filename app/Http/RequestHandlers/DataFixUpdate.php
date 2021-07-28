@@ -36,8 +36,7 @@ use function response;
  */
 class DataFixUpdate implements RequestHandlerInterface
 {
-    /** @var ModuleService */
-    private $module_service;
+    private ModuleService $module_service;
 
     /**
      * DataFix constructor.
@@ -64,7 +63,7 @@ class DataFixUpdate implements RequestHandlerInterface
         assert($module instanceof ModuleDataFixInterface);
 
         $xref   = $request->getQueryParams()['xref'] ?? '';
-        $params = (array) $request->getQueryParams();
+        $params = $request->getQueryParams();
 
         $record = Registry::gedcomRecordFactory()->make($xref, $tree);
         $record = Auth::checkRecordAccess($record, true);

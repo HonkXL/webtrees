@@ -30,18 +30,19 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
-use Throwable;
-use Transliterator;
 
 use function addcslashes;
 use function app;
+use function array_combine;
+use function array_keys;
+use function array_map;
+use function array_search;
 use function array_shift;
 use function assert;
 use function count;
 use function date;
 use function e;
 use function explode;
-use function implode;
 use function in_array;
 use function md5;
 use function preg_match;
@@ -49,13 +50,12 @@ use function preg_match_all;
 use function preg_replace;
 use function preg_replace_callback;
 use function preg_split;
+use function range;
 use function route;
 use function str_contains;
+use function str_ends_with;
 use function str_pad;
-use function str_starts_with;
-use function strip_tags;
 use function strtoupper;
-use function substr_count;
 use function trim;
 
 use const PHP_INT_MAX;
@@ -91,6 +91,7 @@ class GedcomRecord
 
     /** @var int|null Cached result */
     protected $getPrimaryName;
+
     /** @var int|null Cached result */
     protected $getSecondaryName;
 
@@ -135,7 +136,7 @@ class GedcomRecord
         return static function (GedcomRecord $x, GedcomRecord $y): int {
             if ($x->canShowName()) {
                 if ($y->canShowName()) {
-                    return I18N::strcasecmp($x->sortName(), $y->sortName());
+                    return I18N::comparator()($x->sortName(), $y->sortName());
                 }
 
                 return -1; // only $y is private
@@ -227,28 +228,6 @@ class GedcomRecord
     }
 
     /**
-     * Generate a "slug" to use in pretty URLs.
-     *
-     * @return string
-     */
-    public function slug(): string
-    {
-        $slug = strip_tags($this->fullName());
-
-        try {
-            $transliterator = Transliterator::create('Any-Latin;Latin-ASCII');
-            $slug           = $transliterator->transliterate($slug);
-        } catch (Throwable $ex) {
-            // ext-intl not installed?
-            // Transliteration algorithms not present in lib-icu?
-        }
-
-        $slug = preg_replace('/[^A-Za-z0-9]+/', '-', $slug);
-
-        return trim($slug, '-') ?: '-';
-    }
-
-    /**
      * Generate a URL to this record.
      *
      * @return string
@@ -258,7 +237,7 @@ class GedcomRecord
         return route(static::ROUTE_NAME, [
             'xref' => $this->xref(),
             'tree' => $this->tree->name(),
-            'slug' => $this->slug(),
+            'slug' => Registry::slugFactory()->make($this),
         ]);
     }
 
@@ -363,7 +342,7 @@ class GedcomRecord
     /**
      * Derived classes should redefine this function, otherwise the object will have no name
      *
-     * @return array<array<string>>
+     * @return array<int,array<string,string>>
      */
     public function getAllNames(): array
     {
@@ -403,9 +382,7 @@ class GedcomRecord
     {
         static $language_script;
 
-        if ($language_script === null) {
-            $language_script = $language_script ?? I18N::locale()->script()->code();
-        }
+        $language_script ??= I18N::locale()->script()->code();
 
         if ($this->getPrimaryName === null) {
             // Generally, the first name is the primary one....
@@ -806,17 +783,39 @@ class GedcomRecord
     ): Collection {
         $access_level = $access_level ?? Auth::accessLevel($this->tree);
 
+        // Convert BIRT into INDI:BIRT, etc.
+        $filter = array_map(fn (string $tag): string => $this->tag() . ':' . $tag, $filter);
+
         $facts = new Collection();
         if ($this->canShow($access_level)) {
             foreach ($this->facts as $fact) {
-                if (($filter === [] || in_array($fact->getTag(), $filter, true)) && $fact->canShow($access_level)) {
+                if (($filter === [] || in_array($fact->tag(), $filter, true)) && $fact->canShow($access_level)) {
                     $facts->push($fact);
                 }
             }
         }
 
         if ($sort) {
-            $facts = Fact::sortFacts($facts);
+            switch ($this->tag()) {
+                case Family::RECORD_TYPE:
+                case Individual::RECORD_TYPE:
+                    $facts = Fact::sortFacts($facts);
+                    break;
+
+                default:
+                    $subtags = Registry::elementFactory()->make($this->tag())->subtags();
+                    $subtags = array_map(fn (string $tag): string => $this->tag() . ':' . $tag, array_keys($subtags));
+                    $subtags = array_combine(range(1, count($subtags)), $subtags);
+
+                    $facts = $facts
+                        ->sort(static function (Fact $x, Fact $y) use ($subtags): int {
+                            $sort_x = array_search($x->tag(), $subtags, true) ?: PHP_INT_MAX;
+                            $sort_y = array_search($y->tag(), $subtags, true) ?: PHP_INT_MAX;
+
+                            return $sort_x <=> $sort_y;
+                        });
+                    break;
+            }
         }
 
         if ($ignore_deleted) {
@@ -826,6 +825,35 @@ class GedcomRecord
         }
 
         return new Collection($facts);
+    }
+
+    /**
+     * @return array<string,string>
+     */
+    public function missingFacts(): array
+    {
+        $missing_facts = [];
+
+        foreach (Registry::elementFactory()->make($this->tag())->subtags() as $subtag => $repeat) {
+            [, $max] = explode(':', $repeat);
+            $max = $max === 'M' ? PHP_INT_MAX : (int) $max;
+
+            if ($this->facts([$subtag], false, null, true)->count() < $max) {
+                $missing_facts[$subtag] = $subtag;
+                $missing_facts[$subtag] = Registry::elementFactory()->make($this->tag() . ':' . $subtag)->label();
+            }
+        }
+
+        uasort($missing_facts, I18N::comparator());
+
+        if ($this->tree->getPreference('MEDIA_UPLOAD') < Auth::accessLevel($this->tree)) {
+            unset($missing_facts['OBJE']);
+        }
+
+        // We have special code for this.
+        unset($missing_facts['FILE']);
+
+        return $missing_facts;
     }
 
     /**
@@ -946,7 +974,7 @@ class GedcomRecord
                     $new_gedcom .= "\n" . $gedcom;
                 }
                 $fact_id = 'NOT A VALID FACT ID'; // Only replace/delete one copy of a duplicate fact
-            } elseif ($fact->getTag() !== 'CHAN' || !$update_chan) {
+            } elseif (!str_ends_with($fact->tag(), ':CHAN') || !$update_chan) {
                 $new_gedcom .= "\n" . $fact->gedcom();
             }
         }
@@ -1169,7 +1197,7 @@ class GedcomRecord
     {
         $this->getAllNames[] = [
             'type'   => $type,
-            'sort'   => preg_replace_callback('/([0-9]+)/', static function (array $matches): string {
+            'sort'   => preg_replace_callback('/(\d+)/', static function (array $matches): string {
                 return str_pad($matches[0], 10, '0', STR_PAD_LEFT);
             }, $value),
             'full'   => '<span dir="auto">' . e($value) . '</span>',
@@ -1311,72 +1339,5 @@ class GedcomRecord
             ->where('o_id', '=', $this->xref())
             ->lockForUpdate()
             ->get();
-    }
-
-    /**
-     * Add blank lines, to allow a user to add/edit new values.
-     *
-     * @return string
-     */
-    public function insertMissingSubtags(): string
-    {
-        $gedcom = $this->insertMissingLevels($this->tag(), $this->gedcom());
-
-        return preg_replace('/^0.*\n/', '', $gedcom);
-    }
-
-    /**
-     * @param string $tag
-     * @param string $gedcom
-     *
-     * @return string
-     */
-    protected function insertMissingLevels(string $tag, string $gedcom): string
-    {
-        $next_level = substr_count($tag, ':') + 1;
-        $factory    = Registry::elementFactory();
-        $subtags    = $factory->make($tag)->subtags();
-
-        // The first part is level N (includes CONT records).  The remainder are level N+1.
-        $parts  = preg_split('/\n(?=' . $next_level . ')/', $gedcom);
-        $return = array_shift($parts);
-
-        foreach ($subtags as $subtag => $occurrences) {
-            [$min, $max] = explode(':', $occurrences);
-            if ($max === 'M') {
-                $max = PHP_INT_MAX;
-            } else {
-                $max = (int) $max;
-            }
-
-            $count = 0;
-
-            // Add expected subtags in our preferred order.
-            foreach ($parts as $n => $part) {
-                if (str_starts_with($part, $next_level . ' ' . $subtag)) {
-                    $return .= "\n" . $this->insertMissingLevels($tag . ':' . $subtag, $part);
-                    $count++;
-                    unset($parts[$n]);
-                }
-            }
-
-            // Allowed to have more of this subtag?
-            if ($count < $max) {
-                // Create a new one.
-                $gedcom  = $next_level . ' ' . $subtag;
-                $default = $factory->make($tag . ':' . $subtag)->default($this->tree);
-                if ($default !== '') {
-                    $gedcom .= ' ' . $default;
-                }
-                $return .= "\n" . $this->insertMissingLevels($tag . ':' . $subtag, $gedcom);
-            }
-        }
-
-        // Now add any unexpected/existing data.
-        if ($parts !== []) {
-            $return .= "\n" . implode("\n", $parts);
-        }
-
-        return $return;
     }
 }

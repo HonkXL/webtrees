@@ -25,7 +25,8 @@ use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\PlaceLocation;
-use Fisharebest\Webtrees\Site;
+use Fisharebest\Webtrees\Services\LeafletJsService;
+use Fisharebest\Webtrees\Services\ModuleService;
 use Illuminate\Support\Collection;
 use stdClass;
 
@@ -37,24 +38,41 @@ class PlacesModule extends AbstractModule implements ModuleTabInterface
     use ModuleTabTrait;
 
     protected const ICONS = [
-        'BIRT' => ['color' => 'pink', 'name' => 'baby-carriage fas'],
-        'BAPM' => ['color' => 'pink', 'name' => 'water fas'],
-        'BARM' => ['color' => 'pink', 'name' => 'star-of-david fas'],
-        'BASM' => ['color' => 'pink', 'name' => 'star-of-david fas'],
-        'CHR'  => ['color' => 'pink', 'name' => 'water fas'],
-        'CHRA' => ['color' => 'pink', 'name' => 'water fas'],
-        'MARR' => ['color' => 'green', 'name' => 'infinity fas'],
-        'DEAT' => ['color' => 'black', 'name' => 'times fas'],
-        'BURI' => ['color' => 'purple', 'name' => 'times fas'],
-        'CREM' => ['color' => 'black', 'name' => 'times fas'],
-        'CENS' => ['color' => 'cyan', 'name' => 'list fas'],
-        'RESI' => ['color' => 'cyan', 'name' => 'home fas'],
-        'OCCU' => ['color' => 'cyan', 'name' => 'industry fas'],
-        'GRAD' => ['color' => 'violet', 'name' => 'university fas'],
-        'EDUC' => ['color' => 'violet', 'name' => 'university fas'],
+        'FAM:CENS'  => ['color' => 'cyan', 'name' => 'list fas'],
+        'FAM:MARR'  => ['color' => 'green', 'name' => 'infinity fas'],
+        'INDI:BAPM' => ['color' => 'pink', 'name' => 'water fas'],
+        'INDI:BARM' => ['color' => 'pink', 'name' => 'star-of-david fas'],
+        'INDI:BASM' => ['color' => 'pink', 'name' => 'star-of-david fas'],
+        'INDI:BIRT' => ['color' => 'pink', 'name' => 'baby-carriage fas'],
+        'INDI:BURI' => ['color' => 'purple', 'name' => 'times fas'],
+        'INDI:CENS' => ['color' => 'cyan', 'name' => 'list fas'],
+        'INDI:CHR'  => ['color' => 'pink', 'name' => 'water fas'],
+        'INDI:CHRA' => ['color' => 'pink', 'name' => 'water fas'],
+        'INDI:CREM' => ['color' => 'black', 'name' => 'times fas'],
+        'INDI:DEAT' => ['color' => 'black', 'name' => 'times fas'],
+        'INDI:EDUC' => ['color' => 'violet', 'name' => 'university fas'],
+        'INDI:GRAD' => ['color' => 'violet', 'name' => 'university fas'],
+        'INDI:OCCU' => ['color' => 'cyan', 'name' => 'industry fas'],
+        'INDI:RESI' => ['color' => 'cyan', 'name' => 'home fas'],
     ];
 
     protected const DEFAULT_ICON = ['color' => 'gold', 'name' => 'bullseye fas'];
+
+    private LeafletJsService $leaflet_js_service;
+
+    private ModuleService $module_service;
+
+    /**
+     * PlacesModule constructor.
+     *
+     * @param LeafletJsService $leaflet_js_service
+     * @param ModuleService    $module_service
+     */
+    public function __construct(LeafletJsService $leaflet_js_service, ModuleService $module_service)
+    {
+        $this->leaflet_js_service = $leaflet_js_service;
+        $this->module_service = $module_service;
+    }
 
     /**
      * How should this module be identified in the control panel, etc.?
@@ -97,52 +115,9 @@ class PlacesModule extends AbstractModule implements ModuleTabInterface
      */
     public function hasTabContent(Individual $individual): bool
     {
-        return Site::getPreference('map-provider') !== '' &&
-            $this->getMapData($individual)->features !== [];
-    }
+        $map_providers = $this->module_service->findByInterface(ModuleMapProviderInterface::class);
 
-    /**
-     * A greyed out tab has no actual content, but may perhaps have
-     * options to create content.
-     *
-     * @param Individual $individual
-     *
-     * @return bool
-     */
-    public function isGrayedOut(Individual $individual): bool
-    {
-        return false;
-    }
-
-    /**
-     * Can this tab load asynchronously?
-     *
-     * @return bool
-     */
-    public function canLoadAjax(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Generate the HTML content of this tab.
-     *
-     * @param Individual $individual
-     *
-     * @return string
-     */
-    public function getTabContent(Individual $individual): string
-    {
-        return view('modules/places/tab', [
-            'data'     => $this->getMapData($individual),
-            'provider' => [
-                'url'    => 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                'options' => [
-                    'attribution' => '<a href="https://www.openstreetmap.org/copyright">&copy; OpenStreetMap</a> contributors',
-                    'max_zoom'    => 19
-                ]
-            ]
-        ]);
+        return $map_providers->isNotEmpty() && $this->getMapData($individual)->features !== [];
     }
 
     /**
@@ -181,9 +156,9 @@ class PlacesModule extends AbstractModule implements ModuleTabInterface
                         'coordinates' => [$longitude, $latitude],
                     ],
                     'properties' => [
-                        'icon'     => static::ICONS[$fact->getTag()] ?? static::DEFAULT_ICON,
-                        'tooltip'  => $fact->place()->gedcomName(),
-                        'summary'  => view('modules/places/event-sidebar', $this->summaryData($indi, $fact)),
+                        'icon'    => static::ICONS[$fact->tag()] ?? static::DEFAULT_ICON,
+                        'tooltip' => $fact->place()->gedcomName(),
+                        'summary' => view('modules/places/event-sidebar', $this->summaryData($indi, $fact)),
                     ],
                 ];
             }
@@ -248,12 +223,50 @@ class PlacesModule extends AbstractModule implements ModuleTabInterface
         }
 
         return [
-            'tag'    => $tag,
-            'url'    => $url,
-            'name'   => $name,
-            'value'  => $fact->value(),
-            'date'   => $fact->date()->display(true),
-            'place'  => $fact->place(),
+            'tag'   => $tag,
+            'url'   => $url,
+            'name'  => $name,
+            'value' => $fact->value(),
+            'date'  => $fact->date()->display(true),
+            'place' => $fact->place(),
         ];
+    }
+
+    /**
+     * A greyed out tab has no actual content, but may perhaps have
+     * options to create content.
+     *
+     * @param Individual $individual
+     *
+     * @return bool
+     */
+    public function isGrayedOut(Individual $individual): bool
+    {
+        return false;
+    }
+
+    /**
+     * Can this tab load asynchronously?
+     *
+     * @return bool
+     */
+    public function canLoadAjax(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Generate the HTML content of this tab.
+     *
+     * @param Individual $individual
+     *
+     * @return string
+     */
+    public function getTabContent(Individual $individual): string
+    {
+        return view('modules/places/tab', [
+            'data'           => $this->getMapData($individual),
+            'leaflet_config' => $this->leaflet_js_service->config(),
+        ]);
     }
 }

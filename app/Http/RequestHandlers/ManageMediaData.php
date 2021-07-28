@@ -57,14 +57,11 @@ use function view;
  */
 class ManageMediaData implements RequestHandlerInterface
 {
-    /** @var DatatablesService */
-    private $datatables_service;
+    private DatatablesService $datatables_service;
 
-    /** @var MediaFileService */
-    private $media_file_service;
+    private MediaFileService $media_file_service;
 
-    /** @var TreeService */
-    private $tree_service;
+    private TreeService $tree_service;
 
     /**
      * MediaController constructor.
@@ -113,9 +110,20 @@ class ManageMediaData implements RequestHandlerInterface
             $media = Registry::mediaFactory()->make($row->m_id, $tree, $row->m_gedcom);
             assert($media instanceof Media);
 
-            $path = $row->media_folder . $row->multimedia_file_refn;
+            $is_http  = str_starts_with($row->multimedia_file_refn, 'http://');
+            $is_https = str_starts_with($row->multimedia_file_refn, 'https://');
+
+            if ($is_http || $is_https) {
+                return [
+                    '<a href="' . e($row->multimedia_file_refn) . '">' . e($row->multimedia_file_refn) . '</a>',
+                    view('icons/mime', ['type' => Mime::DEFAULT_TYPE]),
+                    $this->mediaObjectInfo($media),
+                ];
+            }
 
             try {
+                $path = $row->media_folder . $row->multimedia_file_refn;
+
                 try {
                     $mime_type = Registry::filesystem()->data()->mimeType($path);
                 } catch (UnableToRetrieveMetadata $ex) {
@@ -137,7 +145,7 @@ class ManageMediaData implements RequestHandlerInterface
             }
 
             return [
-                $row->multimedia_file_refn,
+                e($row->multimedia_file_refn),
                 $img,
                 $this->mediaObjectInfo($media),
             ];
@@ -151,15 +159,18 @@ class ManageMediaData implements RequestHandlerInterface
                             ->on('media.m_file', '=', 'media_file.m_file')
                             ->on('media.m_id', '=', 'media_file.m_id');
                     })
-                    ->join('gedcom_setting', 'gedcom_id', '=', 'media.m_file')
-                    ->where('setting_name', '=', 'MEDIA_DIRECTORY')
+                    ->leftJoin('gedcom_setting', static function (JoinClause $join): void {
+                        $join
+                            ->on('gedcom_setting.gedcom_id', '=', 'media.m_file')
+                            ->where('setting_name', '=', 'MEDIA_DIRECTORY');
+                    })
                     ->where('multimedia_file_refn', 'NOT LIKE', 'http://%')
                     ->where('multimedia_file_refn', 'NOT LIKE', 'https://%')
                     ->select([
                         'media.*',
                         'multimedia_file_refn',
                         'descriptive_title',
-                        'setting_value AS media_folder',
+                        new Expression("COALESCE(setting_value, 'media/') AS media_folder"),
                     ]);
 
                 $query->where(new Expression('setting_value || multimedia_file_refn'), 'LIKE', $media_folder . '%');

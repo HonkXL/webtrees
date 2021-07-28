@@ -36,8 +36,7 @@ use function route;
  */
 class UserAddAction implements RequestHandlerInterface
 {
-    /** @var UserService */
-    private $user_service;
+    private UserService $user_service;
 
     /**
      * UserAddAction constructor.
@@ -87,7 +86,7 @@ class UserAddAction implements RequestHandlerInterface
         $new_user = $this->user_service->create($username, $real_name, $email, $password);
         $new_user->setPreference(UserInterface::PREF_IS_EMAIL_VERIFIED, '1');
         $new_user->setPreference(UserInterface::PREF_LANGUAGE, I18N::languageTag());
-        $new_user->setPreference(UserInterface::PREF_TIME_ZONE, Site::getPreference('TIMEZONE', 'UTC'));
+        $new_user->setPreference(UserInterface::PREF_TIME_ZONE, Site::getPreference('TIMEZONE'));
         $new_user->setPreference(UserInterface::PREF_TIMESTAMP_REGISTERED, date('U'));
         $new_user->setPreference(UserInterface::PREF_TIMESTAMP_ACTIVE, '0');
 

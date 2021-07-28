@@ -133,7 +133,7 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
 
         switch ($infoStyle) {
             case 'tagcloud':
-                uksort($all_surnames, [I18N::class, 'strcasecmp']);
+                uksort($all_surnames, I18N::comparator());
                 $content = FunctionsPrintLists::surnameTagCloud($all_surnames, $module, true, $tree);
                 break;
             case 'list':
@@ -259,13 +259,13 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
     /**
      * Sort (lists of counts of similar) surname by total count.
      *
-     * @param string[] $a
-     * @param string[] $b
+     * @param array<int> $a
+     * @param array<int> $b
      *
      * @return int
      */
     private function surnameCountSort(array $a, array $b): int
     {
-        return array_sum($b) - array_sum($a);
+        return array_sum($a) <=> array_sum($b);
     }
 }

@@ -23,19 +23,18 @@ use DomainException;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Carbon;
 use Fisharebest\Webtrees\Date;
-use Fisharebest\Webtrees\Registry;
+use Fisharebest\Webtrees\Elements\UnknownElement;
 use Fisharebest\Webtrees\Family;
-use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\Functions\Functions;
 use Fisharebest\Webtrees\Gedcom;
 use Fisharebest\Webtrees\GedcomRecord;
-use Fisharebest\Webtrees\GedcomTag;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\MediaFile;
 use Fisharebest\Webtrees\Note;
 use Fisharebest\Webtrees\Place;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
@@ -1046,11 +1045,14 @@ class ReportParserGenerate extends ReportParserBase
                 }
                 $tmp = explode(':', $tag);
                 if (in_array(end($tmp), ['NOTE', 'TEXT'], true)) {
-                    $value = Filter::formatText($value, $this->tree); // We'll strip HTML in addText()
+                    if ($this->tree->getPreference('FORMAT_TEXT') === 'markdown') {
+                        $value = strip_tags(Registry::markdownFactory()->markdown($this->tree)->convertToHtml($value));
+                    } else {
+                        $value = strip_tags(Registry::markdownFactory()->autolink($this->tree)->convertToHtml($value));
+                    }
                 }
 
                 if (!empty($attrs['truncate'])) {
-                    $value = strip_tags($value);
                     $value = Str::limit($value, (int) $attrs['truncate'], I18N::translate('…'));
                 }
                 $this->current_element->addText($value);
@@ -1240,18 +1242,23 @@ class ReportParserGenerate extends ReportParserBase
             $var = $this->vars[$var]['id'];
         } else {
             $tfact = $this->fact;
-            if (($this->fact === 'EVEN' || $this->fact === 'FACT') && $this->type !== ' ') {
+            if (($this->fact === 'EVEN' || $this->fact === 'FACT') && $this->type !== '') {
                 // Use :
                 // n TYPE This text if string
                 $tfact = $this->type;
+            } else {
+                foreach ([Individual::RECORD_TYPE, Family::RECORD_TYPE] as $record_type) {
+                    $element = Registry::elementFactory()->make($record_type . ':' . $this->fact);
+
+                    if (!$element instanceof UnknownElement) {
+                        $tfact = $element->label();
+                        break;
+                    }
+                }
             }
-            $var = str_replace([
-                '@fact',
-                '@desc',
-            ], [
-                GedcomTag::getLabel($tfact),
-                $this->desc,
-            ], $var);
+
+            $var = strtr($var, ['@desc' => $this->desc, '@fact' => $tfact]);
+
             if (preg_match('/^I18N::number\((.+)\)$/', $var, $match)) {
                 $var = I18N::number((int) $match[1]);
             } elseif (preg_match('/^I18N::translate\(\'(.+)\'\)$/', $var, $match)) {
@@ -1308,13 +1315,15 @@ class ReportParserGenerate extends ReportParserBase
             $this->repeats = [];
             $nonfacts      = explode(',', $tag);
             foreach ($facts as $fact) {
-                if (!in_array($fact->getTag(), $nonfacts, true)) {
+                $tag = explode(':', $fact->tag())[1];
+
+                if (!in_array($tag, $nonfacts, true)) {
                     $this->repeats[] = $fact->gedcom();
                 }
             }
         } else {
             foreach ($record->facts() as $fact) {
-                if (($fact->isPendingAddition() || $fact->isPendingDeletion()) && $fact->getTag() !== 'CHAN') {
+                if (($fact->isPendingAddition() || $fact->isPendingDeletion()) && !str_ends_with($fact->tag(), ':CHAN')) {
                     $this->repeats[] = $fact->gedcom();
                 }
             }
@@ -2668,10 +2677,10 @@ class ReportParserGenerate extends ReportParserBase
     /**
      * Create a list of all ancestors.
      *
-     * @param stdClass[] $list
-     * @param string     $pid
-     * @param bool       $children
-     * @param int        $generations
+     * @param array<stdClass> $list
+     * @param string          $pid
+     * @param bool            $children
+     * @param int             $generations
      *
      * @return void
      */

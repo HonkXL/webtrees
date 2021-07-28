@@ -39,17 +39,15 @@ use function redirect;
 class RedirectAncestryPhp implements RequestHandlerInterface
 {
     private const CHART_STYLES = [
-        '0' => 'tree',
-        '1' => 'tree',
-        '2' => 'individuals',
-        '3' => 'families',
+        0 => 'tree',
+        1 => 'tree',
+        2 => 'individuals',
+        3 => 'families',
     ];
 
-    /** @var TreeService */
-    private $tree_service;
+    private AncestorsChartModule $chart;
 
-    /** @var AncestorsChartModule */
-    private $chart;
+    private TreeService $tree_service;
 
     /**
      * @param AncestorsChartModule $chart

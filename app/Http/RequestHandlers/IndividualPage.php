@@ -23,12 +23,12 @@ use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Age;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Date;
-use Fisharebest\Webtrees\Fact;
 use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Media;
 use Fisharebest\Webtrees\MediaFile;
+use Fisharebest\Webtrees\Module\ModuleShareInterface;
 use Fisharebest\Webtrees\Module\ModuleSidebarInterface;
 use Fisharebest\Webtrees\Module\ModuleTabInterface;
 use Fisharebest\Webtrees\Registry;
@@ -52,7 +52,6 @@ use function is_string;
 use function redirect;
 use function route;
 use function strtoupper;
-use function view;
 
 /**
  * Show an individual's page.
@@ -61,14 +60,11 @@ class IndividualPage implements RequestHandlerInterface
 {
     use ViewResponseTrait;
 
-    /** @var ClipboardService */
-    private $clipboard_service;
+    private ClipboardService $clipboard_service;
 
-    /** @var ModuleService */
-    private $module_service;
+    private ModuleService $module_service;
 
-    /** @var UserService */
-    private $user_service;
+    private UserService $user_service;
 
     /**
      * IndividualPage constructor.
@@ -77,8 +73,11 @@ class IndividualPage implements RequestHandlerInterface
      * @param ModuleService    $module_service
      * @param UserService      $user_service
      */
-    public function __construct(ClipboardService $clipboard_service, ModuleService $module_service, UserService $user_service)
-    {
+    public function __construct(
+        ClipboardService $clipboard_service,
+        ModuleService $module_service,
+        UserService $user_service
+    ) {
         $this->clipboard_service = $clipboard_service;
         $this->module_service    = $module_service;
         $this->user_service      = $user_service;
@@ -101,7 +100,9 @@ class IndividualPage implements RequestHandlerInterface
         $individual = Auth::checkIndividualAccess($individual);
 
         // Redirect to correct xref/slug
-        if ($individual->xref() !== $xref || $request->getAttribute('slug') !== $individual->slug()) {
+        $slug = Registry::slugFactory()->make($individual);
+
+        if ($individual->xref() !== $xref || $request->getAttribute('slug') !== $slug) {
             return redirect($individual->url(), StatusCodeInterface::STATUS_MOVED_PERMANENTLY);
         }
 
@@ -117,38 +118,32 @@ class IndividualPage implements RequestHandlerInterface
             }
         }
 
-        $name_records = $individual->facts(['NAME'])->map(static function (Fact $fact): string {
-            return view('individual-name', ['fact' => $fact]);
-        });
-
-        $sex_records = $individual->facts(['SEX'])->map(static function (Fact $fact): string {
-            return view('individual-sex', ['fact' => $fact]);
-        });
-
         // If this individual is linked to a user account, show the link
-        $user_link = '';
         if (Auth::isAdmin()) {
             $users = $this->user_service->findByIndividual($individual);
-            foreach ($users as $user) {
-                $user_link = ' —  <a href="' . e(route(UserListPage::class, ['filter' => $user->email()])) . '">' . e($user->userName()) . '</a>';
-            }
+        } else {
+            $users = new Collection();
         }
+
+        $shares = $this->module_service
+            ->findByInterface(ModuleShareInterface::class)
+            ->map(fn (ModuleShareInterface $module) => $module->share($individual))
+            ->filter();
 
         return $this->viewResponse('individual-page', [
             'age'              => $this->ageString($individual),
-            'clipboard_facts'  => $this->clipboard_service->pastableFacts($individual, new Collection()),
-            'individual'       => $individual,
+            'clipboard_facts'  => $this->clipboard_service->pastableFacts($individual),
             'individual_media' => $individual_media,
             'meta_description' => $this->metaDescription($individual),
             'meta_robots'      => 'index,follow',
-            'name_records'     => $name_records,
-            'sex_records'      => $sex_records,
+            'record'           => $individual,
+            'shares'           => $shares,
             'sidebars'         => $this->getSidebars($individual),
             'tabs'             => $this->getTabs($individual),
             'significant'      => $this->significant($individual),
             'title'            => $individual->fullName() . ' ' . $individual->lifespan(),
             'tree'             => $tree,
-            'user_link'        => $user_link,
+            'users'            => $users,
         ]);
     }
 
@@ -255,7 +250,8 @@ class IndividualPage implements RequestHandlerInterface
      */
     public function getSidebars(Individual $individual): Collection
     {
-        return $this->module_service->findByComponent(ModuleSidebarInterface::class, $individual->tree(), Auth::user())
+        return $this->module_service
+            ->findByComponent(ModuleSidebarInterface::class, $individual->tree(), Auth::user())
             ->filter(static function (ModuleSidebarInterface $sidebar) use ($individual): bool {
                 return $sidebar->hasSidebarContent($individual);
             });
@@ -271,7 +267,8 @@ class IndividualPage implements RequestHandlerInterface
      */
     public function getTabs(Individual $individual): Collection
     {
-        return $this->module_service->findByComponent(ModuleTabInterface::class, $individual->tree(), Auth::user())
+        return $this->module_service
+            ->findByComponent(ModuleTabInterface::class, $individual->tree(), Auth::user())
             ->filter(static function (ModuleTabInterface $tab) use ($individual): bool {
                 return $tab->hasTabContent($individual);
             });

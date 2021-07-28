@@ -30,12 +30,17 @@ use function assert;
  */
 class AutoCompleteSurname extends AbstractAutocompleteHandler
 {
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return Collection<string>
+     */
     protected function search(ServerRequestInterface $request): Collection
     {
         $tree = $request->getAttribute('tree');
         assert($tree instanceof Tree);
 
-        $query = $request->getAttribute('query');
+        $query = $request->getQueryParams()['query'] ?? '';
 
         return $this->search_service
             ->searchSurnames([$tree], [$query], 0, static::LIMIT);

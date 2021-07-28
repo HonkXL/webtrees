@@ -20,15 +20,21 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Fact;
 use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Registry;
+use Fisharebest\Webtrees\Services\GedcomEditService;
+use Fisharebest\Webtrees\SurnameTradition;
 use Fisharebest\Webtrees\Tree;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use function array_map;
 use function assert;
+use function is_string;
+use function route;
 
 /**
  * Add a new spouse to an individual, creating a new family.
@@ -36,6 +42,25 @@ use function assert;
 class AddSpouseToIndividualPage implements RequestHandlerInterface
 {
     use ViewResponseTrait;
+
+    // Create mixed-sex couples by default
+    private const OPPOSITE_SEX = [
+        'F' => 'M',
+        'M' => 'F',
+        'U' => 'U',
+    ];
+
+    private GedcomEditService $gedcom_edit_service;
+
+    /**
+     * LinkSpouseToIndividualPage constructor.
+     *
+     * @param GedcomEditService $gedcom_edit_service
+     */
+    public function __construct(GedcomEditService $gedcom_edit_service)
+    {
+        $this->gedcom_edit_service = $gedcom_edit_service;
+    }
 
     /**
      * @param ServerRequestInterface $request
@@ -47,30 +72,50 @@ class AddSpouseToIndividualPage implements RequestHandlerInterface
         $tree = $request->getAttribute('tree');
         assert($tree instanceof Tree);
 
-        $xref = $request->getQueryParams()['xref'];
+        $xref = $request->getAttribute('xref');
+        assert(is_string($xref));
 
         $individual = Registry::individualFactory()->make($xref, $tree);
         $individual = Auth::checkIndividualAccess($individual, true);
 
-        if ($individual->sex() === 'F') {
-            $title  = $individual->fullName() . ' - ' . I18N::translate('Add a husband');
-            $famtag = 'HUSB';
-            $gender = 'M';
-        } else {
-            $title  = $individual->fullName() . ' - ' . I18N::translate('Add a wife');
-            $famtag = 'WIFE';
-            $gender = 'F';
-        }
+        // Create a dummy individual, so that we can create new/empty facts.
+        $sex     = self::OPPOSITE_SEX[$individual->sex()];
+        $dummyi  = Registry::individualFactory()->new('', '0 @@ INDI', null, $tree);
+        $dummyf  = Registry::familyFactory()->new('', '0 @@ FAM', null, $tree);
+
+        // Default names facts.
+        $surname_tradition = SurnameTradition::create($tree->getPreference('SURNAME_TRADITION'));
+        $names             = $surname_tradition->newSpouseNames($individual, $sex);
+        $name_facts        = array_map(fn (string $gedcom): Fact => new Fact($gedcom, $dummyi, ''), $names);
+
+        $facts   = [
+            'i' => [
+                new Fact('1 SEX ' . $sex, $dummyi, ''),
+                ...$name_facts,
+                new Fact('1 BIRT', $dummyi, ''),
+                new Fact('1 DEAT', $dummyi, ''),
+            ],
+            'f' => [
+                new Fact('1 MARR', $dummyf, ''),
+            ],
+        ];
+
+        $titles = [
+            'F' => I18N::translate('Add a wife'),
+            'M' => I18N::translate('Add a husband'),
+            'U' => I18N::translate('Add a spouse'),
+        ];
+
+        $title = $titles[$sex] ?? $titles['U'];
 
         return $this->viewResponse('edit/new-individual', [
-            'next_action' => AddSpouseToIndividualAction::class,
-            'tree'        => $tree,
-            'title'       => $title,
-            'individual'  => $individual,
-            'family'      => null,
-            'name_fact'   => null,
-            'famtag'      => $famtag,
-            'gender'      => $gender,
+            'cancel_url'          => $individual->url(),
+            'facts'               => $facts,
+            'gedcom_edit_service' => $this->gedcom_edit_service,
+            'post_url'            => route(AddSpouseToIndividualAction::class, ['tree' => $tree->name(), 'xref' => $xref]),
+            'title'               => $individual->fullName() . ' - ' . $title,
+            'tree'                => $tree,
+            'url'                 => $request->getQueryParams()['url'] ?? $individual->url(),
         ]);
     }
 }

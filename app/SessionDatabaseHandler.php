@@ -29,24 +29,27 @@ use stdClass;
  */
 class SessionDatabaseHandler implements SessionHandlerInterface
 {
-    /** @var ServerRequestInterface */
-    private $request;
+    private ServerRequestInterface $request;
 
-    /** @var stdClass|null The row from the session table */
-    private $row;
+    private ?stdClass $row;
 
+    /**
+     * SessionDatabaseHandler constructor.
+     *
+     * @param ServerRequestInterface $request
+     */
     public function __construct(ServerRequestInterface $request)
     {
         $this->request = $request;
     }
 
     /**
-     * @param string $save_path
+     * @param string $path
      * @param string $name
      *
      * @return bool
      */
-    public function open($save_path, $name): bool
+    public function open($path, $name): bool
     {
         return true;
     }
@@ -88,7 +91,7 @@ class SessionDatabaseHandler implements SessionHandlerInterface
 
         if ($this->row === null) {
             DB::table('session')->insert([
-                'session_id' => $id,
+                'session_id'   => $id,
                 'session_time' => $session_time,
                 'user_id'      => $user_id,
                 'ip_address'   => $ip_address,
@@ -139,14 +142,14 @@ class SessionDatabaseHandler implements SessionHandlerInterface
     }
 
     /**
-     * @param int $maxlifetime
+     * @param int $max_lifetime
      *
      * @return bool
      */
-    public function gc($maxlifetime): bool
+    public function gc($max_lifetime): bool
     {
         DB::table('session')
-            ->where('session_time', '<', Carbon::now()->subSeconds($maxlifetime))
+            ->where('session_time', '<', Carbon::now()->subSeconds($max_lifetime))
             ->delete();
 
         return true;

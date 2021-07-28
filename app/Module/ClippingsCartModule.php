@@ -110,21 +110,31 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
     /** @var int The default access level for this module.  It can be changed in the control panel. */
     protected $access_level = Auth::PRIV_USER;
 
-    /** @var GedcomExportService */
-    private $gedcom_export_service;
+    private GedcomExportService $gedcom_export_service;
 
-    /** @var UserService */
-    private $user_service;
+    private UserService $user_service;
+
+    private ResponseFactoryInterface $response_factory;
+
+    private StreamFactoryInterface $stream_factory;
 
     /**
      * ClippingsCartModule constructor.
      *
-     * @param GedcomExportService $gedcom_export_service
-     * @param UserService         $user_service
+     * @param GedcomExportService      $gedcom_export_service
+     * @param ResponseFactoryInterface $response_factory
+     * @param StreamFactoryInterface   $stream_factory
+     * @param UserService              $user_service
      */
-    public function __construct(GedcomExportService $gedcom_export_service, UserService $user_service)
-    {
+    public function __construct(
+        GedcomExportService $gedcom_export_service,
+        ResponseFactoryInterface $response_factory,
+        StreamFactoryInterface $stream_factory,
+        UserService $user_service
+    ) {
         $this->gedcom_export_service = $gedcom_export_service;
+        $this->response_factory      = $response_factory;
+        $this->stream_factory        = $stream_factory;
         $this->user_service          = $user_service;
     }
 
@@ -346,11 +356,9 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
                     }
                 }
 
-                if ($object instanceof Individual || $object instanceof Family) {
-                    $records->add($record . "\n1 SOUR @WEBTREES@\n2 PAGE " . $object->url());
-                } elseif ($object instanceof Source) {
-                    $records->add($record . "\n1 NOTE " . $object->url());
-                } elseif ($object instanceof Media) {
+                $records->add($record);
+
+                if ($object instanceof Media) {
                     // Add the media files to the archive
                     foreach ($object->mediaFiles() as $media_file) {
                         $from = $media_file->filename();
@@ -359,22 +367,9 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
                             $zip_filesystem->writeStream($to, $media_filesystem->readStream($from));
                         }
                     }
-                    $records->add($record);
-                } else {
-                    $records->add($record);
                 }
             }
         }
-
-        $base_url = $request->getAttribute('base_url');
-
-        // Create a source, to indicate the source of the data.
-        $record = "0 @WEBTREES@ SOUR\n1 TITL " . $base_url;
-        $author = $this->user_service->find((int) $tree->getPreference('CONTACT_USER_ID'));
-        if ($author !== null) {
-            $record .= "\n1 AUTH " . $author->realName();
-        }
-        $records->add($record);
 
         $stream = fopen('php://temp', 'wb+');
 
@@ -390,12 +385,9 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         $zip_filesystem->writeStream('clippings.ged', $stream);
 
         // Use a stream, so that we do not have to load the entire file into memory.
-        $stream = app(StreamFactoryInterface::class)->createStreamFromFile($temp_zip_file);
+        $stream = $this->stream_factory->createStreamFromFile($temp_zip_file);
 
-        /** @var ResponseFactoryInterface $response_factory */
-        $response_factory = app(ResponseFactoryInterface::class);
-
-        return $response_factory->createResponse()
+        return $this->response_factory->createResponse()
             ->withBody($stream)
             ->withHeader('Content-Type', 'application/zip')
             ->withHeader('Content-Disposition', 'attachment; filename="clippings.zip');

@@ -39,8 +39,7 @@ class DataFixPreview implements RequestHandlerInterface
 {
     use ViewResponseTrait;
 
-    /** @var ModuleService */
-    private $module_service;
+    private ModuleService $module_service;
 
     /**
      * DataFix constructor.
@@ -66,9 +65,8 @@ class DataFixPreview implements RequestHandlerInterface
         $module   = $this->module_service->findByName($data_fix);
         assert($module instanceof ModuleDataFixInterface);
 
-        $xref   = $request->getQueryParams()['xref'] ?? '';
-        $params = (array) $request->getQueryParams();
-
+        $params = $request->getQueryParams();
+        $xref   = $params['xref'] ?? '';
         $record = Registry::gedcomRecordFactory()->make($xref, $tree);
         $record = Auth::checkRecordAccess($record);
 

@@ -33,7 +33,7 @@ use Illuminate\Support\Collection;
 
 <form method="post">
     <?= csrf_field() ?>
-    <table class="table table-bordered wt-table-menu">
+    <table class="table table-bordered wt-table-components">
         <thead>
             <tr>
                 <th><?= I18N::translate('Module') ?></th>
@@ -53,16 +53,22 @@ use Illuminate\Support\Collection;
                 <tr>
                     <th scope="col">
                         <input type="hidden" name="order[]" value="<?= e($module->name()) ?>">
-                        <span title="<?= e($module->description()) ?>">
+                        <span title="<?= e(strip_tags($module->description())) ?>">
                             <?= $module->title() ?>
                         </span>
-                        <?php if ($module instanceof ModuleConfigInterface && $module->isEnabled()) : ?>
-                            <a href="<?= e($module->getConfigLink()) ?>" title="<?= I18N::translate('Preferences') ?>">
-                                <?= view('icons/preferences') ?>
-                                <span class="sr-only">
-                                    <?= I18N::translate('Preferences') ?>
+                        <?php if ($module instanceof ModuleConfigInterface) : ?>
+                            <?php if ($module->isEnabled()) : ?>
+                                <a href="<?= e($module->getConfigLink()) ?>" title="<?= I18N::translate('Preferences') ?>">
+                                    <?= view('icons/preferences') ?>
+                                    <span class="sr-only">
+                                        <?= I18N::translate('Preferences') ?>
+                                    </span>
+                                </a>
+                            <?php else : ?>
+                                <span class="text-muted">
+                                    <?= view('icons/preferences') ?>
                                 </span>
-                            </a>
+                            <?php endif ?>
                         <?php endif ?>
                         <?php if ($module instanceof ModuleCustomInterface) : ?>
                             <?= view('admin/custom-module-info', ['module' => $module]) ?>
@@ -166,7 +172,7 @@ use Illuminate\Support\Collection;
 
 <?php View::push('javascript') ?>
 <script>
-  $('.wt-table-menu td.move').click(function () {
+  $('.wt-table-components td.move').click(function () {
     let row = $(this).closest('tr');
 
     if ($(this).hasClass('up')) {
@@ -180,14 +186,3 @@ use Illuminate\Support\Collection;
 </script>
 <?php View::endpush() ?>
 
-<?php View::push('styles') ?>
-<style>
-    .wt-table-menu tr:first-child .wt-icon-arrow-up {
-        display: none;
-    }
-
-    .wt-table-menu tr:last-child .wt-icon-arrow-down {
-        display: none;
-    }
-</style>
-<?php View::endpush() ?>

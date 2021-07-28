@@ -75,28 +75,6 @@ class Individual extends GedcomRecord
     }
 
     /**
-     * Sometimes, we'll know in advance that we need to load a set of records.
-     * Typically when we load families and their members.
-     *
-     * @param Tree     $tree
-     * @param string[] $xrefs
-     *
-     * @return void
-     */
-    public static function load(Tree $tree, array $xrefs): void
-    {
-        $rows = DB::table('individuals')
-            ->where('i_file', '=', $tree->id())
-            ->whereIn('i_id', array_unique($xrefs))
-            ->select(['i_id AS xref', 'i_gedcom AS gedcom'])
-            ->get();
-
-        foreach ($rows as $row) {
-            Registry::individualFactory()->make($row->xref, $tree, $row->gedcom);
-        }
-    }
-
-    /**
      * Can the name of this record be shown?
      *
      * @param int|null $access_level
@@ -975,12 +953,12 @@ class Individual extends GedcomRecord
      * 2 SURN Vasquez,Sante
      *
      * @param string $type
-     * @param string $full
+     * @param string $value
      * @param string $gedcom
      *
      * @return void
      */
-    protected function addName(string $type, string $full, string $gedcom): void
+    protected function addName(string $type, string $value, string $gedcom): void
     {
         ////////////////////////////////////////////////////////////////////////////
         // Extract the structured name parts - use for "sortable" names and indexes
@@ -1005,12 +983,12 @@ class Individual extends GedcomRecord
         ////////////////////////////////////////////////////////////////////////////
 
         // Fix bad slashes. e.g. 'John/Smith' => 'John/Smith/'
-        if (substr_count($full, '/') % 2 === 1) {
-            $full .= '/';
+        if (substr_count($value, '/') % 2 === 1) {
+            $value .= '/';
         }
 
         // GEDCOM uses "//" to indicate an unknown surname
-        $full = preg_replace('/\/\//', '/@N.N./', $full);
+        $full = preg_replace('/\/\//', '/@N.N./', $value);
 
         // Extract the surname.
         // Note, there may be multiple surnames, e.g. Jean /Vasquez/ y /Cortes/
@@ -1081,7 +1059,7 @@ class Individual extends GedcomRecord
         }, $full);
 
         // A suffix of “*” indicates a preferred name
-        $full = preg_replace('/([^ >]*)\*/', '<span class="starredname">\\1</span>', $full);
+        $full = preg_replace('/([^ >\x{200C}]*)\*/u', '<span class="starredname">\\1</span>', $full);
 
         // Remove prefered-name indicater - they don’t go in the database
         $GIVN   = str_replace('*', '', $GIVN);

@@ -38,8 +38,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class UseLanguage implements MiddlewareInterface
 {
-    /** @var ModuleService */
-    private $module_service;
+    private ModuleService $module_service;
 
     /**
      * UseTheme constructor.
@@ -91,7 +90,7 @@ class UseLanguage implements MiddlewareInterface
                 return $module->locale();
             });
 
-        $default = Locale::create(Site::getPreference('LANGUAGE', 'en-US'));
+        $default = Locale::create(Site::getPreference('LANGUAGE'));
         $locale  = Locale::httpAcceptLanguage($request->getServerParams(), $locales->all(), $default);
 
         yield $languages->get('language-' . $locale->languageTag());

@@ -365,9 +365,7 @@ class Fact
      */
     public function place(): Place
     {
-        if ($this->place === null) {
-            $this->place = new Place($this->attribute('PLAC'), $this->record()->tree());
-        }
+        $this->place ??= new Place($this->attribute('PLAC'), $this->record()->tree());
 
         return $this->place;
     }
@@ -381,9 +379,7 @@ class Fact
      */
     public function date(): Date
     {
-        if ($this->date === null) {
-            $this->date = new Date($this->attribute('DATE'));
-        }
+        $this->date ??= new Date($this->attribute('DATE'));
 
         return $this->date;
     }
@@ -416,18 +412,6 @@ class Fact
     public function tag(): string
     {
         return $this->record->tag() . ':' . $this->tag;
-    }
-
-    /**
-     * What is the tag (type) of this fact, such as BIRT, MARR or DEAT.
-     *
-     * @return string
-     *
-     * @deprecated since 2.0.5.  Will be removed in 2.1.0
-     */
-    public function getTag(): string
-    {
-        return $this->tag;
     }
 
     /**

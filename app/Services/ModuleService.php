@@ -22,8 +22,6 @@ namespace Fisharebest\Webtrees\Services;
 use Closure;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
-use Fisharebest\Webtrees\Module\LocationListModule;
-use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Module\AhnentafelReportModule;
@@ -51,11 +49,28 @@ use Fisharebest\Webtrees\Module\ColorsTheme;
 use Fisharebest\Webtrees\Module\CompactTreeChartModule;
 use Fisharebest\Webtrees\Module\ContactsFooterModule;
 use Fisharebest\Webtrees\Module\CustomCssJsModule;
+use Fisharebest\Webtrees\Module\CustomTagsAldfaer;
+use Fisharebest\Webtrees\Module\CustomTagsBrothersKeeper;
+use Fisharebest\Webtrees\Module\CustomTagsFamilyTreeBuilder;
+use Fisharebest\Webtrees\Module\CustomTagsFamilyTreeMaker;
+use Fisharebest\Webtrees\Module\CustomTagsGedcom53;
+use Fisharebest\Webtrees\Module\CustomTagsGedcom55;
+use Fisharebest\Webtrees\Module\CustomTagsGedcomL;
+use Fisharebest\Webtrees\Module\CustomTagsGenPluswin;
+use Fisharebest\Webtrees\Module\CustomTagsLegacy;
+use Fisharebest\Webtrees\Module\CustomTagsPersonalAncestralFile;
+use Fisharebest\Webtrees\Module\CustomTagsPhpGedView;
+use Fisharebest\Webtrees\Module\CustomTagsReunion;
+use Fisharebest\Webtrees\Module\CustomTagsRootsMagic;
+use Fisharebest\Webtrees\Module\CustomTagsWebtrees;
 use Fisharebest\Webtrees\Module\CzechMonarchsAndPresidents;
 use Fisharebest\Webtrees\Module\DeathReportModule;
 use Fisharebest\Webtrees\Module\DescendancyChartModule;
 use Fisharebest\Webtrees\Module\DescendancyModule;
 use Fisharebest\Webtrees\Module\DescendancyReportModule;
+use Fisharebest\Webtrees\Module\DutchMonarchs;
+use Fisharebest\Webtrees\Module\DutchPrimeMinisters;
+use Fisharebest\Webtrees\Module\EsriMaps;
 use Fisharebest\Webtrees\Module\FabTheme;
 use Fisharebest\Webtrees\Module\FactSourcesReportModule;
 use Fisharebest\Webtrees\Module\FamilyBookChartModule;
@@ -69,7 +84,6 @@ use Fisharebest\Webtrees\Module\FanChartModule;
 use Fisharebest\Webtrees\Module\FixCemeteryTag;
 use Fisharebest\Webtrees\Module\FixDuplicateLinks;
 use Fisharebest\Webtrees\Module\FixMissingDeaths;
-use Fisharebest\Webtrees\Module\FixMissingMarriedNames;
 use Fisharebest\Webtrees\Module\FixNameSlashesAndSpaces;
 use Fisharebest\Webtrees\Module\FixNameTags;
 use Fisharebest\Webtrees\Module\FixPlaceNames;
@@ -77,8 +91,10 @@ use Fisharebest\Webtrees\Module\FixPrimaryTag;
 use Fisharebest\Webtrees\Module\FixSearchAndReplace;
 use Fisharebest\Webtrees\Module\FrenchHistory;
 use Fisharebest\Webtrees\Module\FrequentlyAskedQuestionsModule;
+use Fisharebest\Webtrees\Module\GeonamesAutocomplete;
 use Fisharebest\Webtrees\Module\GoogleAnalyticsModule;
 use Fisharebest\Webtrees\Module\GoogleWebmasterToolsModule;
+use Fisharebest\Webtrees\Module\HereMaps;
 use Fisharebest\Webtrees\Module\HitCountFooterModule;
 use Fisharebest\Webtrees\Module\HourglassChartModule;
 use Fisharebest\Webtrees\Module\HtmlBlockModule;
@@ -156,12 +172,26 @@ use Fisharebest\Webtrees\Module\LanguageTurkish;
 use Fisharebest\Webtrees\Module\LanguageUkranian;
 use Fisharebest\Webtrees\Module\LanguageUrdu;
 use Fisharebest\Webtrees\Module\LanguageVietnamese;
+use Fisharebest\Webtrees\Module\LanguageWelsh;
 use Fisharebest\Webtrees\Module\LanguageYiddish;
-use Fisharebest\Webtrees\Module\RedirectLegacyUrlsModule;
 use Fisharebest\Webtrees\Module\LifespansChartModule;
 use Fisharebest\Webtrees\Module\ListsMenuModule;
+use Fisharebest\Webtrees\Module\LocationListModule;
 use Fisharebest\Webtrees\Module\LoggedInUsersModule;
 use Fisharebest\Webtrees\Module\LoginBlockModule;
+use Fisharebest\Webtrees\Module\LowCountriesRulers;
+use Fisharebest\Webtrees\Module\MapBox;
+use Fisharebest\Webtrees\Module\MapLinkBing;
+use Fisharebest\Webtrees\Module\MapLinkGoogle;
+use Fisharebest\Webtrees\Module\MapLinkOpenStreetMap;
+use Fisharebest\Webtrees\Module\MapGeoLocationGeonames;
+use Fisharebest\Webtrees\Module\MapGeoLocationNominatim;
+use Fisharebest\Webtrees\Module\MapGeoLocationOpenRouteService;
+use Fisharebest\Webtrees\Module\BingMaps;
+use Fisharebest\Webtrees\Module\GoogleMaps;
+use Fisharebest\Webtrees\Module\ModuleMapAutocompleteInterface;
+use Fisharebest\Webtrees\Module\OpenRouteServiceAutocomplete;
+use Fisharebest\Webtrees\Module\OpenStreetMap;
 use Fisharebest\Webtrees\Module\MarriageReportModule;
 use Fisharebest\Webtrees\Module\MatomoAnalyticsModule;
 use Fisharebest\Webtrees\Module\MediaListModule;
@@ -172,14 +202,19 @@ use Fisharebest\Webtrees\Module\ModuleAnalyticsInterface;
 use Fisharebest\Webtrees\Module\ModuleBlockInterface;
 use Fisharebest\Webtrees\Module\ModuleChartInterface;
 use Fisharebest\Webtrees\Module\ModuleCustomInterface;
+use Fisharebest\Webtrees\Module\ModuleCustomTagsInterface;
 use Fisharebest\Webtrees\Module\ModuleDataFixInterface;
 use Fisharebest\Webtrees\Module\ModuleFooterInterface;
 use Fisharebest\Webtrees\Module\ModuleHistoricEventsInterface;
 use Fisharebest\Webtrees\Module\ModuleInterface;
 use Fisharebest\Webtrees\Module\ModuleLanguageInterface;
 use Fisharebest\Webtrees\Module\ModuleListInterface;
+use Fisharebest\Webtrees\Module\ModuleMapLinkInterface;
+use Fisharebest\Webtrees\Module\ModuleMapGeoLocationInterface;
+use Fisharebest\Webtrees\Module\ModuleMapProviderInterface;
 use Fisharebest\Webtrees\Module\ModuleMenuInterface;
 use Fisharebest\Webtrees\Module\ModuleReportInterface;
+use Fisharebest\Webtrees\Module\ModuleShareInterface;
 use Fisharebest\Webtrees\Module\ModuleSidebarInterface;
 use Fisharebest\Webtrees\Module\ModuleTabInterface;
 use Fisharebest\Webtrees\Module\ModuleThemeInterface;
@@ -187,6 +222,7 @@ use Fisharebest\Webtrees\Module\NoteListModule;
 use Fisharebest\Webtrees\Module\NotesTabModule;
 use Fisharebest\Webtrees\Module\OccupationReportModule;
 use Fisharebest\Webtrees\Module\OnThisDayModule;
+use Fisharebest\Webtrees\Module\OrdnanceSurveyHistoricMaps;
 use Fisharebest\Webtrees\Module\PedigreeChartModule;
 use Fisharebest\Webtrees\Module\PedigreeMapModule;
 use Fisharebest\Webtrees\Module\PedigreeReportModule;
@@ -195,6 +231,7 @@ use Fisharebest\Webtrees\Module\PlacesModule;
 use Fisharebest\Webtrees\Module\PoweredByWebtreesModule;
 use Fisharebest\Webtrees\Module\PrivacyPolicy;
 use Fisharebest\Webtrees\Module\RecentChangesModule;
+use Fisharebest\Webtrees\Module\RedirectLegacyUrlsModule;
 use Fisharebest\Webtrees\Module\RelatedIndividualsReportModule;
 use Fisharebest\Webtrees\Module\RelationshipsChartModule;
 use Fisharebest\Webtrees\Module\RelativesTabModule;
@@ -203,6 +240,8 @@ use Fisharebest\Webtrees\Module\RepositoryListModule;
 use Fisharebest\Webtrees\Module\ResearchTaskModule;
 use Fisharebest\Webtrees\Module\ReviewChangesModule;
 use Fisharebest\Webtrees\Module\SearchMenuModule;
+use Fisharebest\Webtrees\Module\ShareAnniversaryModule;
+use Fisharebest\Webtrees\Module\ShareUrlModule;
 use Fisharebest\Webtrees\Module\SiteMapModule;
 use Fisharebest\Webtrees\Module\SlideShowModule;
 use Fisharebest\Webtrees\Module\SourceListModule;
@@ -227,6 +266,7 @@ use Fisharebest\Webtrees\Module\WebtreesTheme;
 use Fisharebest\Webtrees\Module\WelcomeBlockModule;
 use Fisharebest\Webtrees\Module\XeneaTheme;
 use Fisharebest\Webtrees\Module\YahrzeitModule;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\Webtrees;
 use Illuminate\Database\Capsule\Manager as DB;
@@ -248,13 +288,19 @@ class ModuleService
         ModuleAnalyticsInterface::class,
         ModuleBlockInterface::class,
         ModuleChartInterface::class,
+        ModuleCustomTagsInterface::class,
         ModuleDataFixInterface::class,
         ModuleFooterInterface::class,
         ModuleHistoricEventsInterface::class,
         ModuleLanguageInterface::class,
         ModuleListInterface::class,
+        ModuleMapAutocompleteInterface::class,
+        ModuleMapLinkInterface::class,
+        ModuleMapProviderInterface::class,
+        ModuleMapGeoLocationInterface::class,
         ModuleMenuInterface::class,
         ModuleReportInterface::class,
+        ModuleShareInterface::class,
         ModuleSidebarInterface::class,
         ModuleTabInterface::class,
         ModuleThemeInterface::class,
@@ -287,6 +333,7 @@ class ModuleService
         'austrian-history'        => AustrianHistoricEvents::class,
         'austrian-presidents'     => AustrianPresidents::class,
         'bdm_report'              => BirthDeathMarriageReportModule::class,
+        'bing-maps'               => BingMaps::class,
         'bing-webmaster-tools'    => BingWebmasterToolsModule::class,
         'birth_report'            => BirthReportModule::class,
         'branches_list'           => BranchesListModule::class,
@@ -306,10 +353,27 @@ class ModuleService
         'contact-links'           => ContactsFooterModule::class,
         'czech-leaders'           => CzechMonarchsAndPresidents::class,
         'custom-css-js'           => CustomCssJsModule::class,
+        'custom-tags-aldfaer'     => CustomTagsAldfaer::class,
+        'custom-tags-bk'          => CustomTagsBrothersKeeper::class,
+        'custom-tags-gedcom-53'   => CustomTagsGedcom53::class,
+        'custom-tags-gedcom-55'   => CustomTagsGedcom55::class,
+        'custom-tags-gedcom-l'    => CustomTagsGedcomL::class,
+        'custom-tags-gedpluswin'  => CustomTagsGenPluswin::class,
+        'custom-tags-legacy'      => CustomTagsLegacy::class,
+        'custom-tags-ftb'         => CustomTagsFamilyTreeBuilder::class,
+        'custom-tags-ftm'         => CustomTagsFamilyTreeMaker::class,
+        'custom-tags-paf'         => CustomTagsPersonalAncestralFile::class,
+        'custom-tags-phpgedview'  => CustomTagsPhpGedView::class,
+        'custom-tags-reunion'     => CustomTagsReunion::class,
+        'custom-tags-roots-magic' => CustomTagsRootsMagic::class,
+        'custom-tags-webtrees'    => CustomTagsWebtrees::class,
         'death_report'            => DeathReportModule::class,
         'descendancy'             => DescendancyModule::class,
         'descendancy_chart'       => DescendancyChartModule::class,
         'descendancy_report'      => DescendancyReportModule::class,
+        'dutch_monarchs'          => DutchMonarchs::class,
+        'dutch_prime_ministers'   => DutchPrimeMinisters::class,
+        'esri-maps'               => EsriMaps::class,
         'extra_info'              => IndividualMetadataModule::class,
         'fab'                     => FabTheme::class,
         'fact_sources'            => FactSourcesReportModule::class,
@@ -321,7 +385,6 @@ class ModuleService
         'faq'                     => FrequentlyAskedQuestionsModule::class,
         'french-history'          => FrenchHistory::class,
         'fix-add-death'           => FixMissingDeaths::class,
-        'fix-add-marr-names'      => FixMissingMarriedNames::class,
         'fix-ceme-tag'            => FixCemeteryTag::class,
         'fix-duplicate-links'     => FixDuplicateLinks::class,
         'fix-name-slashes-spaces' => FixNameSlashesAndSpaces::class,
@@ -333,8 +396,11 @@ class ModuleService
         'gedcom_favorites'        => FamilyTreeFavoritesModule::class,
         'gedcom_news'             => FamilyTreeNewsModule::class,
         'gedcom_stats'            => FamilyTreeStatisticsModule::class,
+        'geonames'                => GeonamesAutocomplete::class,
         'google-analytics'        => GoogleAnalyticsModule::class,
+        'google-maps'             => GoogleMaps::class,
         'google-webmaster-tools'  => GoogleWebmasterToolsModule::class,
+        'here-maps'               => HereMaps::class,
         'hit-counter'             => HitCountFooterModule::class,
         'hourglass_chart'         => HourglassChartModule::class,
         'html'                    => HtmlBlockModule::class,
@@ -347,6 +413,7 @@ class ModuleService
         'language-bs'             => LanguageBosnian::class,
         'language-ca'             => LanguageCatalan::class,
         'language-cs'             => LanguageCzech::class,
+        'language-cy'             => LanguageWelsh::class,
         'language-da'             => LanguageDanish::class,
         'language-de'             => LanguageGerman::class,
         'language-dv'             => LanguageDivehi::class,
@@ -417,6 +484,14 @@ class ModuleService
         'location_list'           => LocationListModule::class,
         'logged_in'               => LoggedInUsersModule::class,
         'login_block'             => LoginBlockModule::class,
+        'low_countries_rulers'    => LowCountriesRulers::class,
+        'map-link-bing'           => MapLinkBing::class,
+        'map-link-google'         => MapLinkGoogle::class,
+        'map-link-openstreetmap'  => MapLinkOpenStreetMap::class,
+        'map-location-geonames'   => MapGeoLocationGeonames::class,
+        'map-location-nominatim'  => MapGeoLocationNominatim::class,
+        'map-location-ors'        => MapGeoLocationOpenRouteService::class,
+        'mapbox'                  => MapBox::class,
         'marriage_report'         => MarriageReportModule::class,
         'matomo-analytics'        => MatomoAnalyticsModule::class,
         'media'                   => MediaTabModule::class,
@@ -426,6 +501,9 @@ class ModuleService
         'notes'                   => NotesTabModule::class,
         'note_list'               => NoteListModule::class,
         'occupation_report'       => OccupationReportModule::class,
+        'openrouteservice'        => OpenRouteServiceAutocomplete::class,
+        'openstreetmap'           => OpenStreetMap::class,
+        'osgb-historic'           => OrdnanceSurveyHistoricMaps::class,
         'pedigree-map'            => PedigreeMapModule::class,
         'pedigree_chart'          => PedigreeChartModule::class,
         'pedigree_report'         => PedigreeReportModule::class,
@@ -443,6 +521,8 @@ class ModuleService
         'repository_list'         => RepositoryListModule::class,
         'review_changes'          => ReviewChangesModule::class,
         'search-menu'             => SearchMenuModule::class,
+        'share-anniversary'       => ShareAnniversaryModule::class,
+        'share-url'               => ShareUrlModule::class,
         'sitemap'                 => SiteMapModule::class,
         'source_list'             => SourceListModule::class,
         'sources_tab'             => SourcesTabModule::class,
@@ -508,27 +588,27 @@ class ModuleService
      *
      * @return Collection<ModuleInterface>
      */
-    public function findByInterface(string $interface, $include_disabled = false, $sort = false): Collection
+    public function findByInterface(string $interface, bool $include_disabled = false, bool $sort = false): Collection
     {
         $modules = $this->all($include_disabled)
             ->filter($this->interfaceFilter($interface));
 
         switch ($interface) {
             case ModuleFooterInterface::class:
-                return $modules->sort($this->footerSorter());
+                return $modules->sort($this->footerComparator());
 
             case ModuleMenuInterface::class:
-                return $modules->sort($this->menuSorter());
+                return $modules->sort($this->menuComparator());
 
             case ModuleSidebarInterface::class:
-                return $modules->sort($this->sidebarSorter());
+                return $modules->sort($this->sidebarComparator());
 
             case ModuleTabInterface::class:
-                return $modules->sort($this->tabSorter());
+                return $modules->sort($this->tabComparator());
 
             default:
                 if ($sort) {
-                    return $modules->sort($this->moduleSorter());
+                    return $modules->sort($this->moduleComparator());
                 }
 
                 return $modules;
@@ -657,38 +737,23 @@ class ModuleService
     }
 
     /**
-     * During setup, we'll need access to some languages.
-     *
-     * @return Collection<ModuleLanguageInterface>
-     */
-    public function setupLanguages(): Collection
-    {
-        return $this->coreModules()
-            ->filter(static function (ModuleInterface $module): bool {
-                return $module instanceof ModuleLanguageInterface && $module->isEnabledByDefault();
-            })
-            ->sort(static function (ModuleLanguageInterface $x, ModuleLanguageInterface $y): int {
-                return $x->locale()->endonymSortable() <=> $y->locale()->endonymSortable();
-            });
-    }
-
-    /**
      * Load a custom module in a static scope, to prevent it from modifying local or object variables.
      *
      * @param string $filename
      *
-     * @return mixed
+     * @return ModuleInterface|null
      */
-    private static function load(string $filename)
+    private static function load(string $filename): ?ModuleInterface
     {
         try {
             return include $filename;
         } catch (Throwable $exception) {
             $module_name = basename(dirname($filename));
-            $message = 'Fatal error in module: ' . $module_name;
-            $message .= '<br>' . $exception;
+            $message     = 'Fatal error in module: ' . $module_name;
+            $message     .= '<br>' . $exception;
             FlashMessages::addMessage($message, 'danger');
         }
+
         return null;
     }
 
@@ -725,7 +790,7 @@ class ModuleService
      *
      * @return Closure
      */
-    private function footerSorter(): Closure
+    private function footerComparator(): Closure
     {
         return static function (ModuleFooterInterface $x, ModuleFooterInterface $y): int {
             return $x->getFooterOrder() <=> $y->getFooterOrder();
@@ -737,7 +802,7 @@ class ModuleService
      *
      * @return Closure
      */
-    private function menuSorter(): Closure
+    private function menuComparator(): Closure
     {
         return static function (ModuleMenuInterface $x, ModuleMenuInterface $y): int {
             return $x->getMenuOrder() <=> $y->getMenuOrder();
@@ -749,7 +814,7 @@ class ModuleService
      *
      * @return Closure
      */
-    private function sidebarSorter(): Closure
+    private function sidebarComparator(): Closure
     {
         return static function (ModuleSidebarInterface $x, ModuleSidebarInterface $y): int {
             return $x->getSidebarOrder() <=> $y->getSidebarOrder();
@@ -761,7 +826,7 @@ class ModuleService
      *
      * @return Closure
      */
-    private function tabSorter(): Closure
+    private function tabComparator(): Closure
     {
         return static function (ModuleTabInterface $x, ModuleTabInterface $y): int {
             return $x->getTabOrder() <=> $y->getTabOrder();
@@ -776,14 +841,30 @@ class ModuleService
      *
      * @return Closure
      */
-    private function moduleSorter(): Closure
+    private function moduleComparator(): Closure
     {
         return static function (ModuleInterface $x, ModuleInterface $y): int {
             $title1 = $x instanceof ModuleLanguageInterface ? $x->locale()->endonymSortable() : $x->title();
             $title2 = $y instanceof ModuleLanguageInterface ? $y->locale()->endonymSortable() : $y->title();
 
-            return I18N::strcasecmp($title1, $title2);
+            return I18N::comparator()($title1, $title2);
         };
+    }
+
+    /**
+     * During setup, we'll need access to some languages.
+     *
+     * @return Collection<ModuleLanguageInterface>
+     */
+    public function setupLanguages(): Collection
+    {
+        return $this->coreModules()
+            ->filter(static function (ModuleInterface $module): bool {
+                return $module instanceof ModuleLanguageInterface && $module->isEnabledByDefault();
+            })
+            ->sort(static function (ModuleLanguageInterface $x, ModuleLanguageInterface $y): int {
+                return $x->locale()->endonymSortable() <=> $y->locale()->endonymSortable();
+            });
     }
 
     /**

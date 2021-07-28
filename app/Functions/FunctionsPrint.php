@@ -20,50 +20,40 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Functions;
 
 use Fisharebest\Webtrees\Age;
+use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Date;
 use Fisharebest\Webtrees\Fact;
 use Fisharebest\Webtrees\Family;
-use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\Gedcom;
 use Fisharebest\Webtrees\GedcomRecord;
-use Fisharebest\Webtrees\GedcomTag;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
-use Fisharebest\Webtrees\Media;
+use Fisharebest\Webtrees\Module\ModuleMapLinkInterface;
 use Fisharebest\Webtrees\Note;
 use Fisharebest\Webtrees\Place;
 use Fisharebest\Webtrees\Registry;
-use Fisharebest\Webtrees\Repository;
-use Fisharebest\Webtrees\Source;
+use Fisharebest\Webtrees\Services\GedcomEditService;
+use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Tree;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use LogicException;
 use Ramsey\Uuid\Uuid;
 
+use function app;
 use function array_filter;
-use function array_intersect;
-use function array_merge;
-use function array_search;
 use function e;
 use function explode;
 use function in_array;
 use function preg_match;
 use function preg_match_all;
-use function preg_replace_callback;
-use function preg_split;
 use function str_contains;
 use function strip_tags;
 use function strlen;
 use function strpos;
-use function strtoupper;
 use function substr;
-use function trim;
 use function uasort;
 use function view;
 
 use const PREG_SET_ORDER;
-use const PREG_SPLIT_NO_EMPTY;
 
 /**
  * Class FunctionsPrint - common functions
@@ -93,27 +83,31 @@ class FunctionsPrint
             assert($note instanceof Note);
 
             $label      = I18N::translate('Shared note');
-            $html       = Filter::formatText($note->getNote(), $tree);
+            $html       = Registry::markdownFactory()->markdown($tree)->convertToHtml($note->getNote());
             $first_line = '<a href="' . e($note->url()) . '">' . $note->fullName() . '</a>';
+
+            $one_line_only = strip_tags($note->fullName()) === strip_tags($note->getNote());
         } else {
             // Inline note.
             $label = I18N::translate('Note');
-            $html  = Filter::formatText($text, $tree);
+            $html  = Registry::markdownFactory()->markdown($tree)->convertToHtml($text);
 
-            // Only one line?  Remove block-level attributes and skip expand/collapse.
-            if (!str_contains($text, "\n")) {
-                return
-                    '<div class="fact_NOTE">' .
-                    I18N::translate(
-                        '<span class="label">%1$s:</span> <span class="field" dir="auto">%2$s</span>',
-                        $label,
-                        strip_tags($html, '<a><strong><em>')
-                    ) .
-                    '</div>';
-            }
+            [$first_line] = explode("\n", strip_tags($html));
+            // Use same logic as note objects
+            $first_line = Str::limit($first_line, 100, I18N::translate('…'));
 
-            [$text] = explode("\n", strip_tags($text));
-            $first_line = Str::limit($text, 50, I18N::translate('…'));
+            $one_line_only = !str_contains($text, "\n") && mb_strlen($text) <= 100;
+        }
+
+        if ($one_line_only) {
+            return
+                '<div class="fact_NOTE">' .
+                I18N::translate(
+                    '<span class="label">%1$s:</span> <span class="field" dir="auto">%2$s</span>',
+                    $label,
+                    $first_line
+                ) .
+                '</div>';
         }
 
         $id       = 'collapse-' . Uuid::uuid4()->toString();
@@ -124,7 +118,7 @@ class FunctionsPrint
             '<a href="#' . e($id) . '" role="button" data-toggle="collapse" aria-controls="' . e($id) . '" aria-expanded="' . ($expanded ? 'true' : 'false') . '">' .
             view('icons/expand') .
             view('icons/collapse') .
-            '</a> ' .
+            '</a>' .
             '<span class="label">' . $label . ':</span> ' .
             $first_line .
             '</div>' .
@@ -230,48 +224,6 @@ class FunctionsPrint
     }
 
     /**
-     * Convert a GEDCOM age string to localized text.
-     *
-     * @param string $age_string
-     *
-     * @return string
-     */
-    public static function formatGedcomAge(string $age_string): string
-    {
-        switch (strtoupper($age_string)) {
-            case 'CHILD':
-                return I18N::translate('Child');
-            case 'INFANT':
-                return I18N::translate('Infant');
-            case 'STILLBORN':
-                return I18N::translate('Stillborn');
-            default:
-                return (string) preg_replace_callback(
-                    [
-                        '/(\d+)([ymwd])/',
-                    ],
-                    static function (array $match): string {
-                        $num = (int) $match[1];
-
-                        switch ($match[2]) {
-                            case 'y':
-                                return I18N::plural('%s year', '%s years', $num, I18N::number($num));
-                            case 'm':
-                                return I18N::plural('%s month', '%s months', $num, I18N::number($num));
-                            case 'w':
-                                return I18N::plural('%s week', '%s weeks', $num, I18N::number($num));
-                            case 'd':
-                                return I18N::plural('%s day', '%s days', $num, I18N::number($num));
-                            default:
-                                throw new LogicException('Should never get here');
-                        }
-                    },
-                    $age_string
-                ) ;
-        }
-    }
-
-    /**
      * Print fact DATE/TIME
      *
      * @param Fact         $event  event containing the date/age
@@ -283,27 +235,30 @@ class FunctionsPrint
      */
     public static function formatFactDate(Fact $event, GedcomRecord $record, bool $anchor, bool $time): string
     {
+        $element_factory = Registry::elementFactory();
+
         $factrec = $event->gedcom();
         $html    = '';
         // Recorded age
         if (preg_match('/\n2 AGE (.+)/', $factrec, $match)) {
-            $fact_age = self::formatGedcomAge($match[1]);
+            $fact_age = $element_factory->make($event->tag() . ':AGE')->value($match[1], $record->tree());
         } else {
             $fact_age = '';
         }
         if (preg_match('/\n2 HUSB\n3 AGE (.+)/', $factrec, $match)) {
-            $husb_age = self::formatGedcomAge($match[1]);
+            $husb_age = $element_factory->make($event->tag() . ':HUSB:AGE')->value($match[1], $record->tree());
         } else {
             $husb_age = '';
         }
         if (preg_match('/\n2 WIFE\n3 AGE (.+)/', $factrec, $match)) {
-            $wife_age = self::formatGedcomAge($match[1]);
+            $wife_age = $element_factory->make($event->tag() . ':WIFE:AGE')->value($match[1], $record->tree());
         } else {
             $wife_age = '';
         }
 
         // Calculated age
-        $fact = $event->getTag();
+        [, $fact] = explode(':', $event->tag());
+
         if (preg_match('/\n2 DATE (.+)/', $factrec, $match)) {
             $date = new Date($match[1]);
             $html .= ' ' . $date->display($anchor);
@@ -427,37 +382,21 @@ class FunctionsPrint
                         $html     .= ' - ' . $wt_place->fullName();
                     }
                 }
-                $map_lati = '';
-                $cts      = preg_match('/\d LATI (.*)/', $placerec, $match);
-                if ($cts > 0) {
-                    $map_lati = $match[1];
-                    $html     .= '<br><span class="label">' . I18N::translate('Latitude') . ': </span>' . $map_lati;
-                }
-                $map_long = '';
-                $cts      = preg_match('/\d LONG (.*)/', $placerec, $match);
-                if ($cts > 0) {
-                    $map_long = $match[1];
-                    $html     .= ' <span class="label">' . I18N::translate('Longitude') . ': </span>' . $map_long;
-                }
-                if ($map_lati && $map_long) {
-                    $map_lati = trim(strtr($map_lati, 'NSEW,�', ' - -. ')); // S5,6789 ==> -5.6789
-                    $map_long = trim(strtr($map_long, 'NSEW,�', ' - -. ')); // E3.456� ==> 3.456
 
-                    $html .= '<a href="https://maps.google.com/maps?q=' . e($map_lati) . ',' . e($map_long) . '" rel="nofollow" title="' . I18N::translate('Google Maps™') . '">' .
-                        view('icons/google-maps') .
-                        '<span class="sr-only">' . I18N::translate('Google Maps™') . '</span>' .
-                        '</a>';
+                $latitude  = $event->latitude();
+                $longitude = $event->longitude();
 
-                    $html .= '<a href="https://www.bing.com/maps/?lvl=15&cp=' . e($map_lati) . '~' . e($map_long) . '" rel="nofollow" title="' . I18N::translate('Bing Maps™') . '">' .
-                        view('icons/bing-maps') .
-                        '<span class="sr-only">' . I18N::translate('Bing Maps™') . '</span>' .
-                        '</a>';
+                if ($latitude !== null && $longitude !== null) {
+                    $html .= '<br><span class="label">' . I18N::translate('Latitude') . ': </span>' . $latitude;
+                    $html .= ' <span class="label">' . I18N::translate('Longitude') . ': </span>' . $longitude;
 
-                    $html .= '<a href="https://www.openstreetmap.org/#map=15/' . e($map_lati) . '/' . e($map_long) . '" rel="nofollow" title="' . I18N::translate('OpenStreetMap™') . '">' .
-                        view('icons/openstreetmap') .
-                        '<span class="sr-only">' . I18N::translate('OpenStreetMap™') . '</span>' .
-                        '</a>';
+                    // Links to external maps
+                    $html .= app(ModuleService::class)
+                        ->findByInterface(ModuleMapLinkInterface::class)
+                        ->map(fn (ModuleMapLinkInterface $module): string => ' ' . $module->mapLink($event))
+                        ->implode('');
                 }
+
                 if (preg_match('/\d NOTE (.*)/', $placerec, $match)) {
                     $html .= '<br>' . self::printFactNotes($tree, $placerec, 3);
                 }
@@ -483,96 +422,97 @@ class FunctionsPrint
     }
 
     /**
-     * Check for facts that may exist only once for a certain record type.
-     * If the fact already exists in the second array, delete it from the first one.
-     *
-     * @param array<string>    $uniquefacts
-     * @param Collection<Fact> $recfacts
-     *
-     * @return array<string>
-     */
-    public static function checkFactUnique(array $uniquefacts, Collection $recfacts): array
-    {
-        foreach ($recfacts as $factarray) {
-            $fact = $factarray->getTag();
-
-            $key = array_search($fact, $uniquefacts, true);
-            if ($key !== false) {
-                unset($uniquefacts[$key]);
-            }
-        }
-
-        return $uniquefacts;
-    }
-
-    /**
      * Print a new fact box on details pages
      *
-     * @param GedcomRecord     $record    the person, family, source etc the fact will be added to
-     * @param Collection<Fact> $usedfacts an array of facts already used in this record
-     * @param string           $type      the type of record INDI, FAM, SOUR etc
+     * @param Individual|Family $record
      *
      * @return void
      */
-    public static function printAddNewFact(GedcomRecord $record, Collection $usedfacts, string $type): void
+    public static function printAddNewFact(GedcomRecord $record): void
     {
         $tree = $record->tree();
 
-        // -- Add from pick list
-        switch ($type) {
+        $add_facts = (new GedcomEditService())->factsToAdd($record, false);
+
+        // Add from pick list
+        switch ($record->tag()) {
             case Individual::RECORD_TYPE:
-                $addfacts    = preg_split('/[, ;:]+/', $tree->getPreference('INDI_FACTS_ADD'), -1, PREG_SPLIT_NO_EMPTY);
-                $uniquefacts = preg_split('/[, ;:]+/', $tree->getPreference('INDI_FACTS_UNIQUE'), -1, PREG_SPLIT_NO_EMPTY);
-                $quickfacts  = preg_split('/[, ;:]+/', $tree->getPreference('INDI_FACTS_QUICK'), -1, PREG_SPLIT_NO_EMPTY);
+                $quick_facts  = explode(',', $tree->getPreference('INDI_FACTS_QUICK'));
+                $unique_facts = [
+                    'ADOP',
+                    'AFN' ,
+                    'BAPL',
+                    'BAPM',
+                    'BARM',
+                    'BASM',
+                    'BIRT',
+                    'BURI',
+                    'CAST',
+                    'CHAN',
+                    'CHR' ,
+                    'CHRA',
+                    'CONF',
+                    'CONL',
+                    'CREM',
+                    'DEAT',
+                    'ENDL',
+                    'FCOM',
+                    'GRAD',
+                    'NCHI',
+                    'NMR' ,
+                    'ORDN',
+                    'PROB',
+                    'REFN',
+                    'RELI',
+                    'RESN',
+                    'RETI',
+                    'RFN' ,
+                    'RIN' ,
+                    'SEX' ,
+                    'SLGC',
+                    'SSN' ,
+                    'WILL',
+                ];
                 break;
 
             case Family::RECORD_TYPE:
-                $addfacts    = preg_split('/[, ;:]+/', $tree->getPreference('FAM_FACTS_ADD'), -1, PREG_SPLIT_NO_EMPTY);
-                $uniquefacts = preg_split('/[, ;:]+/', $tree->getPreference('FAM_FACTS_UNIQUE'), -1, PREG_SPLIT_NO_EMPTY);
-                $quickfacts  = preg_split('/[, ;:]+/', $tree->getPreference('FAM_FACTS_QUICK'), -1, PREG_SPLIT_NO_EMPTY);
+                $quick_facts  = explode(',', $tree->getPreference('FAM_FACTS_QUICK'));
+                $unique_facts = [
+                    'DIV',
+                    'DIVF',
+                    'ENGA',
+                    'MARR',
+                ];
                 break;
 
-            case Source::RECORD_TYPE:
-                $addfacts    = preg_split('/[, ;:]+/', $tree->getPreference('SOUR_FACTS_ADD'), -1, PREG_SPLIT_NO_EMPTY);
-                $uniquefacts = preg_split('/[, ;:]+/', $tree->getPreference('SOUR_FACTS_UNIQUE'), -1, PREG_SPLIT_NO_EMPTY);
-                $quickfacts  = preg_split('/[, ;:]+/', $tree->getPreference('SOUR_FACTS_QUICK'), -1, PREG_SPLIT_NO_EMPTY);
-                break;
-
-            case Note::RECORD_TYPE:
-                $addfacts    = preg_split('/[, ;:]+/', $tree->getPreference('NOTE_FACTS_ADD'), -1, PREG_SPLIT_NO_EMPTY);
-                $uniquefacts = preg_split('/[, ;:]+/', $tree->getPreference('NOTE_FACTS_UNIQUE'), -1, PREG_SPLIT_NO_EMPTY);
-                $quickfacts  = preg_split('/[, ;:]+/', $tree->getPreference('NOTE_FACTS_QUICK'), -1, PREG_SPLIT_NO_EMPTY);
-                break;
-
-            case Repository::RECORD_TYPE:
-                $addfacts    = preg_split('/[, ;:]+/', $tree->getPreference('REPO_FACTS_ADD'), -1, PREG_SPLIT_NO_EMPTY);
-                $uniquefacts = preg_split('/[, ;:]+/', $tree->getPreference('REPO_FACTS_UNIQUE'), -1, PREG_SPLIT_NO_EMPTY);
-                $quickfacts  = preg_split('/[, ;:]+/', $tree->getPreference('REPO_FACTS_QUICK'), -1, PREG_SPLIT_NO_EMPTY);
-                break;
-
-            case Media::RECORD_TYPE:
-                $addfacts    = ['NOTE'];
-                $uniquefacts = [];
-                $quickfacts  = [];
-                break;
             default:
-                return;
+                $quick_facts  = [];
+                $unique_facts = [];
+                break;
         }
-        $addfacts            = array_merge(self::checkFactUnique($uniquefacts, $usedfacts), $addfacts);
-        $quickfacts          = array_intersect($quickfacts, $addfacts);
-        $translated_addfacts = [];
-        foreach ($addfacts as $addfact) {
-            $translated_addfacts[$addfact] = GedcomTag::getLabel($record->tag() . ':' . $addfact);
+
+        // Filter existing tags
+        $filter_fn = fn ($tag): bool => !in_array($tag, $unique_facts, true) || $record->facts([$tag])->isEmpty();
+
+        $quick_facts = array_filter($quick_facts, $filter_fn);
+
+
+        // Create a label for a subtag
+        $label_fn = fn ($subtag): string => Registry::elementFactory()->make($record->tag() . ':' . $subtag)->label();
+
+        $quick_facts = array_combine($quick_facts, array_map($label_fn, $quick_facts));
+        $add_facts   = array_combine($add_facts, array_map($label_fn, $add_facts));
+
+        uasort($add_facts, I18N::comparator());
+
+        if ($record->tree()->getPreference('MEDIA_UPLOAD') < Auth::accessLevel($record->tree())) {
+            unset($add_facts['OBJE'], $quick_facts['OBJE']);
         }
-        uasort($translated_addfacts, static function (string $x, string $y): int {
-            return I18N::strcasecmp(I18N::translate($x), I18N::translate($y));
-        });
 
         echo view('edit/add-fact-row', [
-            'add_facts'   => $translated_addfacts,
-            'quick_facts' => $quickfacts,
+            'add_facts'   => $add_facts,
+            'quick_facts' => $quick_facts,
             'record'      => $record,
-            'tree'        => $tree,
         ]);
     }
 }

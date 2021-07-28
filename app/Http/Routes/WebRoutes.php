@@ -35,7 +35,6 @@ use Fisharebest\Webtrees\Http\RequestHandlers\AddChildToIndividualAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\AddChildToIndividualPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\AddMediaFileAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\AddMediaFileModal;
-use Fisharebest\Webtrees\Http\RequestHandlers\AddName;
 use Fisharebest\Webtrees\Http\RequestHandlers\AddNewFact;
 use Fisharebest\Webtrees\Http\RequestHandlers\AddParentToIndividualAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\AddParentToIndividualPage;
@@ -54,6 +53,7 @@ use Fisharebest\Webtrees\Http\RequestHandlers\AutoCompletePlace;
 use Fisharebest\Webtrees\Http\RequestHandlers\AutoCompleteSurname;
 use Fisharebest\Webtrees\Http\RequestHandlers\BroadcastAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\BroadcastPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\BrowserconfigXml;
 use Fisharebest\Webtrees\Http\RequestHandlers\CalendarAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\CalendarEvents;
 use Fisharebest\Webtrees\Http\RequestHandlers\CalendarPage;
@@ -98,7 +98,6 @@ use Fisharebest\Webtrees\Http\RequestHandlers\EditFactAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\EditFactPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\EditMediaFileAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\EditMediaFileModal;
-use Fisharebest\Webtrees\Http\RequestHandlers\EditName;
 use Fisharebest\Webtrees\Http\RequestHandlers\EditNoteAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\EditNotePage;
 use Fisharebest\Webtrees\Http\RequestHandlers\EditRawFactAction;
@@ -154,8 +153,6 @@ use Fisharebest\Webtrees\Http\RequestHandlers\MapDataImportAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\MapDataImportPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\MapDataList;
 use Fisharebest\Webtrees\Http\RequestHandlers\MapDataSave;
-use Fisharebest\Webtrees\Http\RequestHandlers\MapProviderAction;
-use Fisharebest\Webtrees\Http\RequestHandlers\MapProviderPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\Masquerade;
 use Fisharebest\Webtrees\Http\RequestHandlers\MediaFileDownload;
 use Fisharebest\Webtrees\Http\RequestHandlers\MediaFileThumbnail;
@@ -179,6 +176,8 @@ use Fisharebest\Webtrees\Http\RequestHandlers\ModulesBlocksAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesBlocksPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesChartsAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesChartsPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesCustomTagsAction;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesCustomTagsPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesDataFixesAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesDataFixesPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesFootersAction;
@@ -189,10 +188,20 @@ use Fisharebest\Webtrees\Http\RequestHandlers\ModulesLanguagesAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesLanguagesPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesListsAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesListsPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMapAutocompleteAction;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMapAutocompletePage;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMapLinksAction;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMapLinksPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMapProvidersAction;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMapProvidersPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMapGeoLocationsAction;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMapGeoLocationsPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMenusAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesMenusPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesReportsAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesReportsPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesSharesAction;
+use Fisharebest\Webtrees\Http\RequestHandlers\ModulesSharesPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesSidebarsAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesSidebarsPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ModulesTabsAction;
@@ -286,6 +295,8 @@ use Fisharebest\Webtrees\Http\RequestHandlers\TreePreferencesAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\TreePreferencesPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\TreePrivacyAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\TreePrivacyPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\SiteTagsAction;
+use Fisharebest\Webtrees\Http\RequestHandlers\SiteTagsPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\UnconnectedAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\UnconnectedPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\UpgradeWizardConfirm;
@@ -310,6 +321,7 @@ use Fisharebest\Webtrees\Http\RequestHandlers\UserPageUpdate;
 use Fisharebest\Webtrees\Http\RequestHandlers\UsersCleanupAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\UsersCleanupPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\VerifyEmail;
+use Fisharebest\Webtrees\Http\RequestHandlers\WebmanifestJson;
 
 /**
  * Routing table for web requests
@@ -369,8 +381,6 @@ class WebRoutes
                 $router->post(MapDataImportAction::class, '/locations-import');
                 $router->get(MapDataList::class, '/map-data{/parent_id}');
                 $router->post(MapDataSave::class, '/map-data-update');
-                $router->get(MapProviderPage::class, '/map-provider');
-                $router->post(MapProviderAction::class, '/map-provider');
                 $router->post(ModuleDeleteSettings::class, '/module-delete-settings');
                 $router->get(ModulesAllPage::class, '/modules');
                 $router->post(ModulesAllAction::class, '/modules');
@@ -380,6 +390,8 @@ class WebRoutes
                 $router->post(ModulesBlocksAction::class, '/blocks');
                 $router->get(ModulesChartsPage::class, '/charts');
                 $router->post(ModulesChartsAction::class, '/charts');
+                $router->get(ModulesCustomTagsPage::class, '/custom-tags');
+                $router->post(ModulesCustomTagsAction::class, '/custom-tags');
                 $router->get(ModulesDataFixesPage::class, '/data-fixes');
                 $router->post(ModulesDataFixesAction::class, '/data-fixes');
                 $router->get(ModulesFootersPage::class, '/footers');
@@ -388,12 +400,22 @@ class WebRoutes
                 $router->post(ModulesHistoricEventsAction::class, '/historic-events');
                 $router->get(ModulesListsPage::class, '/lists');
                 $router->post(ModulesListsAction::class, '/lists');
+                $router->get(ModulesMapAutocompletePage::class, '/map-autocomplete');
+                $router->post(ModulesMapAutocompleteAction::class, '/map-autocomplete');
+                $router->get(ModulesMapLinksPage::class, '/map-links');
+                $router->post(ModulesMapLinksAction::class, '/map-links');
+                $router->get(ModulesMapProvidersPage::class, '/map-providers');
+                $router->post(ModulesMapProvidersAction::class, '/map-providers');
+                $router->get(ModulesMapGeoLocationsPage::class, '/map-searches');
+                $router->post(ModulesMapGeoLocationsAction::class, '/map-searches');
                 $router->get(ModulesMenusPage::class, '/menus');
                 $router->post(ModulesMenusAction::class, '/menus');
                 $router->get(ModulesLanguagesPage::class, '/languages');
                 $router->post(ModulesLanguagesAction::class, '/languages');
                 $router->get(ModulesReportsPage::class, '/reports');
                 $router->post(ModulesReportsAction::class, '/reports');
+                $router->get(ModulesSharesPage::class, '/shares');
+                $router->post(ModulesSharesAction::class, '/shares');
                 $router->get(ModulesSidebarsPage::class, '/sidebars');
                 $router->post(ModulesSidebarsAction::class, '/sidebars');
                 $router->get(ModulesTabsPage::class, '/tabs');
@@ -413,6 +435,8 @@ class WebRoutes
                 $router->post(SitePreferencesAction::class, '/site-preferences');
                 $router->get(SiteRegistrationPage::class, '/site-registration');
                 $router->post(SiteRegistrationAction::class, '/site-registration');
+                $router->get(SiteTagsPage::class, '/tags');
+                $router->post(SiteTagsAction::class, '/tags');
                 $router->get(TreePageDefaultEdit::class, '/trees/default-blocks');
                 $router->post(TreePageDefaultUpdate::class, '/trees/default-blocks');
                 $router->get(MergeTreesPage::class, '/trees/merge');
@@ -504,19 +528,18 @@ class WebRoutes
                     ],
                 ]);
 
-                $router->get(AutoCompleteCitation::class, '/autocomplete/citation/{query}');
-                $router->get(AutoCompleteFolder::class, '/autocomplete/folder/{query}');
-                $router->get(AutoCompletePlace::class, '/autocomplete/place/{query}');
-                $router->get(AutoCompleteSurname::class, '/autocomplete/surname/{query}');
-                $router->get(AddChildToFamilyPage::class, '/add-child-to-family');
-                $router->post(AddChildToFamilyAction::class, '/add-child-to-family');
+                $router->get(AutoCompleteCitation::class, '/autocomplete/citation');
+                $router->get(AutoCompleteFolder::class, '/autocomplete/folder');
+                $router->get(AutoCompletePlace::class, '/autocomplete/place');
+                $router->get(AutoCompleteSurname::class, '/autocomplete/surname');
+                $router->get(AddChildToFamilyPage::class, '/add-child-to-family/{xref}/{sex}');
+                $router->post(AddChildToFamilyAction::class, '/add-child-to-family/{xref}');
                 $router->get(AddNewFact::class, '/add-fact/{xref}/{fact}');
                 $router->post(SelectNewFact::class, '/add-fact/{xref}');
                 $router->get(AddMediaFileModal::class, '/add-media-file/{xref}');
                 $router->post(AddMediaFileAction::class, '/add-media-file/{xref}');
-                $router->get(AddName::class, '/add-name');
-                $router->get(AddSpouseToFamilyPage::class, '/add-spouse-to-family');
-                $router->post(AddSpouseToFamilyAction::class, '/add-spouse-to-family');
+                $router->get(AddSpouseToFamilyPage::class, '/add-spouse-to-family/{xref}/{sex}');
+                $router->post(AddSpouseToFamilyAction::class, '/add-spouse-to-family/{xref}');
                 $router->get(ChangeFamilyMembersPage::class, '/change-family-members');
                 $router->post(ChangeFamilyMembersAction::class, '/change-family-members');
                 $router->get(CreateLocationModal::class, '/create-location');
@@ -564,19 +587,18 @@ class WebRoutes
                 $router->post(ReorderFamiliesAction::class, '/reorder-spouses/{xref}');
                 $router->get(SearchReplacePage::class, '/search-replace');
                 $router->post(SearchReplaceAction::class, '/search-replace');
-                $router->get(AddChildToIndividualPage::class, '/add-child-to-individual');
-                $router->post(AddChildToIndividualAction::class, '/add-child-to-individual');
-                $router->get(AddParentToIndividualPage::class, '/add-parent-to-individual');
-                $router->post(AddParentToIndividualAction::class, '/add-parent-to-individual');
-                $router->get(AddSpouseToIndividualPage::class, '/add-spouse-to-individual');
-                $router->post(AddSpouseToIndividualAction::class, '/add-spouse-to-individual');
+                $router->get(AddChildToIndividualPage::class, '/add-child-to-individual/{xref}');
+                $router->post(AddChildToIndividualAction::class, '/add-child-to-individual/{xref}');
+                $router->get(AddParentToIndividualPage::class, '/add-parent-to-individual/{xref}/{sex}');
+                $router->post(AddParentToIndividualAction::class, '/add-parent-to-individual/{xref}');
+                $router->get(AddSpouseToIndividualPage::class, '/add-spouse-to-individual/{xref}');
+                $router->post(AddSpouseToIndividualAction::class, '/add-spouse-to-individual/{xref}');
                 $router->get(AddUnlinkedPage::class, '/add-unlinked-individual');
                 $router->post(AddUnlinkedAction::class, '/add-unlinked-individual');
-                $router->get(LinkChildToFamilyPage::class, '/link-child-to-family');
-                $router->post(LinkChildToFamilyAction::class, '/link-child-to-family');
-                $router->get(LinkSpouseToIndividualPage::class, '/link-spouse-to-individual');
-                $router->post(LinkSpouseToIndividualAction::class, '/link-spouse-to-individual');
-                $router->get(EditName::class, '/edit-name/{xref}/{fact_id}');
+                $router->get(LinkChildToFamilyPage::class, '/link-child-to-family/{xref}');
+                $router->post(LinkChildToFamilyAction::class, '/link-child-to-family/{xref}');
+                $router->get(LinkSpouseToIndividualPage::class, '/link-spouse-to-individual/{xref}');
+                $router->post(LinkSpouseToIndividualAction::class, '/link-spouse-to-individual/{xref}');
             });
 
             // User routes with a tree.
@@ -686,13 +708,15 @@ class WebRoutes
             $router->post(Logout::class, '/logout');
             $router->get(Ping::class, '/ping', Ping::class)
                 ->allows(RequestMethodInterface::METHOD_HEAD);
-            $router->get(RobotsTxt::class, '/robots.txt');
             $router->post(SelectTheme::class, '/theme/{theme}');
             $router->get(HomePage::class, '/');
 
-            // Some URL rewrite configurations will pass everything not in /public to index.php
+            // Special files, either dynamic or need to be in the root folder.
             $router->get(AppleTouchIconPng::class, '/apple-touch-icon.png');
+            $router->get(BrowserconfigXml::class, '/browserconfig.xml');
             $router->get(FaviconIco::class, '/favicon.ico');
+            $router->get(RobotsTxt::class, '/robots.txt');
+            $router->get(WebmanifestJson::class, '/webmanifest.json');
         });
     }
 }

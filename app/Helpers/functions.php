@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 use Aura\Router\RouterContainer;
 use Fig\Http\Message\StatusCodeInterface;
-use Fisharebest\Webtrees\Application;
 use Fisharebest\Webtrees\Html;
 use Fisharebest\Webtrees\Session as WebtreesSession;
 use Fisharebest\Webtrees\View as WebtreesView;
@@ -39,10 +38,10 @@ use Psr\Http\Message\StreamFactoryInterface;
 function app(string $abstract = null)
 {
     if ($abstract === null) {
-        return Application::getInstance();
+        return Webtrees::container();
     }
 
-    return Application::getInstance()->make($abstract);
+    return Webtrees::make($abstract);
 }
 
 /**
@@ -94,7 +93,7 @@ function csrf_token(): string
  *
  * @return ResponseInterface
  */
-function redirect(string $url, $code = StatusCodeInterface::STATUS_FOUND): ResponseInterface
+function redirect(string $url, int $code = StatusCodeInterface::STATUS_FOUND): ResponseInterface
 {
     /** @var ResponseFactoryInterface $response_factory */
     $response_factory = app(ResponseFactoryInterface::class);
@@ -113,7 +112,7 @@ function redirect(string $url, $code = StatusCodeInterface::STATUS_FOUND): Respo
  *
  * @return ResponseInterface
  */
-function response($content = '', $code = StatusCodeInterface::STATUS_OK, $headers = []): ResponseInterface
+function response($content = '', int $code = StatusCodeInterface::STATUS_OK, array $headers = []): ResponseInterface
 {
     if ($content === '' && $code === StatusCodeInterface::STATUS_OK) {
         $code = StatusCodeInterface::STATUS_NO_CONTENT;
@@ -156,8 +155,8 @@ function response($content = '', $code = StatusCodeInterface::STATUS_OK, $header
 /**
  * Generate a URL for a named route.
  *
- * @param string  $route_name
- * @param mixed[] $parameters
+ * @param string       $route_name
+ * @param array<mixed> $parameters
  *
  * @return string
  */
@@ -191,10 +190,10 @@ function route(string $route_name, array $parameters = []): string
 }
 
 /**
- * Cerate and render a view in a single operation.
+ * Create and render a view in a single operation.
  *
- * @param string  $name
- * @param mixed[] $data
+ * @param string       $name
+ * @param array<mixed> $data
  *
  * @return string
  */

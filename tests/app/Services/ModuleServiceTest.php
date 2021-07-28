@@ -23,6 +23,7 @@ use Fisharebest\Webtrees\Module\ModuleAnalyticsInterface;
 use Fisharebest\Webtrees\Module\ModuleBlockInterface;
 use Fisharebest\Webtrees\Module\ModuleChartInterface;
 use Fisharebest\Webtrees\Module\ModuleConfigInterface;
+use Fisharebest\Webtrees\Module\ModuleCustomInterface;
 use Fisharebest\Webtrees\Module\ModuleDataFixInterface;
 use Fisharebest\Webtrees\Module\ModuleInterface;
 use Fisharebest\Webtrees\Module\ModuleMenuInterface;
@@ -46,7 +47,7 @@ class ModuleServiceTest extends TestCase
      * @covers \Fisharebest\Webtrees\Services\ModuleService::all
      * @covers \Fisharebest\Webtrees\Services\ModuleService::coreModules
      * @covers \Fisharebest\Webtrees\Services\ModuleService::customModules
-     * @covers \Fisharebest\Webtrees\Services\ModuleService::moduleSorter
+     * @covers \Fisharebest\Webtrees\Services\ModuleService::moduleComparator
      * @return void
      */
     public function testAll(): void
@@ -58,9 +59,9 @@ class ModuleServiceTest extends TestCase
 
     /**
      * @covers \Fisharebest\Webtrees\Services\ModuleService::findByComponent
-     * @covers \Fisharebest\Webtrees\Services\ModuleService::menuSorter
-     * @covers \Fisharebest\Webtrees\Services\ModuleService::sidebarSorter
-     * @covers \Fisharebest\Webtrees\Services\ModuleService::tabSorter
+     * @covers \Fisharebest\Webtrees\Services\ModuleService::menuComparator
+     * @covers \Fisharebest\Webtrees\Services\ModuleService::sidebarComparator
+     * @covers \Fisharebest\Webtrees\Services\ModuleService::tabComparator
      * @return void
      */
     public function testFindByComponent(): void
@@ -113,7 +114,11 @@ class ModuleServiceTest extends TestCase
 
         $module_service = new ModuleService();
 
-        self::assertSame(3, $module_service->otherModules()->count());
+        // Ignore any custom modules that happen to be installed in the development environment.
+        $modules = $module_service->otherModules()
+            ->filter(fn (ModuleInterface $module): bool => !$module instanceof ModuleCustomInterface);
+
+        self::assertSame(3, $modules->count());
     }
 
     /**

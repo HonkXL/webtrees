@@ -32,7 +32,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
-use Throwable;
 
 use function assert;
 use function fclose;
@@ -52,8 +51,7 @@ class ExportGedcomServer implements RequestHandlerInterface
 {
     use ViewResponseTrait;
 
-    /** @var GedcomExportService */
-    private $gedcom_export_service;
+    private GedcomExportService $gedcom_export_service;
 
     /**
      * ExportGedcomServer constructor.
@@ -77,7 +75,9 @@ class ExportGedcomServer implements RequestHandlerInterface
 
         $data_filesystem = Registry::filesystem()->data();
 
-        $filename = $tree->name();
+        $params = (array) $request->getParsedBody();
+
+        $filename = $params['filename'] ?? $tree->name();
 
         // Force a ".ged" suffix
         if (strtolower(pathinfo($filename, PATHINFO_EXTENSION)) !== 'ged') {
