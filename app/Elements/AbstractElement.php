@@ -22,6 +22,7 @@ namespace Fisharebest\Webtrees\Elements;
 use Fisharebest\Webtrees\Contracts\ElementInterface;
 use Fisharebest\Webtrees\Html;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Tree;
 
 use function array_key_exists;
@@ -30,6 +31,8 @@ use function e;
 use function is_numeric;
 use function preg_match;
 use function str_contains;
+use function str_starts_with;
+use function stream_copy_to_stream;
 use function strip_tags;
 use function trim;
 use function view;
@@ -283,7 +286,7 @@ abstract class AbstractElement implements ElementInterface
     }
 
     /**
-     * Display the value of this type of element - convert URLs to links
+     * Display the value of this type of element - convert URLs to links.
      *
      * @param string $value
      *
@@ -293,11 +296,31 @@ abstract class AbstractElement implements ElementInterface
     {
         $canonical = $this->canonical($value);
 
-        if (preg_match(static::REGEX_URL, $canonical)) {
-            return '<a href="' . e($canonical) . '" rel="no-follow">' . e($canonical) . '</a>';
+        if (str_contains($canonical, 'http://') || str_contains($canonical, 'https://')) {
+            $html = Registry::markdownFactory()->autolink()->convertToHtml($canonical);
+
+            return strip_tags($html, ['a']);
         }
 
         return e($canonical);
+    }
+
+    /**
+     * Display the value of this type of element - convert to URL.
+     *
+     * @param string $value
+     *
+     * @return string
+     */
+    protected function valueLink(string $value): string
+    {
+        $canonical = $this->canonical($value);
+
+        if (str_starts_with($canonical, 'https://') || str_starts_with($canonical, 'http://')) {
+            return '<a dir="auto" href="' . e($canonical) . '">' . e($value) . '</a>';
+        }
+
+        return e($value);
     }
 
     /**
