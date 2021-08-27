@@ -108,6 +108,7 @@ use Fisharebest\Webtrees\Http\RequestHandlers\EditRecordAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\EditRecordPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\EmailPreferencesAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\EmailPreferencesPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\EmptyClipboard;
 use Fisharebest\Webtrees\Http\RequestHandlers\ExportGedcomClient;
 use Fisharebest\Webtrees\Http\RequestHandlers\ExportGedcomPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ExportGedcomServer;
@@ -328,6 +329,11 @@ use Fisharebest\Webtrees\Http\RequestHandlers\WebmanifestJson;
  */
 class WebRoutes
 {
+    /**
+     * @param Map $router
+     *
+     * @return void
+     */
     public function load(Map $router): void
     {
         $router->attach('', '', static function (Map $router) {
@@ -631,6 +637,7 @@ class WebRoutes
                 $router->get(AccountEdit::class, '/my-account{/tree}');
                 $router->post(AccountUpdate::class, '/my-account{/tree}');
                 $router->post(AccountDelete::class, '/my-account-delete');
+                $router->post(EmptyClipboard::class, '/empty-clipboard');
             });
 
             // Visitor routes - with an optional tree (for sites with no public trees).

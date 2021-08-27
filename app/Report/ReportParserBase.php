@@ -21,6 +21,7 @@ namespace Fisharebest\Webtrees\Report;
 
 use DomainException;
 use Exception;
+use XMLParser;
 
 use function call_user_func;
 use function fclose;
@@ -46,7 +47,7 @@ use const XML_OPTION_CASE_FOLDING;
  */
 class ReportParserBase
 {
-    /** @var resource The XML parser */
+    /** @var XMLParser (resource before PHP 8.0) The XML parser */
     protected $xml_parser;
 
     /** @var string Text contents of tags */
