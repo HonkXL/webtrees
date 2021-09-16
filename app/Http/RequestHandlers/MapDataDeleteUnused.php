@@ -19,36 +19,30 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
-use Fisharebest\Webtrees\Http\ViewResponseTrait;
-use Fisharebest\Webtrees\I18N;
-use Fisharebest\Webtrees\Module\ModuleDataFixInterface;
-use Fisharebest\Webtrees\Services\ModuleService;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\PlaceLocation;
+use Fisharebest\Webtrees\Services\MapDataService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function assert;
-use function e;
-use function view;
+use function redirect;
+use function route;
 
 /**
- * Run a data-fix.
+ * Delete unused locations from the control panel.
  */
-class DataFixChoose implements RequestHandlerInterface
+class MapDataDeleteUnused implements RequestHandlerInterface
 {
-    use ViewResponseTrait;
-
-    private ModuleService $module_service;
+    private MapDataService $map_data_service;
 
     /**
-     * DataFix constructor.
+     * Dependency injection.
      *
-     * @param ModuleService $module_service
+     * @param MapDataService $map_data_service
      */
-    public function __construct(ModuleService $module_service)
+    public function __construct(MapDataService $map_data_service)
     {
-        $this->module_service = $module_service;
+        $this->map_data_service = $map_data_service;
     }
 
     /**
@@ -58,19 +52,10 @@ class DataFixChoose implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
+        $this->map_data_service->deleteUnusedLocations(null, [0]);
 
-        $data_fixes = $this->module_service->findByInterface(ModuleDataFixInterface::class, false, true);
+        $url = route(MapDataList::class);
 
-        $this->layout = 'layouts/administration';
-
-        $title = I18N::translate('Data fixes') . ' — ' . e($tree->title());
-
-        return $this->viewResponse('admin/data-fix-select', [
-            'title'      => $title,
-            'data_fixes' => $data_fixes,
-            'tree'       => $tree,
-        ]);
+        return redirect($url);
     }
 }

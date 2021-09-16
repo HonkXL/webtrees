@@ -297,7 +297,11 @@ class LifespansChartModule extends AbstractModule implements ModuleChartInterfac
     protected function maxYear(array $individuals): int
     {
         $jd = array_reduce($individuals, static function ($carry, Individual $item) {
-            return max($carry, $item->getEstimatedDeathDate()->maximumJulianDay());
+            if ($item->getEstimatedDeathDate()->isOK()) {
+                return max($carry, $item->getEstimatedDeathDate()->maximumJulianDay());
+            }
+
+            return $carry;
         }, 0);
 
         $year = $this->jdToYear($jd);
@@ -316,7 +320,11 @@ class LifespansChartModule extends AbstractModule implements ModuleChartInterfac
     protected function minYear(array $individuals): int
     {
         $jd = array_reduce($individuals, static function ($carry, Individual $item) {
-            return min($carry, $item->getEstimatedBirthDate()->minimumJulianDay());
+            if ($item->getEstimatedBirthDate()->isOK()) {
+                return min($carry, $item->getEstimatedBirthDate()->minimumJulianDay());
+            }
+
+            return $carry;
         }, PHP_INT_MAX);
 
         return $this->jdToYear($jd);

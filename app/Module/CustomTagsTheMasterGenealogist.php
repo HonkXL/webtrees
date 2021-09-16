@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Contracts\ElementInterface;
-use Fisharebest\Webtrees\Elements\CustomElement;
 use Fisharebest\Webtrees\Elements\DateValue;
-use Fisharebest\Webtrees\Elements\NamePersonal;
-use Fisharebest\Webtrees\Elements\PlaceName;
 use Fisharebest\Webtrees\I18N;
 
 /**
- * Class CustomTagsFTB
+ * Class CustomTagsTheMasterGenealogist
  */
-class CustomTagsFamilyTreeBuilder extends AbstractModule implements ModuleConfigInterface, ModuleCustomTagsInterface
+class CustomTagsTheMasterGenealogist extends AbstractModule implements ModuleConfigInterface, ModuleCustomTagsInterface
 {
     use ModuleConfigTrait;
     use ModuleCustomTagsTrait;
@@ -50,15 +47,8 @@ class CustomTagsFamilyTreeBuilder extends AbstractModule implements ModuleConfig
     public function customTags(): array
     {
         return [
-            '*:_UPD'              => new CustomElement(I18N::translate('Last change')), // e.g. "1 _UPD 14 APR 2012 00:14:10 GMT-5"
-            'INDI:NAME:_AKA'      => new NamePersonal(I18N::translate('Also known as'), []),
-            'OBJE:_ALBUM'         => new CustomElement(I18N::translate('Album')), // XREF to an album
-            'OBJE:_DATE'          => new DateValue(I18N::translate('Date')),
-            'OBJE:_FILESIZE'      => new CustomElement(I18N::translate('File size')),
-            'OBJE:_PHOTO_RIN'     => new CustomElement(I18N::translate('Record ID number')),
-            'OBJE:_PLACE'         => new PlaceName(I18N::translate('Place')),
-            '_ALBUM:_PHOTO'       => new CustomElement(I18N::translate('Photo')),
-            '_ALBUM:_PHOTO:_PRIN' => new CustomElement(I18N::translate('Highlighted image')),
+            'INDI:*:_SDATE' => new DateValue(I18N::translate('Sort date')),
+            'INDI:NAME:_DATE'  => new DateValue(I18N::translate('Date')),
         ];
     }
 
@@ -69,6 +59,6 @@ class CustomTagsFamilyTreeBuilder extends AbstractModule implements ModuleConfig
      */
     public function customTagApplication(): string
     {
-        return 'Family Tree Builder™';
+        return 'The Master Genealogist™';
     }
 }

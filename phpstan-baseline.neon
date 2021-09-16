@@ -41,6 +41,86 @@ parameters:
 			path: app/Fact.php
 
 		-
+			message: "#^Access to an undefined property object\\:\\:\\$f_gedcom\\.$#"
+			count: 1
+			path: app/Factories/FamilyFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$f_id\\.$#"
+			count: 1
+			path: app/Factories/FamilyFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_gedcom\\.$#"
+			count: 1
+			path: app/Factories/GedcomRecordFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_id\\.$#"
+			count: 1
+			path: app/Factories/GedcomRecordFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_gedcom\\.$#"
+			count: 1
+			path: app/Factories/HeaderFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_id\\.$#"
+			count: 1
+			path: app/Factories/HeaderFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$i_gedcom\\.$#"
+			count: 1
+			path: app/Factories/IndividualFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$i_id\\.$#"
+			count: 1
+			path: app/Factories/IndividualFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_gedcom\\.$#"
+			count: 1
+			path: app/Factories/LocationFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_id\\.$#"
+			count: 1
+			path: app/Factories/LocationFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$m_gedcom\\.$#"
+			count: 1
+			path: app/Factories/MediaFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$m_id\\.$#"
+			count: 1
+			path: app/Factories/MediaFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_gedcom\\.$#"
+			count: 1
+			path: app/Factories/NoteFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_id\\.$#"
+			count: 1
+			path: app/Factories/NoteFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_gedcom\\.$#"
+			count: 1
+			path: app/Factories/RepositoryFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_id\\.$#"
+			count: 1
+			path: app/Factories/RepositoryFactory.php
+
+		-
 			message: "#^Parameter \\#1 \\$string of function trim expects string, string\\|null given\\.$#"
 			count: 1
 			path: app/Factories/SlugFactory.php
@@ -49,6 +129,36 @@ parameters:
 			message: "#^Parameter \\#3 \\$subject of function preg_replace expects array\\|string, string\\|false given\\.$#"
 			count: 1
 			path: app/Factories/SlugFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$s_gedcom\\.$#"
+			count: 1
+			path: app/Factories/SourceFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$s_id\\.$#"
+			count: 1
+			path: app/Factories/SourceFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_gedcom\\.$#"
+			count: 1
+			path: app/Factories/SubmissionFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_id\\.$#"
+			count: 1
+			path: app/Factories/SubmissionFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_gedcom\\.$#"
+			count: 1
+			path: app/Factories/SubmitterFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$o_id\\.$#"
+			count: 1
+			path: app/Factories/SubmitterFactory.php
 
 		-
 			message: "#^Parameter \\#2 \\$subject of function preg_match_all expects string, string\\|null given\\.$#"
@@ -1045,43 +1155,13 @@ parameters:
 			path: app/Report/AbstractRenderer.php
 
 		-
-			message: "#^Method Fisharebest\\\\Webtrees\\\\Report\\\\AbstractRenderer\\:\\:getStyle\\(\\) should return array but returns array\\<string\\>\\|false\\.$#"
+			message: "#^Method Fisharebest\\\\Webtrees\\\\Report\\\\AbstractRenderer\\:\\:getStyle\\(\\) should return array but returns array\\<string, string\\>\\|false\\.$#"
 			count: 1
 			path: app/Report/AbstractRenderer.php
 
 		-
-			message: "#^Array \\(array\\<Fisharebest\\\\Webtrees\\\\Report\\\\ReportBaseElement\\>\\) does not accept Fisharebest\\\\Webtrees\\\\Report\\\\ReportBaseElement\\|string\\.$#"
-			count: 3
-			path: app/Report/HtmlRenderer.php
-
-		-
-			message: "#^Elseif branch is unreachable because previous condition is always true\\.$#"
-			count: 6
-			path: app/Report/HtmlRenderer.php
-
-		-
-			message: "#^Strict comparison using \\=\\=\\= between \\*NEVER\\* and 'addpage' will always evaluate to false\\.$#"
-			count: 3
-			path: app/Report/HtmlRenderer.php
-
-		-
-			message: "#^Strict comparison using \\=\\=\\= between \\*NEVER\\* and 'footnotetexts' will always evaluate to false\\.$#"
-			count: 3
-			path: app/Report/HtmlRenderer.php
-
-		-
-			message: "#^Array \\(array\\<Fisharebest\\\\Webtrees\\\\Report\\\\ReportBaseElement\\>\\) does not accept Fisharebest\\\\Webtrees\\\\Report\\\\ReportBaseElement\\|string\\.$#"
-			count: 3
-			path: app/Report/PdfRenderer.php
-
-		-
-			message: "#^Array \\(array\\<array\\<string\\>\\>\\) does not accept string\\.$#"
+			message: "#^Array \\(array\\<array\\<string, string\\>\\>\\) does not accept string\\.$#"
 			count: 1
-			path: app/Report/PdfRenderer.php
-
-		-
-			message: "#^Elseif branch is unreachable because previous condition is always true\\.$#"
-			count: 6
 			path: app/Report/PdfRenderer.php
 
 		-
@@ -1090,7 +1170,7 @@ parameters:
 			path: app/Report/PdfRenderer.php
 
 		-
-			message: "#^Method Fisharebest\\\\Webtrees\\\\Report\\\\PdfRenderer\\:\\:getStyle\\(\\) should return array but returns array\\<string\\>\\|string\\.$#"
+			message: "#^Method Fisharebest\\\\Webtrees\\\\Report\\\\PdfRenderer\\:\\:getStyle\\(\\) should return array but returns array\\<string, string\\>\\|string\\.$#"
 			count: 1
 			path: app/Report/PdfRenderer.php
 
@@ -1112,16 +1192,6 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$lw of method TCPDF\\:\\:setHeaderData\\(\\) expects string, int given\\.$#"
 			count: 1
-			path: app/Report/PdfRenderer.php
-
-		-
-			message: "#^Strict comparison using \\=\\=\\= between \\*NEVER\\* and 'addpage' will always evaluate to false\\.$#"
-			count: 3
-			path: app/Report/PdfRenderer.php
-
-		-
-			message: "#^Strict comparison using \\=\\=\\= between \\*NEVER\\* and 'footnotetexts' will always evaluate to false\\.$#"
-			count: 3
 			path: app/Report/PdfRenderer.php
 
 		-
@@ -1300,7 +1370,7 @@ parameters:
 			path: app/Report/ReportPdfCell.php
 
 		-
-			message: "#^Method Fisharebest\\\\Webtrees\\\\Report\\\\ReportPdfFootnote\\:\\:getWidth\\(\\) should return array\\(float, int, float\\|int\\) but returns array\\(0\\|array\\<float\\>\\|float, 1, int\\)\\.$#"
+			message: "#^Method Fisharebest\\\\Webtrees\\\\Report\\\\ReportPdfFootnote\\:\\:getWidth\\(\\) should return array\\(float, int, float\\) but returns array\\(0\\|array\\<float\\>\\|float, 1, int\\<0, max\\>\\)\\.$#"
 			count: 1
 			path: app/Report/ReportPdfFootnote.php
 
@@ -1315,7 +1385,7 @@ parameters:
 			path: app/Report/ReportPdfFootnote.php
 
 		-
-			message: "#^Method Fisharebest\\\\Webtrees\\\\Report\\\\ReportPdfText\\:\\:getWidth\\(\\) should return array\\(float, int, float\\|int\\) but returns array\\(array\\<float\\>\\|float, 0\\|2, int\\)\\.$#"
+			message: "#^Method Fisharebest\\\\Webtrees\\\\Report\\\\ReportPdfText\\:\\:getWidth\\(\\) should return array\\(float, int, float\\) but returns array\\(array\\<float\\>\\|float, 0\\|2, int\\<0, max\\>\\)\\.$#"
 			count: 1
 			path: app/Report/ReportPdfText.php
 
@@ -1430,13 +1500,33 @@ parameters:
 			path: app/Services/HomePageService.php
 
 		-
+			message: "#^Access to an undefined property object\\:\\:\\$child_count\\.$#"
+			count: 2
+			path: app/Services/MapDataService.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$key\\.$#"
+			count: 1
+			path: app/Services/MapDataService.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$no_coord\\.$#"
+			count: 2
+			path: app/Services/MapDataService.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$p_id\\.$#"
+			count: 1
+			path: app/Services/MapDataService.php
+
+		-
 			message: "#^Access to an undefined property object\\:\\:\\$parent_id\\.$#"
 			count: 1
 			path: app/Services/MapDataService.php
 
 		-
 			message: "#^Access to an undefined property object\\:\\:\\$place\\.$#"
-			count: 1
+			count: 2
 			path: app/Services/MapDataService.php
 
 		-
@@ -1485,11 +1575,6 @@ parameters:
 			path: app/Services/RelationshipService.php
 
 		-
-			message: "#^Offset 0 does not exist on array\\(\\?0 \\=\\> string, 1 \\=\\> string\\)\\.$#"
-			count: 1
-			path: app/Services/RelationshipService.php
-
-		-
 			message: "#^Parameter \\#1 \\$individual of method Fisharebest\\\\Webtrees\\\\Services\\\\RelationshipService\\:\\:reflexivePronoun\\(\\) expects Fisharebest\\\\Webtrees\\\\Individual, Fisharebest\\\\Webtrees\\\\Family\\|Fisharebest\\\\Webtrees\\\\Individual given\\.$#"
 			count: 1
 			path: app/Services/RelationshipService.php
@@ -1503,11 +1588,6 @@ parameters:
 			message: "#^Parameter \\#3 \\$person2 of method Fisharebest\\\\Webtrees\\\\Services\\\\RelationshipService\\:\\:legacyNameAlgorithm\\(\\) expects Fisharebest\\\\Webtrees\\\\Individual\\|null, Fisharebest\\\\Webtrees\\\\Family\\|Fisharebest\\\\Webtrees\\\\Individual given\\.$#"
 			count: 1
 			path: app/Services/RelationshipService.php
-
-		-
-			message: "#^Binary operation \"\\*\" between 365 and 0\\|string results in an error\\.$#"
-			count: 1
-			path: app/Services/SearchService.php
 
 		-
 			message: "#^Binary operation \"\\*\" between 365 and string results in an error\\.$#"
@@ -1550,11 +1630,6 @@ parameters:
 			path: app/Services/SiteLogsService.php
 
 		-
-			message: "#^Call to function is_resource\\(\\) with Psr\\\\Http\\\\Message\\\\StreamInterface will always evaluate to false\\.$#"
-			count: 1
-			path: app/Services/UpgradeService.php
-
-		-
 			message: "#^Method Fisharebest\\\\Webtrees\\\\Services\\\\UpgradeService\\:\\:downloadFile\\(\\) should return int but returns int\\|false\\.$#"
 			count: 1
 			path: app/Services/UpgradeService.php
@@ -1588,11 +1663,6 @@ parameters:
 			message: "#^Property Fisharebest\\\\Webtrees\\\\SessionDatabaseHandler\\:\\:\\$row \\(stdClass\\|null\\) does not accept object\\|null\\.$#"
 			count: 1
 			path: app/SessionDatabaseHandler.php
-
-		-
-			message: "#^Call to an undefined method ReflectionType\\:\\:getName\\(\\)\\.$#"
-			count: 1
-			path: app/Statistics.php
 
 		-
 			message: "#^Method Fisharebest\\\\Webtrees\\\\Statistics\\:\\:statsAgeQuery\\(\\) return type has no value type specified in iterable type array\\.$#"

@@ -291,10 +291,10 @@ class FunctionsPrint
                         // Only show calculated age if it differs from recorded age
                         if ($age !== '') {
                             if (
-                                $fact_age !== '' && $fact_age !== $age ||
+                                $fact_age !== '' && !str_starts_with($fact_age, $age) ||
                                 $fact_age === '' && $husb_age === '' && $wife_age === '' ||
-                                $husb_age !== '' && $husb_age !== $age && $record->sex() === 'M' ||
-                                $wife_age !== '' && $wife_age !== $age && $record->sex() === 'F'
+                                $husb_age !== '' && !str_starts_with($husb_age, $age) && $record->sex() === 'M' ||
+                                $wife_age !== '' && !str_starts_with($wife_age, $age) && $record->sex() === 'F'
                             ) {
                                 switch ($record->sex()) {
                                     case 'M':
@@ -313,10 +313,10 @@ class FunctionsPrint
                             }
                         }
                     }
-                    if ($fact !== 'DEAT' && $death_date->isOK() && Date::compare($death_date, $date) < 0) {
+                    if ($fact !== 'DEAT' && $death_date->isOK() && Date::compare($death_date, $date) <= 0) {
                         $death_day = $death_date->minimumDate()->day();
                         $event_day = $date->minimumDate()->day();
-                        if ($death_day !== 0 && $event_day !== 0 && $death_day === $event_day) {
+                        if ($death_day !== 0 && $event_day !== 0 && Date::compare($death_date, $date) === 0) {
                             // On the exact date of death?
                             // NOTE: this path is never reached.  Keep the code (translation) in case
                             // we decide to re-introduce it.
