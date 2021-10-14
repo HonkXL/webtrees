@@ -20,17 +20,16 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fig\Http\Message\StatusCodeInterface;
-use Fisharebest\Webtrees\Exceptions\HttpAccessDeniedException;
-use Fisharebest\Webtrees\Exceptions\HttpNotFoundException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpAccessDeniedException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
 use Fisharebest\Webtrees\Mime;
 use Fisharebest\Webtrees\Registry;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function str_contains;
-use function strlen;
 use function strtolower;
 
 /**
@@ -96,7 +95,7 @@ trait ModuleCustomTrait
                         return $version;
                     }
                 }
-            } catch (RequestException $ex) {
+            } catch (GuzzleException $ex) {
                 // Can't connect to the server?
             }
 

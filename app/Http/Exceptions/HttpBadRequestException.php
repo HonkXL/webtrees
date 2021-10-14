@@ -17,22 +17,22 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Exceptions;
+namespace Fisharebest\Webtrees\Http\Exceptions;
 
 use Fisharebest\Webtrees\I18N;
 
 /**
- * Exception thrown when a repository does not exist.
+ * Application level exceptions.
  */
-class RepositoryNotFoundException extends HttpNotFoundException
+class HttpBadRequestException extends HttpException
 {
     /**
-     * RepositoryNotFoundException constructor.
+     * @param string|null $message
      */
-    public function __construct()
+    public function __construct(string $message = null)
     {
-        parent::__construct(I18N::translate(
-            'This repository does not exist or you do not have permission to view it.'
-        ));
+        $message ??= I18N::translate('The server could not understand this request.');
+
+        parent::__construct($message, self::STATUS_BAD_REQUEST);
     }
 }

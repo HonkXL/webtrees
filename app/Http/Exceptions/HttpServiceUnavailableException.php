@@ -17,22 +17,20 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Exceptions;
+namespace Fisharebest\Webtrees\Http\Exceptions;
 
-use Fisharebest\Webtrees\I18N;
+use Fig\Http\Message\StatusCodeInterface;
 
 /**
- * Exception thrown when a repository cannot be accessed due to privacy rules.
+ * Exception thrown when the server is overloaded.
  */
-class RepositoryAccessDeniedException extends HttpAccessDeniedException
+class HttpServiceUnavailableException extends HttpException
 {
     /**
-     * RepositoryNotFoundException constructor.
+     * @param string $message
      */
-    public function __construct()
+    public function __construct(string $message)
     {
-        parent::__construct(I18N::translate(
-            'This repository does not exist or you do not have permission to view it.'
-        ));
+        parent::__construct($message, StatusCodeInterface::STATUS_SERVICE_UNAVAILABLE);
     }
 }

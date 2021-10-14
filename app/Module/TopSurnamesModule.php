@@ -23,12 +23,14 @@ use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Functions\FunctionsPrintLists;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
-use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\Services\ModuleService;
+use Fisharebest\Webtrees\Tree;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Str;
 use Psr\Http\Message\ServerRequestInterface;
+
+use function array_sum;
 
 /**
  * Class TopSurnamesModule
@@ -79,10 +81,10 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
     /**
      * Generate the HTML content of this block.
      *
-     * @param Tree     $tree
-     * @param int      $block_id
-     * @param string   $context
-     * @param string[] $config
+     * @param Tree          $tree
+     * @param int           $block_id
+     * @param string        $context
+     * @param array<string> $config
      *
      * @return string
      */
@@ -137,11 +139,11 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
                 $content = FunctionsPrintLists::surnameTagCloud($all_surnames, $module, true, $tree);
                 break;
             case 'list':
-                uasort($all_surnames, [$this, 'surnameCountSort']);
+                uasort($all_surnames, fn (array $a, array $b): int => array_sum($b) <=> array_sum($a));
                 $content = FunctionsPrintLists::surnameList($all_surnames, 1, true, $module, $tree);
                 break;
             case 'array':
-                uasort($all_surnames, [$this, 'surnameCountSort']);
+                uasort($all_surnames, fn (array $a, array $b): int => array_sum($b) <=> array_sum($a));
                 $content = FunctionsPrintLists::surnameList($all_surnames, 2, true, $module, $tree);
                 break;
             case 'table':
@@ -254,18 +256,5 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
             'info_style'  => $info_style,
             'info_styles' => $info_styles,
         ]);
-    }
-
-    /**
-     * Sort (lists of counts of similar) surname by total count.
-     *
-     * @param array<int> $a
-     * @param array<int> $b
-     *
-     * @return int
-     */
-    private function surnameCountSort(array $a, array $b): int
-    {
-        return array_sum($a) <=> array_sum($b);
     }
 }

@@ -21,10 +21,10 @@ namespace Fisharebest\Webtrees\Functions;
 
 use Fisharebest\Webtrees\Age;
 use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Elements\UnknownElement;
 use Fisharebest\Webtrees\Fact;
 use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\Gedcom;
-use Fisharebest\Webtrees\Elements\UnknownElement;
 use Fisharebest\Webtrees\GedcomRecord;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
@@ -176,6 +176,9 @@ class FunctionsPrintFacts
         echo '</th>';
         echo '<td>';
 
+        // Primary attributes (value/type/date/place)
+        echo '<div class=mb-2>';
+
         // Event from another record?
         if ($parent !== $record) {
             if ($parent instanceof Family) {
@@ -203,31 +206,18 @@ class FunctionsPrintFacts
             echo Registry::elementFactory()->make($fact->tag() . ':TYPE')->labelValue($type, $tree);
         }
 
-        // Print the date of this fact/event
         echo FunctionsPrint::formatFactDate($fact, $record, true, true);
 
-        // Print the place of this fact/event
         echo '<div class="place">', FunctionsPrint::formatFactPlace($fact, true, true, true), '</div>';
-        // A blank line between the primary attributes (value, date, place) and the secondary ones
+        echo '</div>';
 
-        if ($value !== '' || $fact->attribute('PLAC') !== '' || $fact->attribute('DATE') !== '') {
-            echo '<br>';
-        }
-
-        $addr = $fact->attribute('ADDR');
-        if ($addr !== '') {
-            echo Registry::elementFactory()->make($fact->tag() . ':ADDR')->labelValue($addr, $tree);
-        }
-
-        // Print the associates of this fact/event
-        if ($id !== 'asso') {
-            echo self::formatAssociateRelationship($fact);
-        }
-
-        // Print any other "2 XXXX" attributes, in the order in which they appear.
-        preg_match_all('/\n2 (' . Gedcom::REGEX_TAG . ') ?(.*)((\n[3-9].*)*)/', $fact->gedcom(), $l2_matches, PREG_SET_ORDER);
+        // Secondary attributes
+        echo '<div class="mb-2">';
+        preg_match_all('/\n2 (' . Gedcom::REGEX_TAG . ') ?(.*(?:\n3 CONT.*)*)((\n[3-9].*)*)/', $fact->gedcom(), $l2_matches, PREG_SET_ORDER);
 
         foreach ($l2_matches as $l2_match) {
+            $value = preg_replace('/\n3 CONT ?/', "\n", $l2_match[2]);
+
             switch ($l2_match[1]) {
                 case 'DATE':
                 case 'TIME':
@@ -235,7 +225,6 @@ class FunctionsPrintFacts
                 case 'HUSB':
                 case 'WIFE':
                 case 'PLAC':
-                case 'ADDR':
                 case 'ALIA':
                 case 'ASSO':
                 case '_ASSO':
@@ -261,7 +250,7 @@ class FunctionsPrintFacts
                         break;
                     }
 
-                    echo $element->labelValue($l2_match[2], $tree);
+                    echo $element->labelValue($value, $tree);
 
                     preg_match_all('/\n3 (' . Gedcom::REGEX_TAG . ') ?(.*)((\n[4-9].*)*)/', $l2_match[3], $l3_matches, PREG_SET_ORDER);
 
@@ -304,6 +293,15 @@ class FunctionsPrintFacts
                     break;
             }
         }
+        echo '</div>';
+
+        // Print the associates of this fact/event
+        if ($id !== 'asso') {
+            echo '<div class="mb-2">';
+            echo self::formatAssociateRelationship($fact);
+            echo '</div>';
+        }
+
         echo self::printFactSources($tree, $fact->gedcom(), 2);
         echo FunctionsPrint::printFactNotes($tree, $fact->gedcom(), 2);
         self::printMediaLinks($tree, $fact->gedcom(), 2);
@@ -551,7 +549,6 @@ class FunctionsPrintFacts
     public static function printMainSources(Fact $fact, int $level): void
     {
         $factrec = $fact->gedcom();
-        $parent  = $fact->record();
         $tree    = $fact->record()->tree();
 
         $nlevel = $level + 1;
@@ -652,8 +649,8 @@ class FunctionsPrintFacts
      *  This function prints the input array of SOUR sub-records built by the
      *  getSourceStructure() function.
      *
-     * @param Tree                $tree
-     * @param string[]|string[][] $textSOUR
+     * @param Tree                        $tree
+     * @param array<string|array<string>> $textSOUR
      *
      * @return string
      */
@@ -743,8 +740,7 @@ class FunctionsPrintFacts
     public static function printMainNotes(Fact $fact, int $level): void
     {
         $factrec = $fact->gedcom();
-        $parent  = $fact->record();
-        $tree    = $parent->tree();
+        $tree    = $fact->record()->tree();
 
         if ($fact->isPendingAddition()) {
             $styleadd = 'wt-new ';

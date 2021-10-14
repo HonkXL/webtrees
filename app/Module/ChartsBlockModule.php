@@ -83,10 +83,10 @@ class ChartsBlockModule extends AbstractModule implements ModuleBlockInterface
     /**
      * Generate the HTML content of this block.
      *
-     * @param Tree     $tree
-     * @param int      $block_id
-     * @param string   $context
-     * @param string[] $config
+     * @param Tree          $tree
+     * @param int           $block_id
+     * @param string        $context
+     * @param array<string> $config
      *
      * @return string
      */
@@ -207,16 +207,6 @@ class ChartsBlockModule extends AbstractModule implements ModuleBlockInterface
      * @return bool
      */
     public function loadAjax(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Can this block be shown on the user’s home page?
-     *
-     * @return bool
-     */
-    public function isUserBlock(): bool
     {
         return true;
     }

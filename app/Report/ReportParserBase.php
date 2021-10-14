@@ -21,12 +21,12 @@ namespace Fisharebest\Webtrees\Report;
 
 use DomainException;
 use Exception;
+use Fisharebest\Webtrees\Registry;
 use XMLParser;
 
 use function call_user_func;
 use function fclose;
 use function feof;
-use function fopen;
 use function fread;
 use function method_exists;
 use function sprintf;
@@ -83,11 +83,7 @@ class ReportParserBase
             }
         );
 
-        $fp = fopen($report, 'rb');
-
-        if ($fp === false) {
-            throw new Exception('Cannot open ' . $report);
-        }
+        $fp = Registry::filesystem()->root()->readStream($report);
 
         while ($data = fread($fp, 4096)) {
             if (!xml_parse($this->xml_parser, $data, feof($fp))) {
@@ -107,9 +103,9 @@ class ReportParserBase
     /**
      * XML handler for an opening (or self-closing) tag.
      *
-     * @param resource $parser The resource handler for the xml parser
-     * @param string   $name   The name of the xml element parsed
-     * @param string[] $attrs  An array of key value pairs for the attributes
+     * @param resource      $parser The resource handler for the xml parser
+     * @param string        $name   The name of the xml element parsed
+     * @param array<string> $attrs  An array of key value pairs for the attributes
      *
      * @return void
      */

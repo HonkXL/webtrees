@@ -21,12 +21,12 @@ namespace Fisharebest\Webtrees\Services;
 
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Carbon;
-use Fisharebest\Webtrees\Exceptions\HttpServerErrorException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpServerErrorException;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\Webtrees;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
@@ -35,6 +35,7 @@ use League\Flysystem\StorageAttributes;
 use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
 use League\Flysystem\ZipArchive\ZipArchiveAdapter;
+use RuntimeException;
 use ZipArchive;
 
 use function explode;
@@ -45,6 +46,7 @@ use function fopen;
 use function ftell;
 use function fwrite;
 use function rewind;
+use function strlen;
 use function unlink;
 use function version_compare;
 
@@ -144,12 +146,13 @@ class UpgradeService
      * @param string             $path
      *
      * @return int The number of bytes downloaded
+     * @throws GuzzleException
      * @throws FilesystemException
      */
     public function downloadFile(string $url, FilesystemOperator $filesystem, string $path): int
     {
         // We store the data in PHP temporary storage.
-        $tmp = fopen('php://temp', 'wb+');
+        $tmp = fopen('php://memory', 'wb+');
 
         // Read from the URL
         $client   = new Client();
@@ -158,7 +161,13 @@ class UpgradeService
 
         // Download the file to temporary storage.
         while (!$stream->eof()) {
-            fwrite($tmp, $stream->read(self::READ_BLOCK_SIZE));
+            $data = $stream->read(self::READ_BLOCK_SIZE);
+
+            $bytes_written = fwrite($tmp, $data);
+
+            if ($bytes_written !== strlen($data)) {
+                throw new RuntimeException('Unable to write to stream.  Perhaps the disk is full?');
+            }
 
             if ($this->timeout_service->isTimeNearlyUp()) {
                 $stream->close();
@@ -314,7 +323,7 @@ class UpgradeService
                     Site::setPreference('LATEST_WT_VERSION', $response->getBody()->getContents());
                     Site::setPreference('LATEST_WT_VERSION_TIMESTAMP', (string) $current_timestamp);
                 }
-            } catch (RequestException $ex) {
+            } catch (GuzzleException $ex) {
                 // Can't connect to the server?
                 // Use the existing information about latest versions.
             }

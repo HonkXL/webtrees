@@ -1,21 +1,5 @@
 msgid ""
-msgstr ""
-"Project-Id-Version: webtrees\n"
-"Report-Msgid-Bugs-To: i18n@webtrees.net\n"
-"POT-Creation-Date: 2021-08-18 10:49+0100\n"
-"PO-Revision-Date: 2021-08-18 09:13+0000\n"
-"Last-Translator: TheDutchJewel <thedutchjewel@gmail.com>\n"
-"Language-Team: Dutch <https://translate.webtrees.net/projects/webtrees/webtrees/nl/>\n"
-"Language: nl\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.9.1\n"
-"X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Basepath: ..\n"
-"X-Poedit-KeywordsList: translate;noop;plural:1,2\n"
-"X-Poedit-SearchPath-0: .\n"
+msgstr "Project-Id-Version: webtrees\nReport-Msgid-Bugs-To: i18n@webtrees.net\nPOT-Creation-Date: 2021-08-18 10:49+0100\nPO-Revision-Date: 2021-10-12 09:16+0000\nLast-Translator: TheDutchJewel <thedutchjewel@gmail.com>\nLanguage-Team: Dutch <https://translate.webtrees.net/projects/webtrees/webtrees/nl/>\nLanguage: nl\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 3.9.1\nX-Poedit-SourceCharset: utf-8\nX-Poedit-Basepath: ..\nX-Poedit-KeywordsList: translate;noop;plural:1,2\nX-Poedit-SearchPath-0: .\n"
 
 #: resources/xml/reports/ahnentafel_report.xml:161
 #: resources/xml/reports/ahnentafel_report.xml:189
@@ -199,7 +183,7 @@ msgstr "%s en hun kinderen"
 #: app/Module/ClippingsCartModule.php:513
 #, php-format
 msgid "%s and their descendants"
-msgstr "%s en hun nakomelingen"
+msgstr "%s en hun afstammelingen"
 
 #: app/Statistics/Repository/UserRepository.php:88
 #, php-format
@@ -443,7 +427,7 @@ msgstr "%s, haar huwelijkspartners en kinderen"
 #: app/Module/ClippingsCartModule.php:615
 #, php-format
 msgid "%s, her spouses and descendants"
-msgstr "%s, haar huwelijkspartners en nakomelingen"
+msgstr "%s, haar huwelijkspartners en afstammelingen"
 
 #: app/Module/ClippingsCartModule.php:623
 #, php-format
@@ -463,7 +447,7 @@ msgstr "%s, zijn huwelijkspartners en kinderen"
 #: app/Module/ClippingsCartModule.php:624
 #, php-format
 msgid "%s, his spouses and descendants"
-msgstr "%s, zijn huwelijkspartners en nakomelingen"
+msgstr "%s, zijn huwelijkspartners en afstammelingen"
 
 #: resources/views/admin/data-fix-select.phtml:33
 #: resources/views/edit/add-fact-row.phtml:33
@@ -635,7 +619,7 @@ msgstr "<standaard thema>"
 
 #: resources/views/register-page.phtml:26
 msgid "<p>Notice: By completing and submitting this form, you agree:</p><ul><li>to protect the privacy of living individuals listed on our site;</li><li>and in the text box below, to explain to whom you are related, or to provide us with information on someone who should be listed on our website.</li></ul>"
-msgstr ""
+msgstr "<p>Let op: Door dit formulier in te vullen en te verzenden, gaat u ermee akkoord:</p><ul><li>de privacy te beschermen van levende personen die op onze website zijn vermeld;</li><li>en in het onderstaande tekstvak uit te leggen met wie u verwant bent, of ons informatie te verstrekken over iemand die op onze website zou moeten worden vermeld.</li></ul>"
 
 #. I18N: a label/value pair, such as “Occupation: Farmer”. Some languages may need to change the punctuation.
 #: app/Fact.php:613 app/Functions/FunctionsPrint.php:106
@@ -660,7 +644,7 @@ msgstr "Een diagram dat de verwantschap tussen twee personen weergeeft."
 #. I18N: Description of the “FamilyBookChart” module
 #: app/Module/FamilyBookChartModule.php:103
 msgid "A chart of an individual’s ancestors and descendants, as a family book."
-msgstr "Een diagram dat de voorouders en nakomelingen van een persoon toont in de vorm van een familieboek."
+msgstr "Een diagram dat de voorouders en afstammelingen van een persoon toont in de vorm van een familieboek."
 
 #. I18N: Description of the “CompactTreeChart” module
 #: app/Module/CompactTreeChartModule.php:96
@@ -680,7 +664,7 @@ msgstr "Een diagram met de voorouders van een persoon."
 #. I18N: Description of the “DescendancyChart” module
 #: app/Module/DescendancyChartModule.php:119
 msgid "A chart of an individual’s descendants."
-msgstr "Een diagram met de nakomelingen van een persoon."
+msgstr "Een diagram met de afstammelingen van een persoon."
 
 #. I18N: Description of the “LifespansChart” module
 #: app/Module/LifespansChartModule.php:121
@@ -1897,7 +1881,7 @@ msgstr "Een andere manier om aan en af te melden."
 #. I18N: Description of the “HourglassChart” module
 #: app/Module/HourglassChartModule.php:101
 msgid "An hourglass chart of an individual’s ancestors and descendants."
-msgstr "Een zandloper diagram met de voorouders en nakomelingen van een persoon."
+msgstr "Een zandloper diagram met de voorouders en afstammelingen van een persoon."
 
 #: resources/views/edit/reorder-families.phtml:75
 msgid "An individual can have more than one set of parents.  For example, birth and adopted."
@@ -2615,7 +2599,7 @@ msgstr "Billings, Montana, Verenigde Staten"
 
 #: app/Module/CustomTagsGedcom55.php:50
 msgid "Binary data object"
-msgstr "Binair data object"
+msgstr "Binair gegevensobject"
 
 #: app/Module/BingMaps.php:82 app/Module/MapLinkBing.php:42
 msgid "Bing™ maps"
@@ -4158,7 +4142,7 @@ msgstr "Maak een nieuwe indiening aan"
 #: app/Elements/XrefSubmitter.php:61
 #: resources/views/modals/create-submitter.phtml:16
 msgid "Create a submitter"
-msgstr "Maak een nieuwe inzender aan"
+msgstr "Maak een nieuwe indiener aan"
 
 #: app/Http/RequestHandlers/UpgradeWizardPage.php:120
 msgid "Create a temporary folder…"
@@ -4401,7 +4385,7 @@ msgstr "DKIM digitale handtekening"
 #: app/Module/CustomTagsFamilyTreeMaker.php:118
 #: app/Module/CustomTagsRootsMagic.php:51
 msgid "DNA markers"
-msgstr "DNA markers"
+msgstr "DNA-markers"
 
 #. I18N: https://en.wikipedia.org/wiki/Daitch–Mokotoff_Soundex
 #: app/Soundex.php:3493 resources/views/branches-page.phtml:43
@@ -4518,11 +4502,11 @@ msgstr "Datum verschillen"
 
 #: app/Factories/ElementFactory.php:460
 msgid "Date of LDS baptism"
-msgstr "Datum LDS doop"
+msgstr "Datum van LDS-doop"
 
 #: app/Factories/ElementFactory.php:598
 msgid "Date of LDS child sealing"
-msgstr "Datum van de LDS-kindverzegeling"
+msgstr "Datum van LDS-kindverzegeling"
 
 #: app/Factories/ElementFactory.php:500
 msgid "Date of LDS confirmation"
@@ -4530,7 +4514,7 @@ msgstr "Datum van LDS-bevestiging"
 
 #: app/Factories/ElementFactory.php:520
 msgid "Date of LDS endowment"
-msgstr "Datum van de LDS-schenking"
+msgstr "Datum van LDS-schenking"
 
 #: app/Factories/ElementFactory.php:354
 msgid "Date of LDS spouse sealing"
@@ -4548,12 +4532,12 @@ msgstr "Doopdatum"
 #: app/Factories/ElementFactory.php:469
 #: resources/xml/reports/missing_facts_report.xml:212
 msgid "Date of bar mitzvah"
-msgstr "Bar mitswa datum"
+msgstr "Bar mitswa-datum"
 
 #: app/Factories/ElementFactory.php:472
 #: resources/xml/reports/missing_facts_report.xml:253
 msgid "Date of bat mitzvah"
-msgstr "Datum van de bat mitswa"
+msgstr "Bat mitswa-datum"
 
 #: app/Factories/ElementFactory.php:475
 #: resources/xml/reports/fact_sources.xml:68
@@ -4569,12 +4553,12 @@ msgstr "Datum zegening"
 
 #: app/Module/CustomTagsBrothersKeeper.php:95
 msgid "Date of brit milah"
-msgstr "Datum van brit milah"
+msgstr "Brit milah-datum"
 
 #: app/Factories/ElementFactory.php:482
 #: resources/xml/reports/missing_facts_report.xml:546
 msgid "Date of burial"
-msgstr "Datum van begrafenis"
+msgstr "Begrafenisdatum"
 
 #: app/Factories/ElementFactory.php:492
 #: resources/xml/reports/missing_facts_report.xml:170
@@ -4584,26 +4568,26 @@ msgstr "Doopdatum"
 #: app/Factories/ElementFactory.php:497
 #: resources/xml/reports/missing_facts_report.xml:294
 msgid "Date of confirmation"
-msgstr "Datum vormsel/confirmatie"
+msgstr "Datum van vormsel/confirmatie"
 
 #: app/Factories/ElementFactory.php:506
 msgid "Date of cremation"
-msgstr "Datum crematie"
+msgstr "Crematiedatum"
 
 #: app/Factories/ElementFactory.php:510
 #: resources/xml/reports/cemetery_report.xml:46
 #: resources/xml/reports/fact_sources.xml:274
 #: resources/xml/reports/missing_facts_report.xml:505
 msgid "Date of death"
-msgstr "Datum van overlijden"
+msgstr "Overlijdensdatum"
 
 #: app/Factories/ElementFactory.php:327
 msgid "Date of divorce"
-msgstr "Datum van echtscheiding"
+msgstr "Echtscheidingsdatum"
 
 #: app/Factories/ElementFactory.php:517
 msgid "Date of emigration"
-msgstr "Emigratie datum"
+msgstr "Emigratiedatum"
 
 #: app/Factories/ElementFactory.php:330
 #: resources/xml/reports/missing_facts_report.xml:336
@@ -4621,7 +4605,7 @@ msgstr "Inschrijfdatum in originele bron"
 
 #: app/Factories/ElementFactory.php:526
 msgid "Date of event"
-msgstr "Datum van gebeurtenis"
+msgstr "Gebeurtenisdatum"
 
 #: app/Factories/ElementFactory.php:536
 #: resources/xml/reports/missing_facts_report.xml:378
@@ -4630,7 +4614,7 @@ msgstr "Datum eerste communie"
 
 #: app/Factories/ElementFactory.php:543
 msgid "Date of immigration"
-msgstr "Datum van immigratie"
+msgstr "Immigratiedatum"
 
 #: app/Factories/ElementFactory.php:323 app/Factories/ElementFactory.php:489
 #: app/Factories/ElementFactory.php:620 app/Factories/ElementFactory.php:639
@@ -4653,7 +4637,7 @@ msgstr "Ondertrouwdatum"
 
 #: app/Factories/ElementFactory.php:571
 msgid "Date of naturalization"
-msgstr "Datum naturalisatie"
+msgstr "Naturalisatiedatum"
 
 #: app/Factories/ElementFactory.php:581
 msgid "Date of ordination"
@@ -5225,7 +5209,7 @@ msgstr "Afstammelingen"
 
 #: app/Factories/ElementFactory.php:512
 msgid "Descendants interest"
-msgstr "Interesse in nakomelingen"
+msgstr "Interesse in afstammelingen"
 
 #: resources/xml/reports/descendancy_report.xml:42
 msgid "Descendants of "
@@ -5590,11 +5574,11 @@ msgstr "Wijzig naam"
 #: resources/views/family-page-menu.phtml:76
 #: resources/views/individual-page-menu.phtml:124
 msgid "Edit the raw GEDCOM"
-msgstr "Wijzig onbewerkte GEDCOM-record"
+msgstr "Wijzig onbewerkt GEDCOM-record"
 
 #: app/Http/RequestHandlers/EditNotePage.php:59
 msgid "Edit the shared note"
-msgstr "Wijzig een gedeelde notitie"
+msgstr "Wijzig gedeelde notitie"
 
 #: app/Module/StoriesModule.php:310
 #: resources/views/modules/stories/tab.phtml:27
@@ -5738,7 +5722,7 @@ msgstr "Werkgever"
 
 #: resources/views/record-page-menu-clipboard.phtml:36
 msgid "Empty the clipboard"
-msgstr ""
+msgstr "Klembord leegmaken"
 
 #: app/Module/ClippingsCartModule.php:205
 msgid "Empty the clippings cart"
@@ -5757,7 +5741,7 @@ msgstr "Door deze optie in te schakelen worden alle bezoekers gedwongen aan te m
 
 #: resources/views/modules/lifespans-chart/page.phtml:63
 msgid "End year"
-msgstr "Eind Jaar"
+msgstr "Eindjaar"
 
 #: resources/xml/reports/change_report.xml:6
 msgid "Ending range of change dates"
@@ -5967,7 +5951,7 @@ msgstr "Extra informatie"
 
 #: app/Module/CustomTagsBrothersKeeper.php:98
 msgid "Eye color"
-msgstr "Kleur ogen"
+msgstr "Oogkleur"
 
 #. I18N: Name of a theme.
 #: app/Module/FabTheme.php:39
@@ -7003,7 +6987,7 @@ msgstr "Generaties van voorouders"
 
 #: app/Factories/ElementFactory.php:736
 msgid "Generations of descendants"
-msgstr "Generaties van nakomelingen"
+msgstr "Generaties van afstammelingen"
 
 #. I18N: https://www.geonames.org
 #: app/Module/GeonamesAutocomplete.php:57
@@ -7253,7 +7237,7 @@ msgstr "HTML"
 
 #: app/Module/CustomTagsBrothersKeeper.php:100
 msgid "Hair color"
-msgstr "Kleur haar"
+msgstr "Haarkleur"
 
 #. I18N: Name of a country or state
 #: app/Statistics/Service/CountryService.php:243
@@ -7713,7 +7697,7 @@ msgstr "Als u een groot aantal mediabestanden heeft, kunt u ze organiseren in ma
 
 #: resources/views/admin/trees-import.phtml:96
 msgid "If you have created media objects in webtrees, and have subsequently edited this GEDCOM file using genealogy software that deletes media objects, then select this option to merge the current media objects with the new GEDCOM file."
-msgstr "Als u mediaobjecten hebt gecreëerd in webtrees, en uw gedcom off-line gewijzigd hebt met een programma dat mediaobjecten verwijdert, vink dan dit vakje aan om uw huidige mediaobjecten samen te voegen met het nieuwe GEDCOM bestand."
+msgstr "Als u mediaobjecten hebt gecreëerd in webtrees, en uw gedcom off-line gewijzigd hebt met een programma dat mediaobjecten verwijdert, vink dan dit vakje aan om uw huidige mediaobjecten samen te voegen met het nieuwe GEDCOM-bestand."
 
 #: resources/views/admin/site-preferences.phtml:39
 msgid "If you select a different folder, you must also move all files (except config.ini.php, index.php, and .htaccess) from the existing folder to the new folder."
@@ -8403,7 +8387,7 @@ msgstr "LDS-doop"
 
 #: app/Factories/ElementFactory.php:597
 msgid "LDS child sealing"
-msgstr "LDS kind verzegeling"
+msgstr "LDS-kindverzegeling"
 
 #: resources/views/admin/tags.phtml:713
 msgid "LDS church"
@@ -8415,7 +8399,7 @@ msgstr "LDS-bevestiging"
 
 #: app/Factories/ElementFactory.php:519
 msgid "LDS endowment"
-msgstr "LDS-gave"
+msgstr "LDS-schenking"
 
 #: app/Factories/ElementFactory.php:353
 msgid "LDS spouse sealing"
@@ -9231,7 +9215,7 @@ msgstr "Huwelijkse voorwaarden"
 
 #: app/Module/CustomTagsAldfaer.php:53
 msgid "Marriage type unknown"
-msgstr "Onbekend type huwelijk"
+msgstr "Onbekend soort huwelijk"
 
 #. I18N: Name of a module/report
 #: app/Module/MarriageReportModule.php:40
@@ -11069,7 +11053,7 @@ msgstr "Fonetische naam"
 
 #: app/Factories/ElementFactory.php:295 app/Factories/ElementFactory.php:426
 msgid "Phonetic place"
-msgstr "Plaatsnaam fonetisch"
+msgstr "Fonetische plaatsnaam"
 
 #. I18N: search using “sounds like”, rather than exact spelling
 #: app/Http/RequestHandlers/SearchPhoneticPage.php:100
@@ -11137,7 +11121,7 @@ msgstr "Hiërarchie van plaatsen"
 
 #: app/Module/CustomTagsPhpGedView.php:56
 msgid "Place in Hebrew"
-msgstr "Plaatsnaam in Hebreeuws"
+msgstr "Plaatsnaam in het Hebreeuws"
 
 #: resources/views/modules/place-hierarchy/list.phtml:14
 msgid "Place list"
@@ -11188,12 +11172,12 @@ msgstr "Doopplaats"
 #: app/Factories/ElementFactory.php:470
 #: resources/xml/reports/missing_facts_report.xml:223
 msgid "Place of bar mitzvah"
-msgstr "Plaats van de bar mitswa"
+msgstr "Plaats van bar mitswa"
 
 #: app/Factories/ElementFactory.php:473
 #: resources/xml/reports/missing_facts_report.xml:264
 msgid "Place of bat mitzvah"
-msgstr "Plaats van de bat mitswa"
+msgstr "Plaats van bat mitswa"
 
 #: app/Factories/ElementFactory.php:477
 #: resources/xml/reports/fact_sources.xml:273
@@ -11822,7 +11806,7 @@ msgstr "Record-ID-nummer"
 
 #: app/Factories/ElementFactory.php:594 app/Factories/ElementFactory.php:727
 msgid "Record file number"
-msgstr "Record bestandsnummer"
+msgstr "Recordbestandsnummer"
 
 #: resources/views/modules/fix-search-and-replace/options.phtml:65
 #: resources/views/search-general-page.phtml:61
@@ -11907,25 +11891,25 @@ msgstr "Verwante personen"
 #: app/Module/CustomTagsPhpGedView.php:55 app/Module/CustomTagsWebtrees.php:56
 #: app/Module/CustomTagsWebtrees.php:70
 msgid "Relationship"
-msgstr "Relatie"
+msgstr "Verwantschap"
 
 #: app/Module/CustomTagsFamilyTreeMaker.php:55
 #: app/Module/CustomTagsLegacy.php:58
 msgid "Relationship to father"
-msgstr "Relatie met vader"
+msgstr "Verwantschap met vader"
 
 #: app/Module/RelationshipsChartModule.php:147
 msgid "Relationship to me"
-msgstr "Relatie met mij"
+msgstr "Verwantschap met mij"
 
 #: app/Module/CustomTagsFamilyTreeMaker.php:56
 #: app/Module/CustomTagsLegacy.php:59
 msgid "Relationship to mother"
-msgstr "Relatie met moeder"
+msgstr "Verwantschap met moeder"
 
 #: app/Factories/ElementFactory.php:532
 msgid "Relationship to parents"
-msgstr "Verwantschap met de ouders"
+msgstr "Verwantschap met ouders"
 
 #: app/Module/RelationshipsChartModule.php:336
 #, php-format
@@ -11945,7 +11929,7 @@ msgstr "Verwantschap"
 #: app/Module/RelationshipsChartModule.php:257
 #, php-format
 msgid "Relationships between %1$s and %2$s"
-msgstr "Relaties tussen %1$s en %2$s"
+msgstr "Verwantschappen tussen %1$s en %2$s"
 
 #: app/Module/CustomTagsGenPluswin.php:72
 #: app/Module/CustomTagsGenPluswin.php:104
@@ -13251,7 +13235,7 @@ msgstr "Toon miniatuurafbeeldingen in diagrammen en overzichten."
 #: app/Http/RequestHandlers/TreePrivacyPage.php:93
 #: resources/views/modals/restriction-fields.phtml:21
 msgid "Show to managers"
-msgstr "Toon aan de managers"
+msgstr "Toon aan managers"
 
 #: app/Auth.php:532 app/Auth.php:545 app/Elements/RestrictionNotice.php:76
 #: app/Functions/FunctionsPrintFacts.php:614
@@ -13408,7 +13392,7 @@ msgstr "Sivan"
 #: resources/views/layouts/administration.phtml:47
 #: resources/views/layouts/default.phtml:76
 msgid "Skip to content"
-msgstr "Spring naar de inhoud"
+msgstr "Spring naar inhoud"
 
 #: app/Elements/RelationIsDescriptor.php:125
 msgid "Slave"
@@ -13713,7 +13697,7 @@ msgstr "Diavoorstelling beginnen als pagina geladen is"
 
 #: resources/views/modules/lifespans-chart/page.phtml:54
 msgid "Start year"
-msgstr "Begin Jaar"
+msgstr "Beginjaar"
 
 #: resources/xml/reports/change_report.xml:5
 msgid "Starting range of change dates"
@@ -13824,7 +13808,7 @@ msgstr "Ingediend, maar nog niet vrijgegeven"
 #: resources/views/modals/submission-fields.phtml:14
 #: resources/views/modules/recent_changes/changes-table.phtml:74
 msgid "Submitter"
-msgstr "Inzender"
+msgstr "Indiener"
 
 #: resources/views/lists/submitters-table.phtml:67
 msgid "Submitter name"
@@ -16004,7 +15988,7 @@ msgstr "Gebruik silhouetten"
 
 #: app/Http/RequestHandlers/CopyFact.php:79
 msgid "Use the “edit“ menu to paste this into another record."
-msgstr ""
+msgstr "Gebruik het \"wijzig\"-menu om dit in een ander record te plakken."
 
 #: resources/views/register-page.phtml:90
 msgid "Use this field to tell the site administrator why you are requesting an account and how you are related to the genealogy displayed on this site. You can also use this to enter any other comments you may have for the site administrator."
@@ -16395,7 +16379,7 @@ msgstr "Wie is online"
 
 #: resources/views/admin/data-fix-page.phtml:82
 msgid "Why does this list include records that do not need to be updated?"
-msgstr "Waarom bevat deze lijst records die niet die niet bijgewerkt dienen te worden?"
+msgstr "Waarom bevat deze lijst records die niet bijgewerkt dienen te worden?"
 
 #: resources/views/lists/families-table.phtml:169
 msgid "Widow"
@@ -20811,7 +20795,7 @@ msgstr[1] "±%s jaar"
 #: app/Http/RequestHandlers/CopyFact.php:77
 #, php-format
 msgid "“%s“ has been copied to the clipboard."
-msgstr ""
+msgstr "\"%s\" is naar het klembord gekopieerd."
 
 #. I18N: %s is the name of a genealogy record
 #: app/Http/RequestHandlers/PendingChangesAcceptRecord.php:65

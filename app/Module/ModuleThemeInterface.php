@@ -33,7 +33,7 @@ interface ModuleThemeInterface extends ModuleInterface
      *
      * @param Individual $individual
      *
-     * @return Menu[]
+     * @return array<Menu>
      */
     public function individualBoxMenu(Individual $individual): array;
 
@@ -49,16 +49,16 @@ interface ModuleThemeInterface extends ModuleInterface
      *
      * @param string $parameter_name
      *
-     * @return string|int|float
+     * @return string
      */
-    public function parameter($parameter_name);
+    public function parameter(string $parameter_name): string;
 
     /**
      * Generate a list of items for the main menu.
      *
      * @param Tree|null $tree
      *
-     * @return Menu[]
+     * @return array<Menu>
      */
     public function genealogyMenu(?Tree $tree): array;
 
@@ -67,7 +67,7 @@ interface ModuleThemeInterface extends ModuleInterface
      *
      * @param Tree|null $tree
      *
-     * @return Menu[]
+     * @return array<Menu>
      */
     public function userMenu(?Tree $tree): array;
 

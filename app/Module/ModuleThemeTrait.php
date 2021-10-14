@@ -124,7 +124,7 @@ trait ModuleThemeTrait
      *
      * @param Individual $individual
      *
-     * @return Menu[]
+     * @return array<Menu>
      */
     public function individualBoxMenu(Individual $individual): array
     {
@@ -139,7 +139,7 @@ trait ModuleThemeTrait
      *
      * @param Individual $individual
      *
-     * @return Menu[]
+     * @return array<Menu>
      */
     public function individualBoxMenuCharts(Individual $individual): array
     {
@@ -163,7 +163,7 @@ trait ModuleThemeTrait
      *
      * @param Individual $individual
      *
-     * @return Menu[]
+     * @return array<Menu>
      */
     public function individualBoxMenuFamilyLinks(Individual $individual): array
     {
@@ -460,9 +460,9 @@ trait ModuleThemeTrait
      *
      * @param string $parameter_name
      *
-     * @return string|int|float
+     * @return string
      */
-    public function parameter($parameter_name)
+    public function parameter($parameter_name): string
     {
         return '';
     }
@@ -472,7 +472,7 @@ trait ModuleThemeTrait
      *
      * @param Tree|null $tree
      *
-     * @return Menu[]
+     * @return array<Menu>
      */
     public function genealogyMenu(?Tree $tree): array
     {
@@ -491,7 +491,7 @@ trait ModuleThemeTrait
     /**
      * Create the genealogy menu.
      *
-     * @param Menu[] $menus
+     * @param array<Menu> $menus
      *
      * @return string
      */
@@ -507,7 +507,7 @@ trait ModuleThemeTrait
      *
      * @param Tree|null $tree
      *
-     * @return Menu[]
+     * @return array<Menu>
      */
     public function userMenu(?Tree $tree): array
     {

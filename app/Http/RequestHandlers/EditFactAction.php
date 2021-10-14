@@ -26,12 +26,12 @@ use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\GedcomEditService;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 use function assert;
-use function explode;
 use function is_string;
 use function redirect;
 
@@ -114,6 +114,9 @@ class EditFactAction implements RequestHandlerInterface
             }
         }
 
-        return redirect($params['url'] ?? $record->url());
+        $base_url = $request->getAttribute('base_url');
+        $url      = Validator::parsedBody($request)->isLocalUrl($base_url)->string('url') ?? $record->url();
+
+        return redirect($url);
     }
 }

@@ -136,7 +136,7 @@ class DebugBar
      *
      * @return void
      */
-    public static function addMessage(string $message, $label = 'info', $isString = true): void
+    public static function addMessage(string $message, string $label = 'info', bool $isString = true): void
     {
         if (self::$debugbar instanceof StandardDebugBar) {
             $collector = self::$debugbar->getCollector('messages');
@@ -186,8 +186,8 @@ class DebugBar
     /**
      * Log an exception/throwable
      *
-     * @param string  $view
-     * @param mixed[] $data
+     * @param string       $view
+     * @param array<mixed> $data
      *
      * @return void
      */

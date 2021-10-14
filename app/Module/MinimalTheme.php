@@ -44,21 +44,15 @@ class MinimalTheme extends AbstractModule implements ModuleThemeInterface
      *
      * @param string $parameter_name
      *
-     * @return string|int|float
+     * @return string
      */
-    public function parameter($parameter_name)
+    public function parameter($parameter_name): string
     {
         $parameters = [
             'chart-background-f'             => 'dddddd',
             'chart-background-m'             => 'cccccc',
             'chart-background-u'             => 'eeeeee',
-            'chart-box-x'                    => 260,
-            'chart-box-y'                    => 85,
             'chart-font-color'               => '000000',
-            'chart-spacing-x'                => 5,
-            'chart-spacing-y'                => 10,
-            'compact-chart-box-x'            => 240,
-            'compact-chart-box-y'            => 50,
             'distribution-chart-high-values' => '555555',
             'distribution-chart-low-values'  => 'cccccc',
             'distribution-chart-no-values'   => 'ffffff',

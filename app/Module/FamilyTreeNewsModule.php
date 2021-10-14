@@ -21,7 +21,7 @@ namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Carbon;
-use Fisharebest\Webtrees\Exceptions\HttpAccessDeniedException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpAccessDeniedException;
 use Fisharebest\Webtrees\Http\RequestHandlers\TreePage;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Services\HtmlService;
@@ -69,10 +69,10 @@ class FamilyTreeNewsModule extends AbstractModule implements ModuleBlockInterfac
     /**
      * Generate the HTML content of this block.
      *
-     * @param Tree     $tree
-     * @param int      $block_id
-     * @param string   $context
-     * @param string[] $config
+     * @param Tree          $tree
+     * @param int           $block_id
+     * @param string        $context
+     * @param array<string> $config
      *
      * @return string
      */
