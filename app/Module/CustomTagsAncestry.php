@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,7 +21,7 @@ namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Contracts\ElementInterface;
 use Fisharebest\Webtrees\Elements\CustomElement;
-use Fisharebest\Webtrees\Elements\CustomEvent;
+use Fisharebest\Webtrees\Elements\CustomFact;
 use Fisharebest\Webtrees\I18N;
 
 /**
@@ -49,7 +49,7 @@ class CustomTagsAncestry extends AbstractModule implements ModuleConfigInterface
     {
         return [
             'INDI:*:SOUR:_APID' => new CustomElement(I18N::translate('Ancestry PID')),
-            'INDI:_EMPLOY'      => new CustomEvent(I18N::translate('Occupation')),
+            'INDI:_EMPLOY'      => new CustomFact(I18N::translate('Occupation')),
         ];
     }
 

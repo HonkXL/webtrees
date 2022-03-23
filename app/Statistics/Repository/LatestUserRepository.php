@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,24 +20,25 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Statistics\Repository;
 
 use Fisharebest\Webtrees\Auth;
-use Fisharebest\Webtrees\Carbon;
 use Fisharebest\Webtrees\Contracts\UserInterface;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\UserService;
 use Fisharebest\Webtrees\Statistics\Repository\Interfaces\LatestUserRepositoryInterface;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 
+use function date;
+use function e;
+use function str_replace;
+
 /**
  * A repository providing methods for latest user related statistics.
  */
 class LatestUserRepository implements LatestUserRepositoryInterface
 {
-    /**
-     * @var UserService
-     */
-    private $user_service;
+    private UserService $user_service;
 
     /**
      * LatestUserRepository constructor.
@@ -87,9 +88,7 @@ class LatestUserRepository implements LatestUserRepositoryInterface
             $user_id = (int) $user_id;
         }
 
-        $user = $this->user_service->find($user_id) ?? Auth::user();
-
-        return $user;
+        return $this->user_service->find($user_id) ?? Auth::user();
     }
 
     /**
@@ -119,7 +118,7 @@ class LatestUserRepository implements LatestUserRepositoryInterface
         $user      = $this->latestUserQuery();
         $timestamp = (int) $user->getPreference(UserInterface::PREF_TIMESTAMP_REGISTERED);
 
-        return Carbon::createFromTimestamp($timestamp)->format(strtr($format, ['%' => '']));
+        return Registry::timestampFactory()->make($timestamp)->format(strtr($format, ['%' => '']));
     }
 
     /**

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -62,8 +62,10 @@ use Fisharebest\Webtrees\Elements\CopyrightSourceData;
 use Fisharebest\Webtrees\Elements\CountOfChildren;
 use Fisharebest\Webtrees\Elements\CountOfMarriages;
 use Fisharebest\Webtrees\Elements\Cremation;
-use Fisharebest\Webtrees\Elements\CustomEvent;
+use Fisharebest\Webtrees\Elements\CustomElement;
 use Fisharebest\Webtrees\Elements\CustomFact;
+use Fisharebest\Webtrees\Elements\CustomFamilyEvent;
+use Fisharebest\Webtrees\Elements\CustomIndividualEvent;
 use Fisharebest\Webtrees\Elements\DateLdsOrd;
 use Fisharebest\Webtrees\Elements\DateValue;
 use Fisharebest\Webtrees\Elements\Death;
@@ -78,7 +80,9 @@ use Fisharebest\Webtrees\Elements\EventAttributeType;
 use Fisharebest\Webtrees\Elements\EventOrFactClassification;
 use Fisharebest\Webtrees\Elements\EventsRecorded;
 use Fisharebest\Webtrees\Elements\EventTypeCitedFrom;
+use Fisharebest\Webtrees\Elements\FamilyCensus;
 use Fisharebest\Webtrees\Elements\FamilyRecord;
+use Fisharebest\Webtrees\Elements\FamilyResidence;
 use Fisharebest\Webtrees\Elements\FileName;
 use Fisharebest\Webtrees\Elements\FirstCommunion;
 use Fisharebest\Webtrees\Elements\Form;
@@ -193,6 +197,7 @@ use Fisharebest\Webtrees\Elements\XrefSubmission;
 use Fisharebest\Webtrees\Elements\XrefSubmitter;
 use Fisharebest\Webtrees\I18N;
 
+use function array_merge;
 use function preg_match;
 use function strpos;
 
@@ -251,7 +256,7 @@ class ElementFactory implements ElementFactoryInterface
     private function findElementByWildcard(string $tag): ?ElementInterface
     {
         foreach ($this->elements() as $tags => $element) {
-            if (strpos($tags, '*') !== false) {
+            if (str_contains($tags, '*')) {
                 $regex = '/^' . strtr($tags, ['*' => '[^:]+']) . '$/';
 
                 if (preg_match($regex, $tag)) {
@@ -317,7 +322,7 @@ class ElementFactory implements ElementFactoryInterface
             'FAM:*:WIFE:AGE'           => new AgeAtEvent(I18N::translate('Wife’s age')),
             'FAM:*:WWW'                => new AddressWebPage(I18N::translate('URL')),
             'FAM:ANUL'                 => new Annulment(I18N::translate('Annulment')),
-            'FAM:CENS'                 => new Census(I18N::translate('Family census')),
+            'FAM:CENS'                 => new FamilyCensus(I18N::translate('Family census')),
             'FAM:CHAN'                 => new Change(I18N::translate('Last change')),
             'FAM:CHAN:DATE'            => new ChangeDate(I18N::translate('Date of last change')),
             'FAM:CHAN:DATE:TIME'       => new TimeValue(I18N::translate('Time of last change')),
@@ -327,8 +332,8 @@ class ElementFactory implements ElementFactoryInterface
             'FAM:DIVF'                 => new DivorceFiled(I18N::translate('Divorce filed')),
             'FAM:ENGA'                 => new Engagement(I18N::translate('Engagement')),
             'FAM:ENGA:DATE'            => new DateValue(I18N::translate('Date of engagement')),
-            'FAM:ENGA:PLACE'           => new PlaceName(I18N::translate('Place of engagement')),
-            'FAM:EVEN'                 => new CustomEvent(I18N::translate('Event')),
+            'FAM:ENGA:PLAC'            => new PlaceName(I18N::translate('Place of engagement')),
+            'FAM:EVEN'                 => new CustomFamilyEvent(I18N::translate('Event')),
             'FAM:EVEN:TYPE'            => new EventAttributeType(I18N::translate('Type of event')),
             'FAM:HUSB'                 => new XrefIndividual(I18N::translate('Husband')),
             'FAM:MARB'                 => new MarriageBanns(I18N::translate('Marriage banns')),
@@ -346,7 +351,7 @@ class ElementFactory implements ElementFactoryInterface
             'FAM:OBJE'                 => new XrefMedia(I18N::translate('Media object')),
             'FAM:REFN'                 => new UserReferenceNumber(I18N::translate('Reference number')),
             'FAM:REFN:TYPE'            => new UserReferenceType(I18N::translate('Type of reference number')),
-            'FAM:RESI'                 => new Residence(I18N::translate('Family residence')),
+            'FAM:RESI'                 => new FamilyResidence(I18N::translate('Family residence')),
             'FAM:RESN'                 => new RestrictionNotice(I18N::translate('Restriction')),
             'FAM:RIN'                  => new AutomatedRecordId(I18N::translate('Record ID number')),
             'FAM:SLGS'                 => new LdsSpouseSealing(I18N::translate('LDS spouse sealing')),
@@ -521,7 +526,7 @@ class ElementFactory implements ElementFactoryInterface
             'INDI:ENDL:STAT'           => new LdsEndowmentDateStatus(I18N::translate('Status')),
             'INDI:ENDL:STAT:DATE'      => new ChangeDate(I18N::translate('Status change date')),
             'INDI:ENDL:TEMP'           => new TempleCode(I18N::translate('Temple')),
-            'INDI:EVEN'                => new CustomEvent(I18N::translate('Event')),
+            'INDI:EVEN'                => new CustomIndividualEvent(I18N::translate('Event')),
             'INDI:EVEN:DATE'           => new DateValue(I18N::translate('Date of event')),
             'INDI:EVEN:PLAC'           => new PlaceName(I18N::translate('Place of event')),
             'INDI:EVEN:TYPE'           => new EventAttributeType(I18N::translate('Type of event')),
@@ -614,7 +619,7 @@ class ElementFactory implements ElementFactoryInterface
             'INDI:SUBM'                => new XrefSubmitter(I18N::translate('Submitter')),
             'INDI:TITL'                => new NobilityTypeTitle(I18N::translate('Title')),
             'INDI:WILL'                => new Will(I18N::translate('Will')),
-            'NOTE'                     => new NoteRecord(I18N::translate('Note')),
+            'NOTE'                     => new NoteRecord(I18N::translate('Shared note')),
             'NOTE:CHAN'                => new Change(I18N::translate('Last change')),
             'NOTE:CHAN:DATE'           => new ChangeDate(I18N::translate('Date of last change')),
             'NOTE:CHAN:DATE:TIME'      => new TimeValue(I18N::translate('Time of last change')),
@@ -634,6 +639,7 @@ class ElementFactory implements ElementFactoryInterface
             'NOTE:SOUR:PAGE'           => new WhereWithinSource(I18N::translate('Citation details')),
             'NOTE:SOUR:QUAY'           => new CertaintyAssessment(I18N::translate('Quality of data')),
             'OBJE'                     => new MediaRecord(I18N::translate('Media object')),
+            'OBJE:BLOB'                => new CustomElement(I18N::translate('Binary data object')),
             'OBJE:CHAN'                => new Change(I18N::translate('Last change')),
             'OBJE:CHAN:DATE'           => new ChangeDate(I18N::translate('Date of last change')),
             'OBJE:CHAN:DATE:TIME'      => new TimeValue(I18N::translate('Time of last change')),

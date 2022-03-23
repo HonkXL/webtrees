@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,12 +19,11 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
-use Fisharebest\Webtrees\Carbon;
-use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\GedcomRecord;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\UserService;
 use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\User;
@@ -64,8 +63,7 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
     private const LIMIT_LOW  = 10;
     private const LIMIT_HIGH = 20;
 
-    /** @var UserService */
-    private $user_service;
+    private UserService $user_service;
 
     /**
      * RecentChangesModule constructor.
@@ -100,10 +98,10 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
     }
 
     /**
-     * @param Tree   $tree
-     * @param int    $block_id
-     * @param string $context
-     * @param array  $config
+     * @param Tree                 $tree
+     * @param int                  $block_id
+     * @param string               $context
+     * @param array<string,string> $config
      *
      * @return string
      */
@@ -295,7 +293,7 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
      * @param Tree $tree Changes for which tree
      * @param int  $days Number of days
      *
-     * @return Collection<stdClass> List of records with changes
+     * @return Collection<array-key,stdClass> List of records with changes
      */
     private function getRecentChangesFromDatabase(Tree $tree, int $days): Collection
     {
@@ -303,7 +301,7 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
             ->where('gedcom_id', '=', $tree->id())
             ->where('status', '=', 'accepted')
             ->where('new_gedcom', '<>', '')
-            ->where('change_time', '>', Carbon::now()->subDays($days))
+            ->where('change_time', '>', Registry::timestampFactory()->now()->subtractDays($days)->toDateTimeString())
             ->groupBy(['xref'])
             ->select(new Expression('MAX(change_id) AS recent_change_id'));
 
@@ -313,14 +311,14 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
 
         return $query
             ->get()
-            ->map(function (stdClass $row) use ($tree): stdClass {
+            ->map(function (object $row) use ($tree): object {
                 return (object) [
                     'record' => Registry::gedcomRecordFactory()->make($row->xref, $tree, $row->new_gedcom),
-                    'time'   => Carbon::create($row->change_time)->local(),
+                    'time'   => Registry::timestampFactory()->fromString($row->change_time),
                     'user'   => $this->user_service->find((int) $row->user_id),
                 ];
             })
-            ->filter(static function (stdClass $row): bool {
+            ->filter(static function (object $row): bool {
                 return $row->record instanceof GedcomRecord && $row->record->canShow();
             });
     }
@@ -331,11 +329,11 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
      * @param Tree $tree Changes for which tree
      * @param int  $days Number of days
      *
-     * @return Collection<stdClass> List of records with changes
+     * @return Collection<array-key,stdClass> List of records with changes
      */
     private function getRecentChangesFromGenealogy(Tree $tree, int $days): Collection
     {
-        $julian_day = Carbon::now()->julianDay() - $days;
+        $julian_day = Registry::timestampFactory()->now()->subtractDays($days)->julianDay();
 
         $individuals = DB::table('dates')
             ->where('d_file', '=', $tree->id())
@@ -366,7 +364,7 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
             ->filter(Family::accessFilter());
 
         return $individuals->merge($families)
-            ->map(function (GedcomRecord $record): stdClass {
+            ->map(function (GedcomRecord $record): object {
                 $user = $this->user_service->findByUserName($record->lastChangeUser());
 
                 return (object) [

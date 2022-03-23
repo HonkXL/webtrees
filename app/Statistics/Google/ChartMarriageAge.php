@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -28,36 +28,32 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use stdClass;
 
+use function round;
+use function view;
+
 /**
  * A chart showing the marriage ages by century.
  */
 class ChartMarriageAge
 {
-    /**
-     * @var Tree
-     */
-    private $tree;
+    private Tree $tree;
+
+    private CenturyService $century_service;
 
     /**
-     * @var CenturyService
+     * @param CenturyService $century_service
+     * @param Tree           $tree
      */
-    private $century_service;
-
-    /**
-     * Constructor.
-     *
-     * @param Tree $tree
-     */
-    public function __construct(Tree $tree)
+    public function __construct(CenturyService $century_service, Tree $tree)
     {
         $this->tree            = $tree;
-        $this->century_service = new CenturyService();
+        $this->century_service = $century_service;
     }
 
     /**
      * Returns the related database records.
      *
-     * @return Collection<stdClass>
+     * @return Collection<array-key,stdClass>
      */
     private function queryRecords(): Collection
     {
@@ -112,7 +108,7 @@ class ChartMarriageAge
         return $male->unionAll($female)
             ->orderBy('century')
             ->get()
-            ->map(static function (stdClass $row): stdClass {
+            ->map(static function (object $row): object {
                 return (object) [
                     'age'     => (float) $row->age,
                     'century' => (int) $row->century,
@@ -164,7 +160,9 @@ class ChartMarriageAge
                 'title' => I18N::translate('Age'),
             ],
             'hAxis' => [
-                'title' => I18N::translate('Century'),
+                'showTextEvery' => 1,
+                'slantedText'   => false,
+                'title'         => I18N::translate('Century'),
             ],
             'colors' => [
                 '#84beff',

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,11 +33,11 @@ class Family extends GedcomRecord
 
     protected const ROUTE_NAME = FamilyPage::class;
 
-    /** @var Individual|null The husband (or first spouse for same-sex couples) */
-    private $husb;
+    // The husband (or first spouse for same-sex couples)
+    private ?Individual $husb = null;
 
-    /** @var Individual|null The wife (or second spouse for same-sex couples) */
-    private $wife;
+    // The wife (or second spouse for same-sex couples)
+    private ?Individual $wife = null;
 
     /**
      * Create a GedcomRecord object from raw GEDCOM data.
@@ -198,7 +198,7 @@ class Family extends GedcomRecord
      *
      * @param int|null $access_level
      *
-     * @return Collection<Individual>
+     * @return Collection<int,Individual>
      */
     public function spouses(int $access_level = null): Collection
     {
@@ -215,7 +215,7 @@ class Family extends GedcomRecord
      *
      * @param int|null $access_level
      *
-     * @return Collection<Individual>
+     * @return Collection<int,Individual>
      */
     public function children(int $access_level = null): Collection
     {
@@ -347,7 +347,7 @@ class Family extends GedcomRecord
      */
     public function getAllNames(): array
     {
-        if ($this->getAllNames === null) {
+        if ($this->getAllNames === []) {
             // Check the script used by each name, so we can match cyrillic with cyrillic, greek with greek, etc.
             $husb_names = [];
             if ($this->husb) {

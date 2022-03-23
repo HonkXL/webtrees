@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -31,7 +31,6 @@ use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use stdClass;
 
 use function addcslashes;
 use function e;
@@ -106,7 +105,7 @@ class FixLevel0MediaData implements RequestHandlerInterface
             ->where('descriptive_title', 'LIKE', '%' . addcslashes($request->getQueryParams()['search']['value'] ?? '', '\\%_') . '%')
             ->select(['media.m_file', 'media.m_id', 'media.m_gedcom', 'individuals.i_id', 'individuals.i_gedcom']);
 
-        return $this->datatables_service->handleQuery($request, $query, [], [], function (stdClass $datum) use ($ignore_facts): array {
+        return $this->datatables_service->handleQuery($request, $query, [], [], function (object $datum) use ($ignore_facts): array {
             $tree       = $this->tree_service->find((int) $datum->m_file);
             $media      = Registry::mediaFactory()->make($datum->m_id, $tree, $datum->m_gedcom);
             $individual = Registry::individualFactory()->make($datum->i_id, $tree, $datum->i_gedcom);

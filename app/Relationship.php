@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -126,7 +126,7 @@ class Relationship
      */
     public function adopted(): Relationship
     {
-        $this->matchers[] = fn (array $nodes): bool => count($nodes) > 2 && $nodes[2]
+        $this->matchers[] = static fn (array $nodes): bool => count($nodes) > 2 && $nodes[2]
                 ->facts(['FAMC'], false, Auth::PRIV_HIDE)
                 ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === 'adopted');
 
@@ -138,7 +138,7 @@ class Relationship
      */
     public function adoptive(): Relationship
     {
-        $this->matchers[] = fn (array $nodes): bool => $nodes[0]
+        $this->matchers[] = static fn (array $nodes): bool => $nodes[0]
             ->facts(['FAMC'], false, Auth::PRIV_HIDE)
             ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === 'adopted');
 
@@ -346,7 +346,7 @@ class Relationship
      */
     public function fostered(): Relationship
     {
-        $this->matchers[] = fn (array $nodes): bool => count($nodes) > 2 && $nodes[2]
+        $this->matchers[] = static fn (array $nodes): bool => count($nodes) > 2 && $nodes[2]
                 ->facts(['FAMC'], false, Auth::PRIV_HIDE)
                 ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === 'foster');
 
@@ -358,7 +358,7 @@ class Relationship
      */
     public function fostering(): Relationship
     {
-        $this->matchers[] = fn (array $nodes): bool => $nodes[0]
+        $this->matchers[] = static fn (array $nodes): bool => $nodes[0]
             ->facts(['FAMC'], false, Auth::PRIV_HIDE)
             ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === 'foster');
 

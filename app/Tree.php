@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,11 +27,12 @@ use Illuminate\Database\Capsule\Manager as DB;
 use InvalidArgumentException;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemOperator;
-use stdClass;
 
 use function app;
 use function array_key_exists;
+use function assert;
 use function date;
+use function is_string;
 use function str_starts_with;
 use function strtoupper;
 use function substr_replace;
@@ -100,29 +101,26 @@ class Tree
         'WORD_WRAPPED_NOTES'           => '0',
     ];
 
-    /** @var int The tree's ID number */
-    private $id;
+    private int $id;
 
-    /** @var string The tree's name */
-    private $name;
+    private string $name;
 
-    /** @var string The tree's title */
-    private $title;
+    private string $title;
 
-    /** @var int[] Default access rules for facts in this tree */
-    private $fact_privacy;
+    /** @var array<int> Default access rules for facts in this tree */
+    private array $fact_privacy;
 
-    /** @var int[] Default access rules for individuals in this tree */
-    private $individual_privacy;
+    /** @var array<int> Default access rules for individuals in this tree */
+    private array $individual_privacy;
 
-    /** @var integer[][] Default access rules for individual facts in this tree */
-    private $individual_fact_privacy;
+    /** @var array<array<int>> Default access rules for individual facts in this tree */
+    private array $individual_fact_privacy;
 
     /** @var array<string> Cached copy of the wt_gedcom_setting table. */
     private $preferences = [];
 
     /** @var array<array<string>> Cached copy of the wt_user_gedcom_setting table. */
-    private $user_preferences = [];
+    private array $user_preferences = [];
 
     /**
      * Create a tree object.
@@ -168,7 +166,7 @@ class Tree
      */
     public static function rowMapper(): Closure
     {
-        return static function (stdClass $row): Tree {
+        return static function (object $row): Tree {
             return new Tree((int) $row->tree_id, $row->tree_name, $row->tree_title);
         };
     }
@@ -179,7 +177,7 @@ class Tree
      * @param string $setting_name
      * @param string $setting_value
      *
-     * @return $this
+     * @return self
      */
     public function setPreference(string $setting_name, string $setting_value): Tree
     {
@@ -276,7 +274,7 @@ class Tree
      * @param string        $setting_name
      * @param string        $setting_value
      *
-     * @return $this
+     * @return self
      */
     public function setUserPreference(UserInterface $user, string $setting_name, string $setting_value): Tree
     {
@@ -393,7 +391,10 @@ class Tree
         if (Auth::user()->getPreference(UserInterface::PREF_AUTO_ACCEPT_EDITS) === '1') {
             $record = Registry::gedcomRecordFactory()->new($xref, $gedcom, null, $this);
 
-            app(PendingChangesService::class)->acceptRecord($record);
+            $pending_changes_service = app(PendingChangesService::class);
+            assert($pending_changes_service instanceof PendingChangesService);
+
+            $pending_changes_service->acceptRecord($record);
 
             return $record;
         }
@@ -436,7 +437,10 @@ class Tree
         if (Auth::user()->getPreference(UserInterface::PREF_AUTO_ACCEPT_EDITS) === '1') {
             $record = Registry::familyFactory()->new($xref, $gedcom, null, $this);
 
-            app(PendingChangesService::class)->acceptRecord($record);
+            $pending_changes_service = app(PendingChangesService::class);
+            assert($pending_changes_service instanceof PendingChangesService);
+
+            $pending_changes_service->acceptRecord($record);
 
             return $record;
         }
@@ -479,7 +483,10 @@ class Tree
         if (Auth::user()->getPreference(UserInterface::PREF_AUTO_ACCEPT_EDITS) === '1') {
             $record = Registry::individualFactory()->new($xref, $gedcom, null, $this);
 
-            app(PendingChangesService::class)->acceptRecord($record);
+            $pending_changes_service = app(PendingChangesService::class);
+            assert($pending_changes_service instanceof PendingChangesService);
+
+            $pending_changes_service->acceptRecord($record);
 
             return $record;
         }
@@ -522,7 +529,10 @@ class Tree
         if (Auth::user()->getPreference(UserInterface::PREF_AUTO_ACCEPT_EDITS) === '1') {
             $record = Registry::mediaFactory()->new($xref, $gedcom, null, $this);
 
-            app(PendingChangesService::class)->acceptRecord($record);
+            $pending_changes_service = app(PendingChangesService::class);
+            assert($pending_changes_service instanceof PendingChangesService);
+
+            $pending_changes_service->acceptRecord($record);
 
             return $record;
         }
@@ -566,11 +576,13 @@ class Tree
             $individual = Registry::individualFactory()->make($this->getPreference('PEDIGREE_ROOT_ID'), $this);
         }
         if ($individual === null) {
-            $xref = (string) DB::table('individuals')
+            $xref = DB::table('individuals')
                 ->where('i_file', '=', $this->id())
                 ->min('i_id');
 
-            $individual = Registry::individualFactory()->make($xref, $this);
+            if (is_string($xref)) {
+                $individual = Registry::individualFactory()->make($xref, $this);
+            }
         }
         if ($individual === null) {
             // always return a record

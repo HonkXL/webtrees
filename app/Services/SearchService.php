@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -43,7 +43,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
-use stdClass;
 
 use function addcslashes;
 use function array_filter;
@@ -85,7 +84,7 @@ class SearchService
      * @param array<Tree>   $trees
      * @param array<string> $search
      *
-     * @return Collection<Family>
+     * @return Collection<int,Family>
      */
     public function searchFamilies(array $trees, array $search): Collection
     {
@@ -110,7 +109,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<Family>
+     * @return Collection<int,Family>
      */
     public function searchFamilyNames(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -145,7 +144,7 @@ class SearchService
     /**
      * @param Place $place
      *
-     * @return Collection<Family>
+     * @return Collection<int,Family>
      */
     public function searchFamiliesInPlace(Place $place): Collection
     {
@@ -168,7 +167,7 @@ class SearchService
      * @param array<Tree>   $trees
      * @param array<string> $search
      *
-     * @return Collection<Individual>
+     * @return Collection<int,Individual>
      */
     public function searchIndividuals(array $trees, array $search): Collection
     {
@@ -193,7 +192,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<Individual>
+     * @return Collection<int,Individual>
      */
     public function searchIndividualNames(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -215,7 +214,7 @@ class SearchService
     /**
      * @param Place $place
      *
-     * @return Collection<Individual>
+     * @return Collection<int,Individual>
      */
     public function searchIndividualsInPlace(Place $place): Collection
     {
@@ -242,7 +241,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<Location>
+     * @return Collection<int,Location>
      */
     public function searchLocations(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -263,7 +262,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<Media>
+     * @return Collection<int,Media>
      */
     public function searchMedia(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -283,7 +282,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<Note>
+     * @return Collection<int,Note>
      */
     public function searchNotes(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -304,7 +303,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<Repository>
+     * @return Collection<int,Repository>
      */
     public function searchRepositories(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -325,7 +324,7 @@ class SearchService
      * @param int      $offset
      * @param int      $limit
      *
-     * @return Collection<Source>
+     * @return Collection<int,Source>
      */
     public function searchSources(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -345,7 +344,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<Source>
+     * @return Collection<int,Source>
      */
     public function searchSourcesByName(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -366,7 +365,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<string>
+     * @return Collection<int,string>
      */
     public function searchSurnames(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -391,7 +390,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<Submission>
+     * @return Collection<int,Submission>
      */
     public function searchSubmissions(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -412,7 +411,7 @@ class SearchService
      * @param int           $offset
      * @param int           $limit
      *
-     * @return Collection<Submitter>
+     * @return Collection<int,Submitter>
      */
     public function searchSubmitters(array $trees, array $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -433,7 +432,7 @@ class SearchService
      * @param int    $offset
      * @param int    $limit
      *
-     * @return Collection<Place>
+     * @return Collection<int,Place>
      */
     public function searchPlaces(Tree $tree, string $search, int $offset = 0, int $limit = PHP_INT_MAX): Collection
     {
@@ -473,7 +472,7 @@ class SearchService
             $query->where('p' . $level . '.p_place', 'LIKE', '%' . addcslashes($string, '\\%_') . '%');
         }
 
-        $row_mapper = static function (stdClass $row) use ($tree): Place {
+        $row_mapper = static function (object $row) use ($tree): Place {
             $place = implode(', ', array_filter((array) $row));
 
             return new Place($place, $tree);
@@ -487,11 +486,11 @@ class SearchService
     }
 
     /**
-     * @param array<Tree>   $trees
-     * @param array<string> $fields
-     * @param array<string> $modifiers
+     * @param array<Tree>          $trees
+     * @param array<string,string> $fields
+     * @param array<string,string> $modifiers
      *
-     * @return Collection<Individual>
+     * @return Collection<int,Individual>
      */
     public function searchIndividualsAdvanced(array $trees, array $fields, array $modifiers): Collection
     {
@@ -739,30 +738,30 @@ class SearchService
                         $query->where('individuals.i_gedcom', 'LIKE', $like);
                         break;
                 }
-            } elseif (str_starts_with($field_name, 'INDI:')  && str_ends_with($field_name, ':DATE')) {
+            } elseif (str_starts_with($field_name, 'INDI:') && str_ends_with($field_name, ':DATE')) {
                 $date = new Date($field_value);
                 if ($date->isOK()) {
-                    $delta = 365 * ($modifiers[$field_name] ?? 0);
+                    $delta = 365 * (int) ($modifiers[$field_name] ?? 0);
                     $query
                         ->where('date_' . $parts[1] . '.d_fact', '=', $parts[1])
                         ->where('date_' . $parts[1] . '.d_julianday1', '>=', $date->minimumJulianDay() - $delta)
                         ->where('date_' . $parts[1] . '.d_julianday2', '<=', $date->maximumJulianDay() + $delta);
                 }
                 unset($fields[$field_name]);
-            } elseif (str_starts_with($field_name, 'FAM:')  && str_ends_with($field_name, ':DATE')) {
+            } elseif (str_starts_with($field_name, 'FAM:') && str_ends_with($field_name, ':DATE')) {
                 $date = new Date($field_value);
                 if ($date->isOK()) {
-                    $delta = 365 * $modifiers[$field_name];
+                    $delta = 365 * (int) ($modifiers[$field_name] ?? 0);
                     $query
                         ->where('date_' . $parts[1] . '.d_fact', '=', $parts[1])
                         ->where('date_' . $parts[1] . '.d_julianday1', '>=', $date->minimumJulianDay() - $delta)
                         ->where('date_' . $parts[1] . '.d_julianday2', '<=', $date->maximumJulianDay() + $delta);
                 }
                 unset($fields[$field_name]);
-            } elseif (str_starts_with($field_name, 'INDI:')  && str_ends_with($field_name, ':PLAC')) {
+            } elseif (str_starts_with($field_name, 'INDI:') && str_ends_with($field_name, ':PLAC')) {
                 // SQL can only link a place to a person/family, not to an event.
                 $query->where('individual_places.p_place', 'LIKE', '%' . $field_value . '%');
-            } elseif (str_starts_with($field_name, 'FAM:')  && str_ends_with($field_name, ':PLAC')) {
+            } elseif (str_starts_with($field_name, 'FAM:') && str_ends_with($field_name, ':PLAC')) {
                 // SQL can only link a place to a person/family, not to an event.
                 $query->where('family_places.p_place', 'LIKE', '%' . $field_value . '%');
             } elseif (str_starts_with($field_name, 'MOTHER:NAME:') || str_starts_with($field_name, 'FATHER:NAME:')) {
@@ -870,7 +869,7 @@ class SearchService
 
                     $regex = '/' . preg_quote($field_value, '/') . '/i';
 
-                    if (str_starts_with($field_name, 'INDI:')  && str_ends_with($field_name, ':PLAC')) {
+                    if (str_starts_with($field_name, 'INDI:') && str_ends_with($field_name, ':PLAC')) {
                         foreach ($individual->facts([$parts[1]]) as $fact) {
                             if (preg_match($regex, $fact->place()->gedcomName())) {
                                 continue 2;
@@ -879,7 +878,7 @@ class SearchService
                         return false;
                     }
 
-                    if (str_starts_with($field_name, 'FAM:')  && str_ends_with($field_name, ':PLAC')) {
+                    if (str_starts_with($field_name, 'FAM:') && str_ends_with($field_name, ':PLAC')) {
                         foreach ($individual->spouseFamilies() as $family) {
                             foreach ($family->facts([$parts[1]]) as $fact) {
                                 if (preg_match($regex, $fact->place()->gedcomName())) {
@@ -933,7 +932,7 @@ class SearchService
      * @param string      $place
      * @param array<Tree> $search_trees
      *
-     * @return Collection<Individual>
+     * @return Collection<int,Individual>
      */
     public function searchIndividualsPhonetic(string $soundex, string $lastname, string $firstname, string $place, array $search_trees): Collection
     {
@@ -1010,7 +1009,7 @@ class SearchService
      * @param int     $offset     Skip this many rows.
      * @param int     $limit      Take this many rows.
      *
-     * @return Collection<mixed>
+     * @return Collection<int,mixed>
      */
     private function paginateQuery(Builder $query, Closure $row_mapper, Closure $row_filter, int $offset, int $limit): Collection
     {
@@ -1173,7 +1172,7 @@ class SearchService
      */
     private function familyRowMapper(): Closure
     {
-        return function (stdClass $row): Family {
+        return function (object $row): Family {
             $tree = $this->tree_service->find((int) $row->f_file);
 
             return Registry::familyFactory()->mapper($tree)($row);
@@ -1187,7 +1186,7 @@ class SearchService
      */
     private function individualRowMapper(): Closure
     {
-        return function (stdClass $row): Individual {
+        return function (object $row): Individual {
             $tree = $this->tree_service->find((int) $row->i_file);
 
             return Registry::individualFactory()->mapper($tree)($row);
@@ -1201,7 +1200,7 @@ class SearchService
      */
     private function locationRowMapper(): Closure
     {
-        return function (stdClass $row): Location {
+        return function (object $row): Location {
             $tree = $this->tree_service->find((int) $row->o_file);
 
             return Registry::locationFactory()->mapper($tree)($row);
@@ -1215,7 +1214,7 @@ class SearchService
      */
     private function mediaRowMapper(): Closure
     {
-        return function (stdClass $row): Media {
+        return function (object $row): Media {
             $tree = $this->tree_service->find((int) $row->m_file);
 
             return Registry::mediaFactory()->mapper($tree)($row);
@@ -1229,7 +1228,7 @@ class SearchService
      */
     private function noteRowMapper(): Closure
     {
-        return function (stdClass $row): Note {
+        return function (object $row): Note {
             $tree = $this->tree_service->find((int) $row->o_file);
 
             return Registry::noteFactory()->mapper($tree)($row);
@@ -1243,7 +1242,7 @@ class SearchService
      */
     private function repositoryRowMapper(): Closure
     {
-        return function (stdClass $row): Repository {
+        return function (object $row): Repository {
             $tree = $this->tree_service->find((int) $row->o_file);
 
             return Registry::repositoryFactory()->mapper($tree)($row);
@@ -1257,7 +1256,7 @@ class SearchService
      */
     private function sourceRowMapper(): Closure
     {
-        return function (stdClass $row): Source {
+        return function (object $row): Source {
             $tree = $this->tree_service->find((int) $row->s_file);
 
             return Registry::sourceFactory()->mapper($tree)($row);
@@ -1271,7 +1270,7 @@ class SearchService
      */
     private function submissionRowMapper(): Closure
     {
-        return function (stdClass $row): Submission {
+        return function (object $row): Submission {
             $tree = $this->tree_service->find((int) $row->o_file);
 
             return Registry::submissionFactory()->mapper($tree)($row);
@@ -1285,7 +1284,7 @@ class SearchService
      */
     private function submitterRowMapper(): Closure
     {
-        return function (stdClass $row): Submitter {
+        return function (object $row): Submitter {
             $tree = $this->tree_service->find((int) $row->o_file);
 
             return Registry::submitterFactory()->mapper($tree)($row);

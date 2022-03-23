@@ -1,9 +1,8 @@
 ![Latest version](https://img.shields.io/github/v/release/fisharebest/webtrees?sort=semver)
 ![Licence](https://img.shields.io/github/license/fisharebest/webtrees)
 [![Unit tests](https://github.com/fisharebest/webtrees/actions/workflows/phpunit.yaml/badge.svg)](https://github.com/fisharebest/webtrees/actions/workflows/phpunit.yaml)
-[![Coverage Status](https://coveralls.io/repos/github/fisharebest/webtrees/badge.svg?branch=main)](https://coveralls.io/github/fisharebest/webtrees?branch=main)
+[![codecov](https://codecov.io/gh/fisharebest/webtrees/branch/main/graph/badge.svg?token=zREQBP4GBs)](https://codecov.io/gh/fisharebest/webtrees)
 [![Translation status](https://weblate.iet.open.ac.uk/widgets/webtrees/-/svg-badge.svg)](https://weblate.iet.open.ac.uk/projects/webtrees/webtrees/)
-[![SymfonyInsight](https://insight.symfony.com/projects/78a5ba19-7ddf-4a58-8262-1c8a149f38de/mini.svg)](https://insight.symfony.com/projects/78a5ba19-7ddf-4a58-8262-1c8a149f38de)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/fisharebest/webtrees/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/fisharebest/webtrees/?branch=main)
 [![Code Climate](https://codeclimate.com/github/fisharebest/webtrees/badges/gpa.svg)](https://codeclimate.com/github/fisharebest/webtrees)
 [![StyleCI](https://github.styleci.io/repos/11836349/shield?branch=main)](https://github.styleci.io/repos/11836349?branch=main)
@@ -15,7 +14,7 @@
 * [Coding styles and standards](#coding-styles-and-standards)
 * [Introduction](#introduction)
 * [System requirements](#system-requirements)
-* [Internet browser compatibility](#internet-browser-compatibility)
+* [Internet browser compatibility](#browser-compatibility)
 * [Installation](#installation)
 * [Upgrading](#upgrading)
 * [Building and developing](#building-and-developing)
@@ -27,7 +26,7 @@
 ## License
 
 * **webtrees: online genealogy**
-* Copyright 2021 webtrees development team
+* Copyright 2022 webtrees development team
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

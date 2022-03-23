@@ -10,8 +10,8 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 
 /**
- * @var Collection<Source> $sources
- * @var Tree               $tree
+ * @var Collection<int,Source> $sources
+ * @var Tree                   $tree
  */
 
 ?>
@@ -83,7 +83,7 @@ $count_notes = DB::table('other')
         ['visible' => array_sum($count_media) > 0],
         ['visible' => array_sum($count_notes) > 0],
         ['visible' => (bool) $tree->getPreference('SHOW_LAST_CHANGE'), 'searchable' => false],
-    ])) ?>"
+    ], JSON_THROW_ON_ERROR)) ?>"
 >
     <caption class="visually-hidden">
         <?= $caption ?? I18N::translate('Sources') ?>
@@ -149,7 +149,7 @@ $count_notes = DB::table('other')
                 </td>
 
                 <!-- Last change -->
-                <td data-sort="<?= $source->lastChangeTimestamp()->unix() ?>">
+                <td data-sort="<?= $source->lastChangeTimestamp()->timestamp() ?>">
                     <?= view('components/datetime', ['timestamp' => $source->lastChangeTimestamp()]) ?>
                 </td>
             </tr>

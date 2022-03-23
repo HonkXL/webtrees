@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -209,7 +209,7 @@ class I18N
 
     private static Translator $translator;
 
-    private static ?Collator $collator;
+    private static ?Collator $collator = null;
 
     /**
      * The preferred locales for this site, or a default list if no preference.
@@ -343,7 +343,6 @@ class I18N
             }
         } catch (Exception $ex) {
             // PHP-INTL is not installed?  We'll use a fallback later.
-            self::$collator = null;
         }
     }
 
@@ -566,14 +565,10 @@ class I18N
     public static function comparator(): Closure
     {
         if (self::$collator instanceof Collator) {
-            return static function (string $x, string $y): int {
-                return (int) self::$collator->compare($x, $y);
-            };
+            return static fn (string $x, string $y): int => (int) self::$collator->compare($x, $y);
         }
 
-        return static function (string $x, string $y): int {
-            return strcmp(self::strtolower($x), self::strtolower($y));
-        };
+        return static fn (string $x, string $y): int => strcmp(self::strtolower($x), self::strtolower($y));
     }
 
 

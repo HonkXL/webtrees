@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,12 +24,11 @@ use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\MediaFileService;
 use Fisharebest\Webtrees\Services\PendingChangesService;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function assert;
 use function in_array;
 use function response;
 
@@ -63,15 +62,12 @@ class CreateMediaObjectAction implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $params              = (array) $request->getParsedBody();
-        $note                = $params['media-note'] ?? '';
-        $title               = $params['title'] ?? '';
-        $type                = $params['type'] ?? '';
-        $privacy_restriction = $params['privacy-restriction'] ?? '';
-        $edit_restriction    = $params['edit-restriction'] ?? '';
+        $tree        = Validator::attributes($request)->tree();
+        $params      = (array) $request->getParsedBody();
+        $note        = $params['media-note'] ?? '';
+        $title       = $params['title'] ?? '';
+        $type        = $params['type'] ?? '';
+        $restriction = $params['restriction'] ?? '';
 
         $file = $this->media_file_service->uploadFile($request);
 
@@ -81,12 +77,8 @@ class CreateMediaObjectAction implements RequestHandlerInterface
 
         $gedcom = "0 @@ OBJE\n" . $this->media_file_service->createMediaFileGedcom($file, $type, $title, $note);
 
-        if (in_array($privacy_restriction, $this->media_file_service::PRIVACY_RESTRICTIONS, true)) {
-            $gedcom .= "\n1 RESN " . $privacy_restriction;
-        }
-
-        if (in_array($edit_restriction, $this->media_file_service::EDIT_RESTRICTIONS, true)) {
-            $gedcom .= "\n1 RESN " . $edit_restriction;
+        if (in_array($restriction, ['none', 'privacy', 'confidential', 'locked'], true)) {
+            $gedcom .= "\n1 RESN " . $restriction;
         }
 
         $record = $tree->createMediaObject($gedcom);
@@ -95,14 +87,12 @@ class CreateMediaObjectAction implements RequestHandlerInterface
         // Accept the new record to keep the filesystem synchronized with the genealogy.
         $this->pending_changes_service->acceptRecord($record);
 
-        // id and text are for select2 / autocomplete
+        // value and text are for autocomplete
         // html is for interactive modals
         return response([
-            'id'   => '@' . $record->xref() . '@',
-            'text' => view('selects/media', [
-                'media' => $record,
-            ]),
-            'html' => view('modals/record-created', [
+            'value' => '@' . $record->xref() . '@',
+            'text'  => view('selects/media', ['media' => $record]),
+            'html'  => view('modals/record-created', [
                 'title' => I18N::translate('The media object has been created'),
                 'name'  => $record->fullName(),
                 'url'   => $record->url(),

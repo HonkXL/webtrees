@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,8 +18,6 @@
 declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Report;
-
-use Fisharebest\Webtrees\Functions\FunctionsRtl;
 
 use function count;
 use function explode;
@@ -62,11 +60,11 @@ class ReportPdfText extends ReportBaseText
             $r = hexdec($match[1]);
             $g = hexdec($match[2]);
             $b = hexdec($match[3]);
-            $renderer->tcpdf->SetTextColor($r, $g, $b);
+            $renderer->tcpdf->setTextColor($r, $g, $b);
         } else {
-            $renderer->tcpdf->SetTextColor(0, 0, 0);
+            $renderer->tcpdf->setTextColor(0, 0, 0);
         }
-        $temptext = FunctionsRtl::spanLtrRtl($temptext);
+        $temptext = RightToLeftSupport::spanLtrRtl($temptext);
         $temptext = str_replace(
             [
                 '<br><span dir="rtl">',
@@ -91,7 +89,7 @@ class ReportPdfText extends ReportBaseText
             ''
         ); //change height - line break etc. - the form is mirror on rtl pages
         // Reset the text color to black or it will be inherited
-        $renderer->tcpdf->SetTextColor(0, 0, 0);
+        $renderer->tcpdf->setTextColor(0, 0, 0);
     }
 
     /**

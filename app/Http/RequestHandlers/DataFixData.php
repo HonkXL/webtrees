@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,11 +25,10 @@ use Fisharebest\Webtrees\Module\ModuleDataFixInterface;
 use Fisharebest\Webtrees\Services\DataFixService;
 use Fisharebest\Webtrees\Services\DatatablesService;
 use Fisharebest\Webtrees\Services\ModuleService;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use stdClass;
 
 use function assert;
 use function e;
@@ -71,17 +70,15 @@ class DataFixData implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $data_fix = $request->getAttribute('data_fix') ?? '';
+        $tree     = Validator::attributes($request)->tree();
+        $data_fix = Validator::attributes($request)->string('data_fix', '');
         $module   = $this->module_service->findByName($data_fix);
         assert($module instanceof ModuleDataFixInterface);
 
         $params  = $request->getQueryParams();
         $records = $module->recordsToFix($tree, $params);
 
-        $callback = function (stdClass $row) use ($module, $params, $tree): array {
+        $callback = function (object $row) use ($module, $params, $tree): array {
             $record = $this->data_fix_service->getRecordByType($row->xref, $tree, $row->type);
             assert($record instanceof GedcomRecord);
 
@@ -94,12 +91,14 @@ class DataFixData implements RequestHandlerInterface
                         'action'   => 'update',
                         'xref'     => $row->xref,
                     ] + $params);
-                $update_url  = route(DataFixUpdate::class, [
+
+                $update_url = route(DataFixUpdate::class, [
                         'tree'     => $tree->name(),
                         'data_fix' => $module->name(),
                         'action'   => 'update',
                         'xref'     => $row->xref,
                     ] + $params);
+
                 // wt-ajax-modal-title
                 $col2 = '<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-backdrop="static" data-bs-target="#wt-ajax-modal" data-wt-href="' . $preview_url . '">' . view('icons/search') . I18N::translate('Preview') . '</button>';
                 $col2 .= ' <button type="button" class="btn btn-primary" data-update-url="' . $update_url . '">' . view('icons/data-fix') . I18N::translate('Update') . '</button>';

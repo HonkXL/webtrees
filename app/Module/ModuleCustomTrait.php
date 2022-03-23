@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -37,6 +37,20 @@ use function strtolower;
  */
 trait ModuleCustomTrait
 {
+    /**
+     * A unique internal name for this module (based on the installation folder).
+     *
+     * @return string
+     */
+    abstract public function name(): string;
+
+    /**
+     * Where does this module store its resources
+     *
+     * @return string
+     */
+    abstract public function resourcesFolder(): string;
+
     /**
      * The person or organisation who created this module.
      *
@@ -79,7 +93,7 @@ trait ModuleCustomTrait
             return $this->customModuleVersion();
         }
 
-        return Registry::cache()->file()->remember($this->name() . '-latest-version', function () {
+        return Registry::cache()->file()->remember($this->name() . '-latest-version', function (): string {
             try {
                 $client = new Client([
                     'timeout' => 3,

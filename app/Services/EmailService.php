@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,12 +19,13 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Services;
 
-use Exception;
 use Fisharebest\Webtrees\Contracts\UserInterface;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Site;
+use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\Transport\NullTransport;
 use Symfony\Component\Mailer\Transport\SendmailTransport;
@@ -34,6 +35,7 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Crypto\DkimOptions;
 use Symfony\Component\Mime\Crypto\DkimSigner;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Exception\RfcComplianceException;
 use Symfony\Component\Mime\Message;
 
 use function assert;
@@ -68,7 +70,7 @@ class EmailService
             $transport = $this->transport();
             $mailer    = new Mailer($transport);
             $mailer->send($message);
-        } catch (Exception $ex) {
+        } catch (TransportExceptionInterface $ex) {
             Log::addErrorLog('MailService: ' . $ex->getMessage());
 
             return false;
@@ -113,10 +115,10 @@ class EmailService
                 ->bodyCanon('relaxed');
 
             return $signer->sign($message, $options->toArray());
-        } else {
-            // DKIM body hashes don't work with multipart/alternative content.
-            $message->text($message_text);
         }
+
+        // DKIM body hashes don't work with multipart/alternative content.
+        $message->text($message_text);
 
         return $message;
     }
@@ -134,7 +136,7 @@ class EmailService
                 $request = app(ServerRequestInterface::class);
                 assert($request instanceof ServerRequestInterface);
 
-                $sendmail_command = $request->getAttribute('sendmail_command', '/usr/sbin/sendmail -bs');
+                $sendmail_command = Validator::attributes($request)->string('sendmail_command', '/usr/sbin/sendmail -bs');
 
                 return new SendmailTransport($sendmail_command);
 
@@ -177,14 +179,14 @@ class EmailService
     {
         try {
             $address = new Address($email);
-        } catch (Exception $ex) {
+        } catch (RfcComplianceException $ex) {
             return false;
         }
 
         // Some web hosts disable checkdnsrr.
         if (function_exists('checkdnsrr')) {
             $domain = substr(strrchr($address->getAddress(), '@') ?: '@', 1);
-            return checkdnsrr($domain, 'MX');
+            return checkdnsrr($domain);
         }
 
         return true;

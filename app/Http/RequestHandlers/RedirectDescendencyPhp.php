@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,6 +24,7 @@ use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
 use Fisharebest\Webtrees\Module\DescendancyChartModule;
 use Fisharebest\Webtrees\Registry;
+use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\Tree;
@@ -45,18 +46,18 @@ class RedirectDescendencyPhp implements RequestHandlerInterface
         3 => 'families',
     ];
 
-    private DescendancyChartModule $chart;
+    private ModuleService $module_service;
 
     private TreeService $tree_service;
 
     /**
-     * @param DescendancyChartModule $chart
-     * @param TreeService            $tree_service
+     * @param ModuleService $module_service
+     * @param TreeService   $tree_service
      */
-    public function __construct(DescendancyChartModule $chart, TreeService $tree_service)
+    public function __construct(ModuleService $module_service, TreeService $tree_service)
     {
-        $this->chart        = $chart;
-        $this->tree_service = $tree_service;
+        $this->tree_service   = $tree_service;
+        $this->module_service = $module_service;
     }
 
     /**
@@ -71,13 +72,13 @@ class RedirectDescendencyPhp implements RequestHandlerInterface
         $root_id     = $query['rootid'] ?? '';
         $generations = $query['generations'] ?? '4';
         $chart_style = $query['chart_style'] ?? '';
+        $tree        = $this->tree_service->all()->get($ged);
+        $module      = $this->module_service->findByInterface(DescendancyChartModule::class)->first();
 
-        $tree = $this->tree_service->all()->get($ged);
-
-        if ($tree instanceof Tree) {
+        if ($tree instanceof Tree && $module instanceof DescendancyChartModule) {
             $individual = Registry::individualFactory()->make($root_id, $tree) ?? $tree->significantIndividual(Auth::user());
 
-            $url = $this->chart->chartUrl($individual, [
+            $url = $module->chartUrl($individual, [
                 'generations' => $generations,
                 'style'       => self::CHART_STYLES[$chart_style] ?? 'tree',
             ]);

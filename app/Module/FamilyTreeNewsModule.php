@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,20 +20,19 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Auth;
-use Fisharebest\Webtrees\Carbon;
 use Fisharebest\Webtrees\Http\Exceptions\HttpAccessDeniedException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
 use Fisharebest\Webtrees\Http\RequestHandlers\TreePage;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\HtmlService;
 use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Str;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use stdClass;
-
-use function assert;
 
 /**
  * Class FamilyTreeNewsModule
@@ -42,8 +41,7 @@ class FamilyTreeNewsModule extends AbstractModule implements ModuleBlockInterfac
 {
     use ModuleBlockTrait;
 
-    /** @var HtmlService */
-    private $html_service;
+    private HtmlService $html_service;
 
     /**
      * HtmlBlockModule constructor.
@@ -69,10 +67,10 @@ class FamilyTreeNewsModule extends AbstractModule implements ModuleBlockInterfac
     /**
      * Generate the HTML content of this block.
      *
-     * @param Tree          $tree
-     * @param int           $block_id
-     * @param string        $context
-     * @param array<string> $config
+     * @param Tree                 $tree
+     * @param int                  $block_id
+     * @param string               $context
+     * @param array<string,string> $config
      *
      * @return string
      */
@@ -82,8 +80,8 @@ class FamilyTreeNewsModule extends AbstractModule implements ModuleBlockInterfac
             ->where('gedcom_id', '=', $tree->id())
             ->orderByDesc('updated')
             ->get()
-            ->map(static function (stdClass $row): stdClass {
-                $row->updated = Carbon::make($row->updated);
+            ->map(static function (object $row): object {
+                $row->updated = Registry::timestampFactory()->fromString($row->updated);
 
                 return $row;
             });
@@ -158,8 +156,7 @@ class FamilyTreeNewsModule extends AbstractModule implements ModuleBlockInterfac
      */
     public function getEditNewsAction(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
+        $tree = Validator::attributes($request)->tree();
 
         if (!Auth::isManager($tree)) {
             throw new HttpAccessDeniedException();
@@ -172,6 +169,11 @@ class FamilyTreeNewsModule extends AbstractModule implements ModuleBlockInterfac
                 ->where('news_id', '=', $news_id)
                 ->where('gedcom_id', '=', $tree->id())
                 ->first();
+
+            // Record was deleted before we could read it?
+            if ($row === null) {
+                throw new HttpNotFoundException(I18N::translate('%s does not exist.', 'news_id:' . $news_id));
+            }
         } else {
             $row = (object) [
                 'body'    => '',
@@ -197,8 +199,7 @@ class FamilyTreeNewsModule extends AbstractModule implements ModuleBlockInterfac
      */
     public function postEditNewsAction(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
+        $tree = Validator::attributes($request)->tree();
 
         if (!Auth::isManager($tree)) {
             throw new HttpAccessDeniedException();
@@ -243,8 +244,7 @@ class FamilyTreeNewsModule extends AbstractModule implements ModuleBlockInterfac
      */
     public function postDeleteNewsAction(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
+        $tree = Validator::attributes($request)->tree();
 
         $news_id = $request->getQueryParams()['news_id'];
 

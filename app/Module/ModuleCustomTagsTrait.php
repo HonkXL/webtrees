@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,6 +33,9 @@ trait ModuleCustomTagsTrait
 {
     use ViewResponseTrait;
 
+    /**
+     * Early initialisation.  Called before most of the middleware.
+     */
     public function boot(): void
     {
         $element_factory = Registry::elementFactory();
@@ -89,7 +92,7 @@ trait ModuleCustomTagsTrait
      *
      * @return ResponseInterface
      */
-    public function getAdminAction(ServerRequestInterface $request): ResponseInterface
+    public function getAdminAction(/** @scrutinizer ignore-unused */ ServerRequestInterface $request): ResponseInterface
     {
         $this->layout = 'layouts/administration';
 

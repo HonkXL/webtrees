@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,15 +26,9 @@ use Fisharebest\Webtrees\Contracts\UserInterface;
  */
 class GuestUser implements UserInterface
 {
-    /**
-     * @var string
-     */
-    private $email;
+    private string $email;
 
-    /**
-     * @var string
-     */
-    private $real_name;
+    private string $real_name;
 
     /**
      * GuestUser constructor.
@@ -96,7 +90,9 @@ class GuestUser implements UserInterface
      */
     public function getPreference(string $setting_name, string $default = ''): string
     {
-        return Session::get('_GUEST_' . $setting_name, $default);
+        $preference = Session::get('_GUEST_' . $setting_name);
+
+        return is_string($preference) ? $preference : $default;
     }
 
     /**

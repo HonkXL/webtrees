@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -35,7 +35,7 @@ use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\ClipboardService;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\UserService;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -49,7 +49,9 @@ use function explode;
 use function implode;
 use function is_string;
 use function redirect;
+use function strip_tags;
 use function strtoupper;
+use function trim;
 
 /**
  * Show an individual's page.
@@ -88,19 +90,14 @@ class IndividualPage implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $xref = $request->getAttribute('xref');
-        assert(is_string($xref));
-
+        $tree       = Validator::attributes($request)->tree();
+        $xref       = Validator::attributes($request)->isXref()->string('xref');
+        $slug       = Validator::attributes($request)->string('slug', '');
         $individual = Registry::individualFactory()->make($xref, $tree);
         $individual = Auth::checkIndividualAccess($individual);
 
         // Redirect to correct xref/slug
-        $slug = Registry::slugFactory()->make($individual);
-
-        if ($individual->xref() !== $xref || $request->getAttribute('slug') !== $slug) {
+        if ($individual->xref() !== $xref || Registry::slugFactory()->make($individual) !== $slug) {
             return redirect($individual->url(), StatusCodeInterface::STATUS_MOVED_PERMANENTLY);
         }
 
@@ -130,6 +127,7 @@ class IndividualPage implements RequestHandlerInterface
 
         return $this->viewResponse('individual-page', [
             'age'              => $this->ageString($individual),
+            'can_upload_media' => Auth::canUploadMedia($tree, Auth::user()),
             'clipboard_facts'  => $this->clipboard_service->pastableFacts($individual),
             'individual_media' => $individual_media,
             'meta_description' => $this->metaDescription($individual),
@@ -199,7 +197,7 @@ class IndividualPage implements RequestHandlerInterface
 
         if ($birth_date->isOK() || $birth_place->id() !== 0) {
             $meta_facts[] = I18N::translate('Birth') . ' ' .
-                $birth_date->display(false, null, false) . ' ' .
+                $birth_date->display() . ' ' .
                 $birth_place->placeName();
         }
 
@@ -208,7 +206,7 @@ class IndividualPage implements RequestHandlerInterface
 
         if ($death_date->isOK() || $death_place->id() !== 0) {
             $meta_facts[] = I18N::translate('Death') . ' ' .
-                $death_date->display(false, null, false) . ' ' .
+                $death_date->display() . ' ' .
                 $death_place->placeName();
         }
 
@@ -232,8 +230,8 @@ class IndividualPage implements RequestHandlerInterface
             }
         }
 
-        $meta_facts = array_map('strip_tags', $meta_facts);
-        $meta_facts = array_map('trim', $meta_facts);
+        $meta_facts = array_map(static fn (string $x): string => strip_tags($x), $meta_facts);
+        $meta_facts = array_map(static fn (string $x): string => trim($x), $meta_facts);
 
         return implode(', ', $meta_facts);
     }
@@ -244,7 +242,7 @@ class IndividualPage implements RequestHandlerInterface
      *
      * @param Individual $individual
      *
-     * @return Collection<ModuleSidebarInterface>
+     * @return Collection<int,ModuleSidebarInterface>
      */
     public function getSidebars(Individual $individual): Collection
     {
@@ -261,7 +259,7 @@ class IndividualPage implements RequestHandlerInterface
      *
      * @param Individual $individual
      *
-     * @return Collection<ModuleTabInterface>
+     * @return Collection<int,ModuleTabInterface>
      */
     public function getTabs(Individual $individual): Collection
     {

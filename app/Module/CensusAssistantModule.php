@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,12 +23,11 @@ use Fisharebest\Webtrees\Census\CensusInterface;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Registry;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function array_keys;
-use function assert;
 use function count;
 use function e;
 use function response;
@@ -86,8 +85,7 @@ class CensusAssistantModule extends AbstractModule
      */
     public function postCensusIndividualAction(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
+        $tree = Validator::attributes($request)->tree();
 
         $params       = (array) $request->getParsedBody();
         $individual   = Registry::individualFactory()->make($params['xref'], $tree);
@@ -175,7 +173,17 @@ class CensusAssistantModule extends AbstractModule
      */
     private function createNoteText(CensusInterface $census, string $ca_title, string $ca_place, string $ca_citation, array $ca_individuals, string $ca_notes): string
     {
-        $text = $ca_title . "\n" . $ca_citation . "\n" . $ca_place . "\n\n|";
+        $text = $ca_title;
+
+        if ($ca_citation !== '') {
+            $text .= "\n" . $ca_citation;
+        }
+
+        if ($ca_place !== '') {
+            $text .= "\n" . $ca_place;
+        }
+
+        $text .= "\n\n|";
 
         foreach ($census->columns() as $column) {
             $text .= ' ' . $column->abbreviation() . ' |';
@@ -191,7 +199,11 @@ class CensusAssistantModule extends AbstractModule
             }
         }
 
-        return $text . "\n\n" . strtr($ca_notes, ["\r" => '']);
+        if ($ca_notes !== '') {
+            $text .= "\n\n" . strtr($ca_notes, ["\r" => '']);
+        }
+
+        return $text;
     }
 
     /**

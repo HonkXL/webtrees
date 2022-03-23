@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,7 +24,6 @@ use Fisharebest\Localization\Locale\LocaleInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
 use Fisharebest\Webtrees\Family;
-use Fisharebest\Webtrees\Functions\FunctionsPrintLists;
 use Fisharebest\Webtrees\GedcomRecord;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
@@ -32,10 +31,12 @@ use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\LocalizationService;
 use Fisharebest\Webtrees\Session;
 use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -81,10 +82,7 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
      */
     public function boot(): void
     {
-        $router_container = app(RouterContainer::class);
-        assert($router_container instanceof RouterContainer);
-
-        $router_container->getMap()
+        Registry::routeFactory()->routeMap()
             ->get(static::class, static::ROUTE_URL, $this);
     }
 
@@ -121,14 +119,17 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
     }
 
     /**
-     * @param Tree                              $tree
-     * @param array<bool|int|string|array|null> $parameters
+     * @param Tree                                      $tree
+     * @param array<bool|int|string|array<string>|null> $parameters
      *
      * @return string
      */
     public function listUrl(Tree $tree, array $parameters = []): string
     {
-        $xref = app(ServerRequestInterface::class)->getAttribute('xref', '');
+        $request = app(ServerRequestInterface::class);
+        assert($request instanceof ServerRequestInterface);
+
+        $xref = Validator::attributes($request)->isXref()->string('xref', '');
 
         if ($xref !== '') {
             $individual = Registry::individualFactory()->make($xref, $tree);
@@ -162,7 +163,9 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
      */
     public function getListAction(ServerRequestInterface $request): ResponseInterface
     {
-        return redirect($this->listUrl($request->getAttribute('tree'), $request->getQueryParams()));
+        $tree = Validator::attributes($request)->tree();
+
+        return redirect($this->listUrl($tree, $request->getQueryParams()));
     }
 
     /**
@@ -172,11 +175,8 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $user = $request->getAttribute('user');
-        assert($user instanceof UserInterface);
+        $tree = Validator::attributes($request)->tree();
+        $user = Validator::attributes($request)->user();
 
         Auth::checkComponentAccess($this, ModuleListInterface::class, $tree, $user);
 
@@ -386,17 +386,28 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
                     // Show the surname list
                     switch ($tree->getPreference('SURNAME_LIST_STYLE')) {
                         case 'style1':
-                            echo FunctionsPrintLists::surnameList($surns, 3, true, $this, $tree);
+                            echo view('lists/surnames-column-list', [
+                                'module'   => $this,
+                                'surnames' => $surns,
+                                'totals'   => true,
+                                'tree'     => $tree,
+                            ]);
                             break;
                         case 'style3':
-                            echo FunctionsPrintLists::surnameTagCloud($surns, $this, true, $tree);
+                            echo view('lists/surnames-tag-cloud', [
+                                'module'   => $this,
+                                'surnames' => $surns,
+                                'totals'   => true,
+                                'tree'     => $tree,
+                            ]);
                             break;
                         case 'style2':
                         default:
                             echo view('lists/surnames-table', [
-                                'surnames' => $surns,
                                 'families' => $families,
                                 'module'   => $this,
+                                'order'    => [[1, 'desc']],
+                                'surnames' => $surns,
                                 'tree'     => $tree,
                             ]);
                             break;
@@ -686,7 +697,7 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
      *
      * @return array<array<int>>
      */
-    public function surnames(
+    protected function surnames(
         Tree $tree,
         string $surn,
         string $salpha,
@@ -746,9 +757,9 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
      * @param bool            $fams   if set, only fetch individuals with FAMS records
      * @param LocaleInterface $locale
      *
-     * @return array<Individual>
+     * @return Collection<Individual>
      */
-    public function individuals(
+    protected function individuals(
         Tree $tree,
         string $surn,
         string $salpha,
@@ -756,7 +767,7 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
         bool $marnm,
         bool $fams,
         LocaleInterface $locale
-    ): array {
+    ): Collection {
         $collation = $this->localization_service->collation($locale);
 
         // Use specific collation for name fields.
@@ -797,7 +808,7 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
             ->orderBy(new Expression("CASE n_givn WHEN '" . Individual::NOMEN_NESCIO . "' THEN 1 ELSE 0 END"))
             ->orderBy($n_givn);
 
-        $list = [];
+        $individuals = new Collection();
         $rows = $query->get();
 
         foreach ($rows as $row) {
@@ -811,13 +822,13 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
                     // We need to clone $individual, as we may have multiple references to the
                     // same individual in this list, and the "primary name" would otherwise
                     // be shared amongst all of them.
-                    $list[] = clone $individual;
+                    $individuals->push(clone $individual);
                     break;
                 }
             }
         }
 
-        return $list;
+        return $individuals;
     }
 
     /**
@@ -832,19 +843,19 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
      * @param bool            $marnm  if set, include married names
      * @param LocaleInterface $locale
      *
-     * @return array<Family>
+     * @return Collection<Family>
      */
-    public function families(Tree $tree, string $surn, string $salpha, string $galpha, bool $marnm, LocaleInterface $locale): array
+    protected function families(Tree $tree, string $surn, string $salpha, string $galpha, bool $marnm, LocaleInterface $locale): Collection
     {
-        $list = [];
+        $families = new Collection();
+
         foreach ($this->individuals($tree, $surn, $salpha, $galpha, $marnm, true, $locale) as $indi) {
             foreach ($indi->spouseFamilies() as $family) {
-                $list[$family->xref()] = $family;
+                $families->push($family);
             }
         }
-        usort($list, GedcomRecord::nameComparator());
 
-        return $list;
+        return $families->unique();
     }
 
     /**

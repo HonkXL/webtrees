@@ -1,7 +1,6 @@
 <?php
 
 use Fisharebest\Webtrees\Fact;
-use Fisharebest\Webtrees\Http\RequestHandlers\UserListPage;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Media;
@@ -12,15 +11,16 @@ use Fisharebest\Webtrees\User;
 use Illuminate\Support\Collection;
 
 /**
- * @var string                             $age
- * @var Collection<Fact>                   $clipboard_facts
- * @var Collection<Media>                  $individual_media
- * @var Individual                         $record
- * @var Collection<string>                 $shares
- * @var Collection<ModuleSidebarInterface> $sidebars
- * @var Collection<ModuleTabInterface>     $tabs
- * @var Tree                               $tree
- * @var Collection<User>                   $users
+ * @var string                                 $age
+ * @var bool                                   $can_upload_media
+ * @var Collection<int,Fact>                   $clipboard_facts
+ * @var Collection<int,Media>                  $individual_media
+ * @var Individual                             $record
+ * @var Collection<int,string>                 $shares
+ * @var Collection<int,ModuleSidebarInterface> $sidebars
+ * @var Collection<int,ModuleTabInterface>     $tabs
+ * @var Tree                                   $tree
+ * @var Collection<int,User>                   $users
  */
 ?>
 
@@ -28,23 +28,18 @@ use Illuminate\Support\Collection;
 
 <div class="d-flex mb-4">
     <h2 class="wt-page-title mx-auto">
-        <?= $record->fullName() ?>, <?= $record->lifespan() ?> <?= $age ?>
-        <?php foreach ($users as $user) : ?>
-            — <a href="<?= e(route(UserListPage::class, ['filter' => $user->email()])) ?>">
-                <?= e($user->userName()) ?>
-            </a>
-        <?php endforeach ?>
+        <?= view('individual-page-title', ['age' => $age, 'record' => $record, 'users' => $users]) ?>
     </h2>
 
     <?php if ($record->canEdit()) : ?>
-        <?= view('individual-page-menu', ['clipboard_facts' => $clipboard_facts, 'record' => $record, 'shares' => $shares]) ?>
+        <?= view('individual-page-menu', ['can_upload_media' => $can_upload_media, 'clipboard_facts' => $clipboard_facts, 'record' => $record, 'shares' => $shares]) ?>
     <?php endif ?>
 </div>
 
 <div class="row">
     <div class="col">
         <div class="row mb-4">
-            <?= view('individual-page-images', ['individual_media' => $individual_media, 'record' => $record, 'tree' => $tree]) ?>
+            <?= view('individual-page-images', ['can_upload_media' => $can_upload_media, 'individual_media' => $individual_media, 'record' => $record, 'tree' => $tree]) ?>
 
             <?= view('individual-page-names', ['record' => $record]) ?>
         </div>

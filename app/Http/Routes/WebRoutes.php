@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +20,7 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\Routes;
 
 use Aura\Router\Map;
+use Aura\Router\Route;
 use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\Http\Middleware\AuthAdministrator;
 use Fisharebest\Webtrees\Http\Middleware\AuthEditor;
@@ -46,6 +47,8 @@ use Fisharebest\Webtrees\Http\RequestHandlers\AddUnlinkedAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\AddUnlinkedPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\AdminMediaFileDownload;
 use Fisharebest\Webtrees\Http\RequestHandlers\AdminMediaFileThumbnail;
+use Fisharebest\Webtrees\Http\RequestHandlers\AdsTxt;
+use Fisharebest\Webtrees\Http\RequestHandlers\AppAdsTxt;
 use Fisharebest\Webtrees\Http\RequestHandlers\AppleTouchIconPng;
 use Fisharebest\Webtrees\Http\RequestHandlers\AutoCompleteCitation;
 use Fisharebest\Webtrees\Http\RequestHandlers\AutoCompleteFolder;
@@ -258,16 +261,16 @@ use Fisharebest\Webtrees\Http\RequestHandlers\SearchPhoneticPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\SearchQuickAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\SearchReplaceAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\SearchReplacePage;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2Family;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2Individual;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2Location;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2MediaObject;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2Note;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2Place;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2Repository;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2Source;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2Submission;
-use Fisharebest\Webtrees\Http\RequestHandlers\Select2Submitter;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectFamily;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectIndividual;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectLocation;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectMediaObject;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectNote;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectPlace;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectRepository;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectSource;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectSubmission;
+use Fisharebest\Webtrees\Http\RequestHandlers\TomSelectSubmitter;
 use Fisharebest\Webtrees\Http\RequestHandlers\SelectDefaultTree;
 use Fisharebest\Webtrees\Http\RequestHandlers\SelectLanguage;
 use Fisharebest\Webtrees\Http\RequestHandlers\SelectNewFact;
@@ -331,7 +334,7 @@ use Fisharebest\Webtrees\Http\RequestHandlers\WebmanifestJson;
 class WebRoutes
 {
     /**
-     * @param Map $router
+     * @param Map<Route> $router
      *
      * @return void
      */
@@ -347,8 +350,8 @@ class WebRoutes
                 ]);
 
                 $router->get(ControlPanel::class, '');
-                $router->get(BroadcastPage::class, '/broadcast');
-                $router->post(BroadcastAction::class, '/broadcast');
+                $router->get(BroadcastPage::class, '/broadcast/{to}');
+                $router->post(BroadcastAction::class, '/broadcast/{to}');
                 $router->get(CleanDataFolder::class, '/clean');
                 $router->post(DeletePath::class, '/delete-path');
                 $router->get(EmailPreferencesPage::class, '/email');
@@ -504,8 +507,8 @@ class WebRoutes
                 $router->get(TreePageEdit::class, '/tree-page-edit');
                 $router->post(GedcomLoad::class, '/load');
                 $router->post(TreePageUpdate::class, '/tree-page-update');
-                $router->get(TreePageBlockEdit::class, '/tree-page-block-edit');
-                $router->post(TreePageBlockUpdate::class, '/tree-page-block-edit');
+                $router->get(TreePageBlockEdit::class, '/tree-page-block-edit/{block_id}');
+                $router->post(TreePageBlockUpdate::class, '/tree-page-block-update/{block_id}');
                 $router->get(TreePrivacyPage::class, '/privacy');
                 $router->post(TreePrivacyAction::class, '/privacy');
                 $router->get(UnconnectedPage::class, '/unconnected');
@@ -539,7 +542,6 @@ class WebRoutes
                 $router->get(AutoCompleteCitation::class, '/autocomplete/citation');
                 $router->get(AutoCompleteFolder::class, '/autocomplete/folder');
                 $router->get(AutoCompletePlace::class, '/autocomplete/place');
-                $router->get(AutoCompleteSurname::class, '/autocomplete/surname');
                 $router->get(AddChildToFamilyPage::class, '/add-child-to-family/{xref}/{sex}');
                 $router->post(AddChildToFamilyAction::class, '/add-child-to-family/{xref}');
                 $router->get(AddNewFact::class, '/add-fact/{xref}/{fact}');
@@ -624,8 +626,8 @@ class WebRoutes
                 $router->get(UserPageBlock::class, '/my-page-block');
                 $router->get(UserPageEdit::class, '/my-page-edit');
                 $router->post(UserPageUpdate::class, '/my-page-edit');
-                $router->get(UserPageBlockEdit::class, '/my-page-block-edit');
-                $router->post(UserPageBlockUpdate::class, '/my-page-block-edit');
+                $router->get(UserPageBlockEdit::class, '/my-page-block-edit/{block_id}');
+                $router->post(UserPageBlockUpdate::class, '/my-page-block-edit/{block_id}');
             });
 
             // User routes without a tree.
@@ -658,6 +660,7 @@ class WebRoutes
             // Visitor routes with a tree.
             $router->attach('', '/tree/{tree}', static function (Map $router) {
                 $router->get(TreePage::class, '');
+                $router->get(AutoCompleteSurname::class, '/autocomplete/surname');
                 $router->get(CalendarPage::class, '/calendar/{view}');
                 $router->post(CalendarAction::class, '/calendar/{view}');
                 $router->get(CalendarEvents::class, '/calendar-events/{view}');
@@ -685,19 +688,19 @@ class WebRoutes
                 $router->get(SearchPhoneticPage::class, '/search-phonetic');
                 $router->post(SearchPhoneticAction::class, '/search-phonetic');
                 $router->post(SearchQuickAction::class, '/search-quick');
-                $router->post(Select2Family::class, '/select2-family');
-                $router->post(Select2Individual::class, '/select2-individual');
-                $router->post(Select2Location::class, '/select2-location');
-                $router->post(Select2MediaObject::class, '/select2-media');
-                $router->post(Select2Note::class, '/select2-note');
-                $router->post(Select2Place::class, '/select2-place');
-                $router->post(Select2Source::class, '/select2-source');
-                $router->post(Select2Submission::class, '/select2-submission');
-                $router->post(Select2Submitter::class, '/select2-submitter');
-                $router->post(Select2Repository::class, '/select2-repository');
                 $router->get(SourcePage::class, '/source/{xref}{/slug}');
                 $router->get(SubmissionPage::class, '/submission/{xref}{/slug}');
                 $router->get(SubmitterPage::class, '/submitter/{xref}{/slug}');
+                $router->get(TomSelectFamily::class, '/tom-select-family');
+                $router->get(TomSelectIndividual::class, '/tom-select-individual');
+                $router->get(TomSelectLocation::class, '/tom-select-location');
+                $router->get(TomSelectMediaObject::class, '/tom-select-media');
+                $router->get(TomSelectNote::class, '/tom-select-note');
+                $router->get(TomSelectPlace::class, '/tom-select-place');
+                $router->get(TomSelectSource::class, '/tom-select-source');
+                $router->get(TomSelectSubmission::class, '/tom-select-submission');
+                $router->get(TomSelectSubmitter::class, '/tom-select-submitter');
+                $router->get(TomSelectRepository::class, '/tom-select-repository');
                 $router->get(TreePageBlock::class, '/tree-page-block');
                 $router->get('example', '/…')
                     ->isRoutable(false);
@@ -721,6 +724,8 @@ class WebRoutes
             $router->get(HomePage::class, '/');
 
             // Special files, either dynamic or need to be in the root folder.
+            $router->get(AdsTxt::class, '/ads.txt');
+            $router->get(AppAdsTxt::class, '/app-ads.txt');
             $router->get(AppleTouchIconPng::class, '/apple-touch-icon.png');
             $router->get(BrowserconfigXml::class, '/browserconfig.xml');
             $router->get(FaviconIco::class, '/favicon.ico');

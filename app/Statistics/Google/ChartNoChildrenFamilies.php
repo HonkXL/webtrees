@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,32 +24,26 @@ use Fisharebest\Webtrees\Statistics\Service\CenturyService;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\JoinClause;
-use stdClass;
+
+use function view;
 
 /**
  * A chart showing the number of families with no children by century.
  */
 class ChartNoChildrenFamilies
 {
-    /**
-     * @var Tree
-     */
-    private $tree;
+    private Tree $tree;
+
+    private CenturyService $century_service;
 
     /**
-     * @var CenturyService
+     * @param CenturyService $century_service
+     * @param Tree           $tree
      */
-    private $century_service;
-
-    /**
-     * Constructor.
-     *
-     * @param Tree $tree
-     */
-    public function __construct(Tree $tree)
+    public function __construct(CenturyService $century_service, Tree $tree)
     {
+        $this->century_service = $century_service;
         $this->tree            = $tree;
-        $this->century_service = new CenturyService();
     }
 
     /**
@@ -58,7 +52,7 @@ class ChartNoChildrenFamilies
      * @param int $year1
      * @param int $year2
      *
-     * @return array<stdClass>
+     * @return array<object>
      */
     private function queryRecords(int $year1, int $year2): array
     {
@@ -133,7 +127,9 @@ class ChartNoChildrenFamilies
                 'title' => I18N::translate('Total families'),
             ],
             'hAxis' => [
-                'title' => I18N::translate('Century'),
+                'showTextEvery' => 1,
+                'slantedText'   => false,
+                'title'         => I18N::translate('Century'),
             ],
             'colors' => [
                 '#84beff'

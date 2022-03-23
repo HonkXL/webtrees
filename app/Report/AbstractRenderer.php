@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,8 +23,6 @@ use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\MediaFile;
 use Fisharebest\Webtrees\Webtrees;
 use League\Flysystem\FilesystemOperator;
-
-use function current;
 
 /**
  * Class AbstractRenderer - base for PDF and HTML reports
@@ -394,10 +392,10 @@ abstract class AbstractRenderer
      *
      * @param string $s Style name
      *
-     * @return array
+     * @return array<string>
      */
     public function getStyle(string $s): array
     {
-        return $this->styles[$s] ?? current($this->styles);
+        return $this->styles[$s];
     }
 }

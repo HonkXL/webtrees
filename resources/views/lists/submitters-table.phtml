@@ -9,8 +9,8 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 
 /**
- * @var Collection<Submitter> $submitters
- * @var Tree                  $tree
+ * @var Collection<int,Submitter> $submitters
+ * @var Tree                      $tree
  */
 
 ?>
@@ -55,7 +55,7 @@ $count_families = DB::table('families')
         ['visible' => array_sum($count_individuals) > 0],
         ['visible' => array_sum($count_families) > 0],
         ['visible' => (bool) $tree->getPreference('SHOW_LAST_CHANGE'), 'searchable' => false],
-    ])) ?>"
+    ], JSON_THROW_ON_ERROR)) ?>"
     data-searchable="true"
 >
     <caption class="visually-hidden">
@@ -88,7 +88,7 @@ $count_families = DB::table('families')
                     <?= I18N::number($count_families[$submitter->xref()] ?? 0) ?>
                 </td>
 
-                <td data-sort="<?= $submitter->lastChangeTimestamp()->unix() ?>">
+                <td data-sort="<?= $submitter->lastChangeTimestamp()->timestamp() ?>">
                     <?= view('components/datetime', ['timestamp' => $submitter->lastChangeTimestamp()]) ?>
                 </td>
             </tr>

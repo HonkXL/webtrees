@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,7 +27,6 @@ use Fisharebest\Webtrees\Webtrees;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Throwable;
 
 use function filter_var;
 use function gethostbyaddr;
@@ -80,7 +79,12 @@ class EmailPreferencesPage implements RequestHandlerInterface
         $DKIM_SELECTOR  = Site::getPreference('DKIM_SELECTOR');
         $DKIM_KEY       = Site::getPreference('DKIM_KEY');
 
-        $hostname = gethostbyaddr(gethostbyname(gethostname() ?: 'localhost'));
+        $hostname = gethostname() ?: 'localhost';
+        $ip       = gethostbyname($hostname);
+
+        if ($ip !== $hostname) {
+            $hostname = gethostbyaddr($ip);
+        }
 
         // Defaults
         $SMTP_PORT      = $SMTP_PORT ?: '25';

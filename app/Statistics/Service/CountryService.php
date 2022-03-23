@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -555,6 +555,7 @@ class CountryService
     public function iso3166(): array
     {
         return [
+            'GBR' => 'GB', // Must come before ENG, NIR, SCT and WLS
             'ABW' => 'AW',
             'AFG' => 'AF',
             'AGO' => 'AO',
@@ -632,7 +633,6 @@ class CountryService
             'FRO' => 'FO',
             'FSM' => 'FM',
             'GAB' => 'GA',
-            'GBR' => 'GB',
             'GEO' => 'GE',
             'GHA' => 'GH',
             'GIB' => 'GI',
@@ -665,7 +665,7 @@ class CountryService
             'ITA' => 'IT',
             'JAM' => 'JM',
             'JOR' => 'JO',
-            'JPN' => 'JA',
+            'JPN' => 'JP',
             'KAZ' => 'KZ',
             'KEN' => 'KE',
             'KGZ' => 'KG',

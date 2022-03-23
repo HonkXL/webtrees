@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -37,28 +37,6 @@ class FabTheme extends AbstractModule implements ModuleThemeInterface
     {
         /* I18N: Name of a theme. */
         return I18N::translate('F.A.B.');
-    }
-
-    /**
-     * Miscellaneous dimensions, fonts, styles, etc.
-     *
-     * @param string $parameter_name
-     *
-     * @return string
-     */
-    public function parameter($parameter_name): string
-    {
-        $parameters = [
-            'chart-background-f'             => 'e9daf1',
-            'chart-background-m'             => 'b1cff0',
-            'chart-background-u'             => 'eeeeee',
-            'chart-font-color'               => '000000',
-            'distribution-chart-high-values' => '9ca3d4',
-            'distribution-chart-low-values'  => 'e5e6ef',
-            'distribution-chart-no-values'   => 'ffffff',
-        ];
-
-        return $parameters[$parameter_name];
     }
 
     /**

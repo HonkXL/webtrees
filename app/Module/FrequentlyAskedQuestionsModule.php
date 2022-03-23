@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,14 +25,13 @@ use Fisharebest\Webtrees\Menu;
 use Fisharebest\Webtrees\Services\HtmlService;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use stdClass;
 
-use function assert;
 use function redirect;
 use function route;
 
@@ -44,11 +43,9 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
     use ModuleConfigTrait;
     use ModuleMenuTrait;
 
-    /** @var HtmlService */
-    private $html_service;
+    private HtmlService $html_service;
 
-    /** @var TreeService */
-    private $tree_service;
+    private TreeService $tree_service;
 
     /**
      * FrequentlyAskedQuestionsModule constructor.
@@ -124,7 +121,7 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
         $this->layout = 'layouts/administration';
 
         // This module can't run without a tree
-        $tree = $request->getAttribute('tree');
+        $tree = Validator::attributes($request)->treeOptional();
 
         if (!$tree instanceof Tree) {
             $tree = $this->tree_service->all()->first();
@@ -222,7 +219,7 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
         $swap_block = DB::table('block')
             ->where('module_name', '=', $this->name())
             ->where('block_order', '>', $block_order)
-            ->orderBy('block_order', 'asc')
+            ->orderBy('block_order')
             ->first();
 
         if ($block_order !== null && $swap_block !== null) {
@@ -391,12 +388,11 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
      */
     public function getShowAction(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
+        $tree = Validator::attributes($request)->tree();
 
         // Filter foreign languages.
         $faqs = $this->faqsForTree($tree)
-            ->filter(static function (stdClass $faq): bool {
+            ->filter(static function (object $faq): bool {
                 return $faq->languages === '' || in_array(I18N::languageTag(), explode(',', $faq->languages), true);
             });
 
@@ -410,7 +406,7 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
     /**
      * @param Tree $tree
      *
-     * @return Collection<stdClass>
+     * @return Collection<int,object>
      */
     private function faqsForTree(Tree $tree): Collection
     {
@@ -451,7 +447,7 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
             })
             ->select(['setting_value AS languages'])
             ->get()
-            ->filter(static function (stdClass $faq) use ($language): bool {
+            ->filter(static function (object $faq) use ($language): bool {
                 return $faq->languages === '' || in_array($language, explode(',', $faq->languages), true);
             })
             ->isNotEmpty();

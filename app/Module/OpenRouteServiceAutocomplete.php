@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -137,17 +137,25 @@ class OpenRouteServiceAutocomplete extends AbstractModule implements ModuleConfi
         $results = json_decode($body, false, 512, JSON_THROW_ON_ERROR);
 
         foreach ($results->features as $result) {
+            $result->properties->name ??= null;
+            $result->properties->county ??= null;
+            $result->properties->region ??= null;
+            $result->properties->macroregion ??= null;
+            $result->properties->country ??= null;
+
             if ($result->properties->country === 'United Kingdom') {
                 // macroregion will contain England, Scotland, etc.
                 $result->properties->country = null;
+                // region will contain the county.
+                $result->properties->region = null;
             }
 
             $parts = [
-                $result->properties->name ?? null,
-                $result->properties->county ?? null,
-                $result->properties->region ?? null,
-                $result->properties->macroregion ?? null,
-                $result->properties->country ?? null,
+                $result->properties->name,
+                $result->properties->county,
+                $result->properties->region,
+                $result->properties->macroregion,
+                $result->properties->country,
             ];
 
             $places[] = implode(Gedcom::PLACE_SEPARATOR, array_filter($parts)) ?: $result->properties->label;

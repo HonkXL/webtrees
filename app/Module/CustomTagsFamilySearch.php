@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -48,6 +48,16 @@ class CustomTagsFamilySearch extends AbstractModule implements ModuleConfigInter
     {
         return [
             'INDI:_FSFTID' => /* I18N: familysearch.org */ new FamilySearchFamilyTreeId(I18N::translate('FamilySearch ID')),
+        ];
+    }
+
+    /**
+     * @return array<string,array<int,array<int,string>>>
+     */
+    public function customSubTags(): array
+    {
+        return [
+            'INDI' => [['_FSFTID', '0:1']],
         ];
     }
 

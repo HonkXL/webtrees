@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -36,6 +36,8 @@ class TopPageViewsModule extends AbstractModule implements ModuleBlockInterface
 
     private const DEFAULT_NUMBER_TO_SHOW = '10';
 
+    private const PAGES = ['individual.php', 'family.php', 'source.php', 'repo.php', 'note.php', 'mediaviewer.php'];
+
     /**
      * How should this module be identified in the control panel, etc.?
      *
@@ -61,10 +63,10 @@ class TopPageViewsModule extends AbstractModule implements ModuleBlockInterface
     /**
      * Generate the HTML content of this block.
      *
-     * @param Tree          $tree
-     * @param int           $block_id
-     * @param string        $context
-     * @param array<string> $config
+     * @param Tree                 $tree
+     * @param int                  $block_id
+     * @param string               $context
+     * @param array<string,string> $config
      *
      * @return string
      */
@@ -76,7 +78,7 @@ class TopPageViewsModule extends AbstractModule implements ModuleBlockInterface
 
         $query = DB::table('hit_counter')
             ->where('gedcom_id', '=', $tree->id())
-            ->whereIn('page_name', ['individual.php','family.php','source.php','repo.php','note.php','mediaviewer.php'])
+            ->whereIn('page_name', self::PAGES)
             ->orderByDesc('page_count');
 
         $results = [];

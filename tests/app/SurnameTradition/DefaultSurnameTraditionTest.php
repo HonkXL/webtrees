@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -32,18 +32,6 @@ class DefaultSurnameTraditionTest extends TestCase
     private SurnameTraditionInterface $surname_tradition;
 
     /**
-     * Test whether married surnames are used
-     *
-     * @covers \Fisharebest\Webtrees\SurnameTradition\DefaultSurnameTradition
-     *
-     * @return void
-     */
-    public function testMarriedSurnames(): void
-    {
-        self::assertFalse($this->surname_tradition->hasMarriedNames());
-    }
-
-    /**
      * Test whether surnames are used
      *
      * @covers \Fisharebest\Webtrees\SurnameTradition\DefaultSurnameTradition
@@ -52,7 +40,7 @@ class DefaultSurnameTraditionTest extends TestCase
      */
     public function testSurnames(): void
     {
-        self::assertTrue($this->surname_tradition->hasSurnames());
+        self::assertSame('//', $this->surname_tradition->defaultName());
     }
 
     /**
@@ -65,16 +53,16 @@ class DefaultSurnameTraditionTest extends TestCase
     public function testNewChildNames(): void
     {
         $father_fact = $this->createStub(Fact::class);
-        $father_fact->expects(self::any())->method('value')->willReturn('Chris /White/');
+        $father_fact->method('value')->willReturn('Chris /White/');
 
         $father = $this->createStub(Individual::class);
-        $father->expects(self::any())->method('facts')->willReturn(new Collection([$father]));
+        $father->method('facts')->willReturn(new Collection([$father]));
 
         $mother_fact = $this->createStub(Fact::class);
-        $mother_fact->expects(self::any())->method('value')->willReturn('Chris /White/');
+        $mother_fact->method('value')->willReturn('Chris /White/');
 
         $mother = $this->createStub(Individual::class);
-        $mother->expects(self::any())->method('facts')->willReturn(new Collection([$mother_fact]));
+        $mother->method('facts')->willReturn(new Collection([$mother_fact]));
 
         self::assertSame(
             ["1 NAME //\n2 TYPE birth"],
@@ -102,10 +90,10 @@ class DefaultSurnameTraditionTest extends TestCase
     public function testNewParentNames(): void
     {
         $fact = $this->createStub(Fact::class);
-        $fact->expects(self::any())->method('value')->willReturn('Chris /White/');
+        $fact->method('value')->willReturn('Chris /White/');
 
         $individual = $this->createStub(Individual::class);
-        $individual->expects(self::any())->method('facts')->willReturn(new Collection([$fact]));
+        $individual->method('facts')->willReturn(new Collection([$fact]));
 
         self::assertSame(
             ["1 NAME //\n2 TYPE birth"],
@@ -133,10 +121,10 @@ class DefaultSurnameTraditionTest extends TestCase
     public function testNewSpouseNames(): void
     {
         $fact = $this->createStub(Fact::class);
-        $fact->expects(self::any())->method('value')->willReturn('Chris /White/');
+        $fact->method('value')->willReturn('Chris /White/');
 
         $individual = $this->createStub(Individual::class);
-        $individual->expects(self::any())->method('facts')->willReturn(new Collection([$fact]));
+        $individual->method('facts')->willReturn(new Collection([$fact]));
 
         self::assertSame(
             ["1 NAME //\n2 TYPE birth"],

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,12 +19,13 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
-use Exception;
 use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Http\Exceptions\HttpAccessDeniedException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\MediaFileService;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -35,7 +36,7 @@ use function response;
 use function view;
 
 /**
- * dd a new media file to a media object.
+ * Add a new media file to a media object.
  */
 class AddMediaFileModal implements RequestHandlerInterface
 {
@@ -60,11 +61,8 @@ class AddMediaFileModal implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $xref = $request->getAttribute('xref');
-        assert(is_string($xref));
+        $tree = Validator::attributes($request)->tree();
+        $xref = Validator::attributes($request)->isXref()->string('xref');
 
         $data_filesystem = Registry::filesystem()->data();
 
@@ -72,7 +70,7 @@ class AddMediaFileModal implements RequestHandlerInterface
 
         try {
             $media = Auth::checkMediaAccess($media);
-        } catch (Exception $ex) {
+        } catch (HttpNotFoundException | HttpAccessDeniedException $ex) {
             return response(view('modals/error', [
                 'title' => I18N::translate('Add a media file'),
                 'error' => $ex->getMessage(),

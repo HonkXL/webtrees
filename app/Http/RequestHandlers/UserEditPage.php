@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -81,7 +81,7 @@ class UserEditPage implements RequestHandlerInterface
         $user    = $this->user_service->find($user_id);
 
         if ($user === null) {
-            throw new HttpNotFoundException(I18N::translate('%1$s does not exist.', 'user_id:' . $user_id));
+            throw new HttpNotFoundException(I18N::translate('%s does not exist.', 'user_id:' . $user_id));
         }
 
         $languages = $this->module_service->findByInterface(ModuleLanguageInterface::class, true, true)

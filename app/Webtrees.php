@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,7 +22,9 @@ namespace Fisharebest\Webtrees;
 use Closure;
 use ErrorException;
 use Fisharebest\Webtrees\Factories\CacheFactory;
+use Fisharebest\Webtrees\Factories\CalendarDateFactory;
 use Fisharebest\Webtrees\Factories\ElementFactory;
+use Fisharebest\Webtrees\Factories\EncodingFactory;
 use Fisharebest\Webtrees\Factories\FamilyFactory;
 use Fisharebest\Webtrees\Factories\FilesystemFactory;
 use Fisharebest\Webtrees\Factories\GedcomRecordFactory;
@@ -34,12 +36,17 @@ use Fisharebest\Webtrees\Factories\MarkdownFactory;
 use Fisharebest\Webtrees\Factories\MediaFactory;
 use Fisharebest\Webtrees\Factories\NoteFactory;
 use Fisharebest\Webtrees\Factories\RepositoryFactory;
+use Fisharebest\Webtrees\Factories\ResponseFactory;
+use Fisharebest\Webtrees\Factories\RouteFactory;
 use Fisharebest\Webtrees\Factories\SlugFactory;
 use Fisharebest\Webtrees\Factories\SourceFactory;
 use Fisharebest\Webtrees\Factories\SubmissionFactory;
 use Fisharebest\Webtrees\Factories\SubmitterFactory;
+use Fisharebest\Webtrees\Factories\TimestampFactory;
 use Fisharebest\Webtrees\Factories\XrefFactory;
+use Fisharebest\Webtrees\GedcomFilters\GedcomEncodingFilter;
 use Fisharebest\Webtrees\Http\Middleware\BadBotBlocker;
+use Fisharebest\Webtrees\Http\Middleware\BaseUrl;
 use Fisharebest\Webtrees\Http\Middleware\BootModules;
 use Fisharebest\Webtrees\Http\Middleware\CheckForMaintenanceMode;
 use Fisharebest\Webtrees\Http\Middleware\ClientIp;
@@ -55,12 +62,10 @@ use Fisharebest\Webtrees\Http\Middleware\Router;
 use Fisharebest\Webtrees\Http\Middleware\SecurityHeaders;
 use Fisharebest\Webtrees\Http\Middleware\UpdateDatabaseSchema;
 use Fisharebest\Webtrees\Http\Middleware\UseDatabase;
-use Fisharebest\Webtrees\Http\Middleware\UseDebugbar;
 use Fisharebest\Webtrees\Http\Middleware\UseLanguage;
 use Fisharebest\Webtrees\Http\Middleware\UseSession;
 use Fisharebest\Webtrees\Http\Middleware\UseTheme;
 use Fisharebest\Webtrees\Http\Middleware\UseTransaction;
-use Fisharebest\Webtrees\Http\Middleware\BaseUrl;
 use Illuminate\Container\Container;
 use Middleland\Dispatcher;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -80,6 +85,7 @@ use function error_reporting;
 use function is_string;
 use function mb_internal_encoding;
 use function set_error_handler;
+use function stream_filter_register;
 
 use const E_ALL;
 use const E_DEPRECATED;
@@ -97,7 +103,7 @@ class Webtrees
     // The system files are always in this location.
     // It is also the default location of user data, such as media and GEDCOM files.
     // The user files could be anywhere supported by Flysystem.
-    public const DATA_DIR  = self::ROOT_DIR . 'data/';
+    public const DATA_DIR = self::ROOT_DIR . 'data/';
 
     // Location of the file containing the database connection details.
     public const CONFIG_FILE = self::DATA_DIR . 'config.ini.php';
@@ -115,6 +121,12 @@ class Webtrees
     // We want to know about all PHP errors during development, and fewer in production.
     public const ERROR_REPORTING = self::DEBUG ? E_ALL : E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED;
 
+    // Page layouts for various page types.
+    public const LAYOUT_ADMINISTRATION = 'layouts/administration';
+    public const LAYOUT_AJAX           = 'layouts/ajax';
+    public const LAYOUT_DEFAULT        = 'layouts/default';
+    public const LAYOUT_ERROR          = 'layouts/error';
+
     // The name of the application.
     public const NAME = 'webtrees';
 
@@ -122,7 +134,7 @@ class Webtrees
     public const SCHEMA_VERSION = 45;
 
     // e.g. "-dev", "-alpha", "-beta", etc.
-    public const STABILITY = '-dev';
+    public const STABILITY = '-beta.1';
 
     // Version number
     public const VERSION = '2.1.0' . self::STABILITY;
@@ -147,7 +159,6 @@ class Webtrees
         CompressResponse::class,
         BadBotBlocker::class,
         UseDatabase::class,
-        UseDebugbar::class,
         UpdateDatabaseSchema::class,
         UseSession::class,
         UseLanguage::class,
@@ -180,9 +191,11 @@ class Webtrees
 
         // Factory objects
         Registry::cache(new CacheFactory());
+        Registry::calendarDateFactory(new CalendarDateFactory());
+        Registry::elementFactory(new ElementFactory());
+        Registry::encodingFactory(new EncodingFactory());
         Registry::familyFactory(new FamilyFactory());
         Registry::filesystem(new FilesystemFactory());
-        Registry::elementFactory(new ElementFactory());
         Registry::gedcomRecordFactory(new GedcomRecordFactory());
         Registry::headerFactory(new HeaderFactory());
         Registry::imageFactory(new ImageFactory());
@@ -192,11 +205,16 @@ class Webtrees
         Registry::mediaFactory(new MediaFactory());
         Registry::noteFactory(new NoteFactory());
         Registry::repositoryFactory(new RepositoryFactory());
+        Registry::responseFactory(new ResponseFactory(new Psr17Factory(), new Psr17Factory()));
+        Registry::routeFactory(new RouteFactory());
         Registry::slugFactory(new SlugFactory());
         Registry::sourceFactory(new SourceFactory());
         Registry::submissionFactory(new SubmissionFactory());
         Registry::submitterFactory(new SubmitterFactory());
+        Registry::timestampFactory(new TimestampFactory());
         Registry::xrefFactory(new XrefFactory());
+
+        stream_filter_register(GedcomEncodingFilter::class, GedcomEncodingFilter::class);
     }
 
     /**
@@ -210,20 +228,24 @@ class Webtrees
     }
 
     /**
-     * Response to an HTTP request.
+     * Respond to an HTTP request.
      *
      * @return ResponseInterface
      */
     public function httpRequest(): ResponseInterface
     {
-        // PSR7 messages and PSR17 message-factories
-        self::set(ResponseFactoryInterface::class, Psr17Factory::class);
-        self::set(ServerRequestFactoryInterface::class, Psr17Factory::class);
-        self::set(StreamFactoryInterface::class, Psr17Factory::class);
-        self::set(UploadedFileFactoryInterface::class, Psr17Factory::class);
-        self::set(UriFactoryInterface::class, Psr17Factory::class);
+        $psr17factory = new Psr17Factory();
 
-        $request = $this->captureRequest();
+        // PSR7 messages and PSR17 message-factories
+        self::set(ResponseFactoryInterface::class, $psr17factory);
+        self::set(ServerRequestFactoryInterface::class, $psr17factory);
+        self::set(StreamFactoryInterface::class, $psr17factory);
+        self::set(UploadedFileFactoryInterface::class, $psr17factory);
+        self::set(UriFactoryInterface::class, $psr17factory);
+
+        $server_request_creator = new ServerRequestCreator($psr17factory, $psr17factory, $psr17factory, $psr17factory);
+
+        $request = $server_request_creator->fromGlobals();
 
         return self::dispatch($request, self::MIDDLEWARE);
     }
@@ -256,16 +278,6 @@ class Webtrees
 
             return true;
         };
-    }
-
-    /**
-     * Build the request from the PHP super-globals.
-     *
-     * @return ServerRequestInterface
-     */
-    private function captureRequest(): ServerRequestInterface
-    {
-        return self::make(ServerRequestCreator::class)->fromGlobals();
     }
 
     /**

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,6 +24,7 @@ use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\Module\ModuleInterface;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
+use Fisharebest\Webtrees\Tree;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -66,7 +67,7 @@ abstract class AbstractModuleComponentPage implements RequestHandlerInterface
         $access_summary = $modules
             ->mapWithKeys(function (ModuleInterface $module) use ($interface): array {
                 $access_levels = $this->tree_service->all()
-                    ->map(static function ($tree) use ($interface, $module): int {
+                    ->map(static function (Tree $tree) use ($interface, $module): int {
                         return $module->accessLevel($tree, $interface);
                     })
                     ->uniqueStrict()

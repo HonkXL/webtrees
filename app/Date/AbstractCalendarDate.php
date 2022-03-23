@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -21,14 +21,12 @@ namespace Fisharebest\Webtrees\Date;
 
 use Fisharebest\ExtCalendar\CalendarInterface;
 use Fisharebest\ExtCalendar\JewishCalendar;
-use Fisharebest\Webtrees\Carbon;
 use Fisharebest\Webtrees\Http\RequestHandlers\CalendarPage;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Tree;
 use InvalidArgumentException;
 
-use function array_key_exists;
-use function array_search;
 use function get_class;
 use function intdiv;
 use function is_array;
@@ -59,25 +57,20 @@ abstract class AbstractCalendarDate
     public const ESCAPE = '@#DUNKNOWN@';
 
     // Convert GEDCOM month names to month numbers.
-    protected const MONTH_ABBREVIATIONS = [];
+    protected const MONTH_TO_NUMBER = [];
+    protected const NUMBER_TO_MONTH = [];
 
-    /** @var CalendarInterface The calendar system used to represent this date */
-    protected $calendar;
+    protected CalendarInterface $calendar;
 
-    /** @var int Year number */
-    public $year;
+    public int $year;
 
-    /** @var int Month number */
-    public $month;
+    public int $month;
 
-    /** @var int Day number */
-    public $day;
+    public int $day;
 
-    /** @var int Earliest Julian day number (start of month/year for imprecise dates) */
-    private $minimum_julian_day;
+    private int $minimum_julian_day;
 
-    /** @var int Latest Julian day number (end of month/year for imprecise dates) */
-    private $maximum_julian_day;
+    private int $maximum_julian_day;
 
     /**
      * Create a date from either:
@@ -101,12 +94,12 @@ abstract class AbstractCalendarDate
         // Construct from an array (of three gedcom-style strings: "1900", "FEB", "4")
         if (is_array($date)) {
             $this->day = (int) $date[2];
-            if (array_key_exists($date[1], static::MONTH_ABBREVIATIONS)) {
-                $this->month = static::MONTH_ABBREVIATIONS[$date[1]];
-            } else {
-                $this->month = 0;
+            $this->month = static::MONTH_TO_NUMBER[$date[1]] ?? 0;
+
+            if ($this->month === 0) {
                 $this->day   = 0;
             }
+
             $this->year = $this->extractYear($date[0]);
 
             // Our simple lookup table above does not take into account Adar and leap-years.
@@ -144,7 +137,7 @@ abstract class AbstractCalendarDate
         // ...else construct an inequivalent xxxxDate object
         if ($date->year === 0) {
             // Incomplete date - convert on basis of anniversary in current year
-            $today = $date->calendar->jdToYmd(Carbon::now()->julianDay());
+            $today = $date->calendar->jdToYmd(Registry::timestampFactory()->now()->julianDay());
             $jd    = $date->calendar->ymdToJd($today[0], $date->month, $date->day === 0 ? $today[2] : $date->day);
         } else {
             // Complete date
@@ -793,7 +786,7 @@ abstract class AbstractCalendarDate
             return 'ADR';
         }
 
-        return array_search($this->month, static::MONTH_ABBREVIATIONS, true);
+        return static::NUMBER_TO_MONTH[$this->month] ?? '';
     }
 
     /**
@@ -850,7 +843,7 @@ abstract class AbstractCalendarDate
      */
     public function todayYmd(): array
     {
-        return $this->calendar->jdToYmd(Carbon::now()->julianDay());
+        return $this->calendar->jdToYmd(Registry::timestampFactory()->now()->julianDay());
     }
 
     /**

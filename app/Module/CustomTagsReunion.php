@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,6 +22,7 @@ namespace Fisharebest\Webtrees\Module;
 use Fisharebest\Webtrees\Contracts\ElementInterface;
 use Fisharebest\Webtrees\Elements\AddressEmail;
 use Fisharebest\Webtrees\Elements\CustomElement;
+use Fisharebest\Webtrees\Elements\PafUid;
 use Fisharebest\Webtrees\I18N;
 
 /**
@@ -48,12 +49,31 @@ class CustomTagsReunion extends AbstractModule implements ModuleConfigInterface,
     public function customTags(): array
     {
         return [
-            'INDI:EMAL'  => new AddressEmail(I18N::translate('Email address')),
+            'FAM:_UID'   => new PafUid(I18N::translate('Unique identifier')),
             'INDI:CITN'  => new CustomElement(I18N::translate('Citizenship')),
+            'INDI:EMAL'  => new AddressEmail(I18N::translate('Email address')),
             'INDI:_LEGA' => new CustomElement(I18N::translate('Legatee')),
             'INDI:_MDCL' => new CustomElement(I18N::translate('Medical')),
             'INDI:_PURC' => new CustomElement('Land purchase'),
             'INDI:_SALE' => new CustomElement('Land sale'),
+            'INDI:_UID'  => new PafUid(I18N::translate('Unique identifier')),
+            'OBJE:_UID'  => new PafUid(I18N::translate('Unique identifier')),
+            'REPO:_UID'  => new PafUid(I18N::translate('Unique identifier')),
+            'SOUR:_UID'  => new PafUid(I18N::translate('Unique identifier')),
+        ];
+    }
+
+    /**
+     * @return array<string,array<int,array<int,string>>>
+     */
+    public function customSubTags(): array
+    {
+        return [
+            'FAM'  => [['_UID', '0:M']],
+            'INDI' => [['_UID', '0:M']],
+            'OBJE' => [['_UID', '0:M']],
+            'REPO' => [['_UID', '0:M']],
+            'SOUR' => [['_UID', '0:M']],
         ];
     }
 

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,20 +19,18 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
+use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\MediaFileService;
 use Fisharebest\Webtrees\Services\PendingChangesService;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function assert;
-use function is_string;
 use function redirect;
-use function route;
 
 /**
  * Add a new media file to a media object.
@@ -64,21 +62,13 @@ class AddMediaFileAction implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $xref = $request->getAttribute('xref');
-        assert(is_string($xref));
-
-        $media = Registry::mediaFactory()->make($xref, $tree);
-
+        $tree   = Validator::attributes($request)->tree();
+        $xref   = Validator::attributes($request)->isXref()->string('xref');
+        $media  = Registry::mediaFactory()->make($xref, $tree);
+        $media  = Auth::checkMediaAccess($media, true);
         $params = (array) $request->getParsedBody();
         $title  = $params['title'] ?? '';
         $type   = $params['type'] ?? '';
-
-        if ($media === null || $media->isPendingDeletion() || !$media->canEdit()) {
-            return redirect(route(TreePage::class, ['tree' => $tree->name()]));
-        }
 
         $file = $this->media_file_service->uploadFile($request);
 

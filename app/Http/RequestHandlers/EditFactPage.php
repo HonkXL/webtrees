@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,7 +24,7 @@ use Fisharebest\Webtrees\Fact;
 use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\GedcomEditService;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -59,15 +59,9 @@ class EditFactPage implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $xref = $request->getAttribute('xref');
-        assert(is_string($xref));
-
-        $fact_id = $request->getAttribute('fact_id');
-        assert(is_string($fact_id));
-
+        $tree    = Validator::attributes($request)->tree();
+        $xref    = Validator::attributes($request)->isXref()->string('xref');
+        $fact_id = Validator::attributes($request)->string('fact_id');
         $include_hidden = (bool) ($request->getQueryParams()['include_hidden'] ?? false);
 
         $record = Registry::gedcomRecordFactory()->make($xref, $tree);
@@ -98,7 +92,7 @@ class EditFactPage implements RequestHandlerInterface
             ]);
         }
 
-        $title  = $record->fullName() . ' - ' . $fact->label();
+        $title = $record->fullName() . ' - ' . $fact->label();
 
         return $this->viewResponse('edit/edit-fact', [
             'can_edit_raw' => $can_edit_raw,

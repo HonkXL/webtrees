@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -30,24 +30,20 @@ use Fisharebest\Webtrees\Statistics\Repository\Interfaces\UserRepositoryInterfac
 use Fisharebest\Webtrees\Tree;
 
 use function count;
+use function e;
+use function route;
+use function view;
 
 /**
  * A repository providing methods for user related statistics.
  */
 class UserRepository implements UserRepositoryInterface
 {
-    /**
-     * @var Tree
-     */
-    private $tree;
-    /**
-     * @var UserService
-     */
-    private $user_service;
+    private Tree $tree;
+
+    private UserService $user_service;
 
     /**
-     * Constructor.
-     *
      * @param Tree        $tree
      * @param UserService $user_service
      */
@@ -64,7 +60,7 @@ class UserRepository implements UserRepositoryInterface
      *
      * @return string
      */
-    private function usersLoggedInQuery(string $type = 'nolist'): string
+    private function usersLoggedInQuery(string $type): string
     {
         $content   = '';
         $anonymous = 0;

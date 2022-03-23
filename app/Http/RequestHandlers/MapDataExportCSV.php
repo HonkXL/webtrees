@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,7 +26,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
-use stdClass;
 
 use function addcslashes;
 use function array_map;
@@ -128,7 +127,7 @@ class MapDataExportCSV implements RequestHandlerInterface
             $max_level = max($max_level, count($place->hierarchy));
         }
 
-        $places = array_map(function (stdClass $place) use ($max_level): array {
+        $places = array_map(function (object $place) use ($max_level): array {
             return array_merge(
                 [
                     count($place->hierarchy) - 1,

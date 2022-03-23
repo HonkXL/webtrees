@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -29,6 +29,8 @@ use function array_key_exists;
 use function array_map;
 use function e;
 use function is_numeric;
+use function nl2br;
+use function preg_replace;
 use function str_contains;
 use function str_starts_with;
 use function strip_tags;
@@ -40,8 +42,6 @@ use function view;
  */
 abstract class AbstractElement implements ElementInterface
 {
-    protected const REGEX_URL = '~((https?|ftp]):)(//([^\s/?#<>]*))?([^\s?#<>]*)(\?([^\s#<>]*))?(#[^\s?#<>]+)?~';
-
     // HTML attributes for an <input>
     protected const MAXIMUM_LENGTH = false;
     protected const PATTERN        = false;
@@ -86,6 +86,34 @@ abstract class AbstractElement implements ElementInterface
     }
 
     /**
+     * Convert a multi-line value to a canonical form.
+     *
+     * @param string $value
+     *
+     * @return string
+     */
+    protected function canonicalText(string $value): string
+    {
+        // Browsers use MS-DOS line endings in multi-line data.
+        $value = strtr($value, ["\t" => ' ', "\r\n" => "\n", "\r" => "\n"]);
+
+        // Remove blank lines at start/end
+        $value = preg_replace('/^( *\n)+/', '', $value);
+
+        return preg_replace('/(\n *)+$/', '', $value);
+    }
+
+    /**
+     * Should we collapse the children of this element when editing?
+     *
+     * @return bool
+     */
+    public function collapseChildren(): bool
+    {
+        return false;
+    }
+
+    /**
      * Create a default value for this element.
      *
      * @param Tree $tree
@@ -120,7 +148,7 @@ abstract class AbstractElement implements ElementInterface
             }
 
             // We may use markup to display values, but not when editing them.
-            $values = array_map(fn (string $x): string => strip_tags($x), $values);
+            $values = array_map(static fn (string $x): string => strip_tags($x), $values);
 
             return view('components/select', [
                 'id'       => $id,
@@ -169,7 +197,7 @@ abstract class AbstractElement implements ElementInterface
      */
     public function editTextArea(string $id, string $name, string $value): string
     {
-        return '<textarea class="form-control" id="' . e($id) . '" name="' . e($name) . '" rows="5" dir="auto">' . e($value) . '</textarea>';
+        return '<textarea class="form-control" id="' . e($id) . '" name="' . e($name) . '" rows="3" dir="auto">' . e($value) . '</textarea>';
     }
 
     /**
@@ -220,11 +248,9 @@ abstract class AbstractElement implements ElementInterface
      *
      * @return void
      */
-    public function subtag(string $subtag, string $repeat = '0:1', string $before = ''): void
+    public function subtag(string $subtag, string $repeat, string $before = ''): void
     {
-        if ($repeat === '') {
-            unset($this->subtags[$subtag]);
-        } elseif ($before === '' || ($this->subtags[$before] ?? null) === null) {
+        if ($before === '' || ($this->subtags[$before] ?? null) === null) {
             $this->subtags[$subtag] = $repeat;
         } else {
             $tmp = [];
@@ -262,7 +288,7 @@ abstract class AbstractElement implements ElementInterface
 
         if ($values === []) {
             if (str_contains($value, "\n")) {
-                return '<bdi class="d-inline-block" style="white-space: pre-wrap;">' . e($value) . '</bdi>';
+                return '<bdi class="d-inline-block">' . nl2br(e($value, false)) . '</bdi>';
             }
 
             return '<bdi>' . e($value) . '</bdi>';
@@ -295,12 +321,43 @@ abstract class AbstractElement implements ElementInterface
         $canonical = $this->canonical($value);
 
         if (str_contains($canonical, 'http://') || str_contains($canonical, 'https://')) {
-            $html = Registry::markdownFactory()->autolink()->convertToHtml($canonical);
+            $html = Registry::markdownFactory()->autolink($canonical);
 
             return strip_tags($html, ['a']);
         }
 
         return e($canonical);
+    }
+
+    /**
+     * Display the value of this type of element - multi-line text with/without markdown.
+     *
+     * @param string $value
+     * @param Tree   $tree
+     *
+     * @return string
+     */
+    protected function valueFormatted(string $value, Tree $tree): string
+    {
+        $canonical = $this->canonical($value);
+
+        $format = $tree->getPreference('FORMAT_TEXT');
+
+        switch ($format) {
+            case 'markdown':
+                $html = Registry::markdownFactory()->markdown($canonical, $tree);
+
+                return '<div class="markdown" dir="auto">' . $html . '</div>';
+
+            default:
+                $html = Registry::markdownFactory()->autolink($canonical, $tree);
+
+                if (str_contains($html, "\n")) {
+                    return '<div class="markdown" dir="auto">' . $html . '</div>';
+                }
+
+                return '<span class="markdown" dir="auto">' . $html . '</span>';
+        }
     }
 
     /**

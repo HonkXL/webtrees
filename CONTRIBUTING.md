@@ -15,7 +15,7 @@ If you want to submit a patch or feature, please create a pull request on Github
 Before submitting a pull request make sure you have [tested the code](#how-to-test) 
 and [followed the coding conventions](#coding-conventions).
 
-Please read more about [setting up your environment](#how-to-setup-the-environment) for development.
+Please read more about [setting up your environment](#how-to-setup-a-development-environment) for development.
 
 ## How to start
 
@@ -55,8 +55,6 @@ The instructions below assume you have created an alias/shortcut for `composer`.
 If not, you'll need to replace `composer` with `php /path/to/your/copy/of/composer.phar`.
 
 * You would usually run `composer install` before starting any develoment.  This loads all the development tools, including the PHP debug bar, the build scripts, the analysis and testing tools.  You would then run `composer install --no-dev` before committing any changes.
-
-* The PHP Debug Bar can set a large number of HTTP headers, and you may need to increase the size of buffers in your webserver configuration.  There are some notes in the file `app/Http/Middleware/UseDebugbar.php`.
 
 * You can use a "pre-commit hook" to run checks on your code before you commit them to your local repository.  To do this, rename the file `.git/hooks/pre-commit.sample` to `.git/hooks/pre-commit` and then add this line at the end of the file: `composer webtrees:pre-commit-hook`. 
 
@@ -103,8 +101,6 @@ Your code should follow the [PSR-12](https://www.php-fig.org/psr/psr-12/) Extend
 Please do not contribute your IDE directories (e.g. `.idea` or `.vscode`).
 
 ## Translations
-
-Please refer to the guide from the [official wiki](https://wiki.webtrees.net/en/Category:Translation_Guidelines).
 
 There is a [translators forum](http://webtrees.net/index.php/en/forum/8-translation) where you can discuss any issues relating to translation.
 

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -34,6 +34,13 @@ interface ElementInterface
      * @return string
      */
     public function canonical(string $value): string;
+
+    /**
+     * Should we collapse the children of this element when editing?
+     *
+     * @return bool
+     */
+    public function collapseChildren(): bool;
 
     /**
      * Create a default value for this element.
@@ -91,7 +98,7 @@ interface ElementInterface
      *
      * @return void
      */
-    public function subtag(string $subtag, string $repeat = '0:1', string $before = ''): void;
+    public function subtag(string $subtag, string $repeat, string $before = ''): void;
 
     /**
      * @return array<string,string>

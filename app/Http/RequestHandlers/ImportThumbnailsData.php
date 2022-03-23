@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,9 +26,9 @@ use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\SearchService;
 use Illuminate\Support\Collection;
 use Intervention\Image\ImageManager;
-use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
+use League\Flysystem\FilesystemReader;
 use League\Flysystem\StorageAttributes;
 use League\Flysystem\UnableToRetrieveMetadata;
 use Psr\Http\Message\ResponseInterface;
@@ -91,7 +91,7 @@ class ImportThumbnailsData implements RequestHandlerInterface
 
         // Fetch all thumbnails
         try {
-            $thumbnails = Collection::make($data_filesystem->listContents('', Filesystem::LIST_DEEP))
+            $thumbnails = Collection::make($data_filesystem->listContents('', FilesystemReader::LIST_DEEP))
                 ->filter(static function (StorageAttributes $attributes): bool {
                     return $attributes->isFile() && str_contains($attributes->path(), '/thumbs/');
                 })
@@ -193,7 +193,7 @@ class ImportThumbnailsData implements RequestHandlerInterface
         // The original filename was generated from the thumbnail filename.
         // It may not actually exist.
         try {
-            $file_exists =  $data_filesystem->fileExists($original);
+            $file_exists = $data_filesystem->fileExists($original);
         } catch (FilesystemException | UnableToRetrieveMetadata $ex) {
             $file_exists = false;
         }

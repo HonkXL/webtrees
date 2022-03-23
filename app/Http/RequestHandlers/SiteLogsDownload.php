@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -24,7 +24,6 @@ use Fisharebest\Webtrees\Services\SiteLogsService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use stdClass;
 
 use function response;
 use function str_replace;
@@ -54,7 +53,7 @@ class SiteLogsDownload implements RequestHandlerInterface
         $content = $this->site_logs_service->logsQuery($request->getQueryParams())
             ->orderBy('log_id')
             ->get()
-            ->map(static function (stdClass $row): string {
+            ->map(static function (object $row): string {
                 return
                     '"' . $row->log_time . '",' .
                     '"' . $row->log_type . '",' .

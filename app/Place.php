@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -26,8 +26,12 @@ use Fisharebest\Webtrees\Services\ModuleService;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
-use stdClass;
 
+use function app;
+use function e;
+use function is_object;
+use function preg_split;
+use function strip_tags;
 use function trim;
 
 use const PREG_SPLIT_NO_EMPTY;
@@ -37,14 +41,13 @@ use const PREG_SPLIT_NO_EMPTY;
  */
 class Place
 {
-    /** @var string e.g. "Westminster, London, England" */
-    private $place_name;
+    // "Westminster, London, England"
+    private string $place_name;
 
-    /** @var Collection<string> The parts of a place name, e.g. ["Westminster", "London", "England"] */
-    private $parts;
+    /** @var Collection<int,string> The parts of a place name, e.g. ["Westminster", "London", "England"] */
+    private Collection $parts;
 
-    /** @var Tree We may have the same place name in different trees. */
-    private $tree;
+    private Tree $tree;
 
     /**
      * Create a place.
@@ -82,7 +85,7 @@ class Place
                 ->where('p_id', '=', $id)
                 ->first();
 
-            if ($row instanceof stdClass) {
+            if (is_object($row)) {
                 $id = (int) $row->p_parent_id;
                 $parts->add($row->p_place);
             } else {
@@ -158,7 +161,7 @@ class Place
      *
      * @param int $n
      *
-     * @return Collection<string>
+     * @return Collection<int,string>
      */
     public function firstParts(int $n): Collection
     {
@@ -170,7 +173,7 @@ class Place
      *
      * @param int $n
      *
-     * @return Collection<string>
+     * @return Collection<int,string>
      */
     public function lastParts(int $n): Collection
     {

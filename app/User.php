@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -22,7 +22,8 @@ namespace Fisharebest\Webtrees;
 use Closure;
 use Fisharebest\Webtrees\Contracts\UserInterface;
 use Illuminate\Database\Capsule\Manager as DB;
-use stdClass;
+
+use function is_string;
 
 /**
  * Provide an interface to the wt_user table.
@@ -150,7 +151,7 @@ class User implements UserInterface
      *
      * @param string $user_name
      *
-     * @return $this
+     * @return self
      */
     public function setUserName(string $user_name): self
     {
@@ -236,7 +237,7 @@ class User implements UserInterface
             ->where('user_id', '=', $this->id())
             ->value('password');
 
-        if ($password_hash !== null && password_verify($password, $password_hash)) {
+        if (is_string($password_hash) && password_verify($password, $password_hash)) {
             if (password_needs_rehash($password_hash, PASSWORD_DEFAULT)) {
                 $this->setPassword($password);
             }
@@ -254,7 +255,7 @@ class User implements UserInterface
      */
     public static function rowMapper(): Closure
     {
-        return static function (stdClass $row): User {
+        return static function (object $row): User {
             return new self((int) $row->user_id, $row->user_name, $row->real_name, $row->email);
         };
     }

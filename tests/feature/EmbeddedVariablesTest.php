@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,9 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees;
 
 use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\Services\GedcomImportService;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\Services\UserService;
+use Fisharebest\Webtrees\Statistics\Service\CenturyService;
+use Fisharebest\Webtrees\Statistics\Service\ColorService;
+use Fisharebest\Webtrees\Statistics\Service\CountryService;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -84,7 +88,14 @@ class EmbeddedVariablesTest extends TestCase
         $request    = self::createRequest()->withAttribute('tree', $tree);
         Webtrees::set(ServerRequestInterface::class, $request);
 
-        $statistics = new Statistics(new ModuleService(), $tree, $user_service);
+        $statistics = new Statistics(
+            new CenturyService(),
+            new ColorService(),
+            new CountryService(),
+            new ModuleService(),
+            $tree,
+            $user_service
+        );
 
         // As member
         $text = $statistics->embedTags('#getAllTagsTable#');
@@ -100,9 +111,17 @@ class EmbeddedVariablesTest extends TestCase
      */
     public function testAllEmbeddedVariablesWithEmptyTree(): void
     {
-        $tree_service = new TreeService();
-        $tree         = $tree_service->create('name', 'title');
-        $statistics   = new Statistics(new ModuleService(), $tree, new UserService());
+        $gedcom_import_service = new GedcomImportService();
+        $tree_service          = new TreeService($gedcom_import_service);
+        $tree                  = $tree_service->create('name', 'title');
+        $statistics            = new Statistics(
+            new CenturyService(),
+            new ColorService(),
+            new CountryService(),
+            new ModuleService(),
+            $tree,
+            new UserService()
+        );
 
         // As visitor
         $text = $statistics->embedTags('#getAllTagsTable#');

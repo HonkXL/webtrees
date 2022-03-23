@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -23,8 +23,9 @@ use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\TreeService;
-use League\Flysystem\Filesystem;
+use Fisharebest\Webtrees\Validator;
 use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemReader;
 use League\Flysystem\StorageAttributes;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -69,8 +70,8 @@ class CleanDataFolder implements RequestHandlerInterface
             'config.ini.php',
         ];
 
-        if ($request->getAttribute('dbtype') === 'sqlite') {
-            $protected[] = $request->getAttribute('dbname') . '.sqlite';
+        if (Validator::attributes($request)->string('dbtype') === 'sqlite') {
+            $protected[] = Validator::attributes($request)->string('dbname') . '.sqlite';
         }
 
         // Protect the media folders
@@ -83,7 +84,7 @@ class CleanDataFolder implements RequestHandlerInterface
 
         // List the top-level contents of the data folder
         try {
-            $entries = $data_filesystem->listContents('', Filesystem::LIST_SHALLOW)
+            $entries = $data_filesystem->listContents('', FilesystemReader::LIST_SHALLOW)
                 ->map(static function (StorageAttributes $attributes): string {
                     if ($attributes->isDir()) {
                         return $attributes->path() . '/';

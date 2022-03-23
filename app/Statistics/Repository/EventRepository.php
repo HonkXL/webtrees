@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -25,13 +25,18 @@ use Fisharebest\Webtrees\Fact;
 use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Registry;
-use Fisharebest\Webtrees\Functions\FunctionsPrint;
 use Fisharebest\Webtrees\Gedcom;
 use Fisharebest\Webtrees\Header;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Statistics\Repository\Interfaces\EventRepositoryInterface;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Database\Capsule\Manager as DB;
+
+use function array_map;
+use function array_merge;
+use function e;
+use function strncmp;
+use function substr;
 
 /**
  * A repository providing methods for event related statistics.
@@ -52,14 +57,9 @@ class EventRepository implements EventRepositoryInterface
     private const EVENT_MARRIAGE = 'MARR';
     private const EVENT_DIVORCE  = 'DIV';
 
-    /**
-     * @var Tree
-     */
-    private $tree;
+    private Tree $tree;
 
     /**
-     * Constructor.
-     *
      * @param Tree $tree
      */
     public function __construct(Tree $tree)
@@ -407,7 +407,7 @@ class EventRepository implements EventRepositoryInterface
             }
 
             if ($fact instanceof Fact) {
-                return FunctionsPrint::formatFactPlace($fact, true, true, true);
+                return $fact->place()->shortName();
             }
         }
 

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -155,7 +155,7 @@ class ImageFactory implements ImageFactoryInterface
     public function mediaFileResponse(MediaFile $media_file, bool $add_watermark, bool $download): ResponseInterface
     {
         $filesystem = Registry::filesystem()->media($media_file->media()->tree());
-        $path   = $media_file->filename();
+        $path       = $media_file->filename();
 
         if (!$add_watermark || !$media_file->isImage()) {
             return $this->fileResponse($filesystem, $path, $download);
@@ -264,7 +264,7 @@ class ImageFactory implements ImageFactoryInterface
     {
         $tree = $media_file->media()->tree();
 
-        return Auth::accessLevel($tree, $user) > $tree->getPreference('SHOW_NO_WATERMARK');
+        return Auth::accessLevel($tree, $user) > (int) $tree->getPreference('SHOW_NO_WATERMARK');
     }
 
     /**
@@ -343,10 +343,10 @@ class ImageFactory implements ImageFactoryInterface
                 ->withHeader('X-Image-Exception', 'SVG image blocked due to XSS.');
         }
 
-        // HTML files may contain javascript, so use content-security-policy to disable it.
+        // HTML files may contain javascript and iframes, so use content-security-policy to disable them.
         $response = response($data)
             ->withHeader('content-type', $mime_type)
-            ->withHeader('content-security-policy', 'script-src none');
+            ->withHeader('content-security-policy', 'script-src none;frame-src none');
 
         if ($filename === '') {
             return $response;

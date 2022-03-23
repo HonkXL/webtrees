@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
+use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\Html;
 use Fisharebest\Webtrees\I18N;
@@ -26,7 +27,7 @@ use Fisharebest\Webtrees\MediaFile;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\MediaFileService;
 use Fisharebest\Webtrees\Services\PendingChangesService;
-use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\UnableToMoveFile;
 use League\Flysystem\UnableToRetrieveMetadata;
@@ -72,15 +73,9 @@ class EditMediaFileAction implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $xref = $request->getAttribute('xref');
-        assert(is_string($xref));
-
-        $fact_id = $request->getAttribute('fact_id');
-        assert(is_string($fact_id));
-
+        $tree    = Validator::attributes($request)->tree();
+        $xref    = Validator::attributes($request)->isXref()->string('xref');
+        $fact_id = Validator::attributes($request)->string('fact_id');
         $data_filesystem = Registry::filesystem()->data();
 
         $params   = (array) $request->getParsedBody();
@@ -90,15 +85,11 @@ class EditMediaFileAction implements RequestHandlerInterface
         $title    = $params['title'] ?? '';
         $type     = $params['type'] ?? '';
         $media    = Registry::mediaFactory()->make($xref, $tree);
+        $media    = Auth::checkMediaAccess($media, true);
 
         // Tidy non-printing characters
         $type  = trim(preg_replace('/\s+/', ' ', $type));
         $title = trim(preg_replace('/\s+/', ' ', $title));
-
-        // Media object oes not exist?  Media object is read-only?
-        if ($media === null || $media->isPendingDeletion() || !$media->canEdit()) {
-            return redirect(route(TreePage::class, ['tree' => $tree->name()]));
-        }
 
         // Find the fact to edit
         $media_file = $media->mediaFiles()

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,12 +33,12 @@ use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\CalendarService;
 use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\Validator;
 use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function assert;
 use function count;
 use function e;
 use function explode;
@@ -75,10 +75,8 @@ class CalendarEvents implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = $request->getAttribute('tree');
-        assert($tree instanceof Tree);
-
-        $view            = $request->getAttribute('view');
+        $tree            = Validator::attributes($request)->tree();
+        $view            = Validator::attributes($request)->isInArray(['day', 'month', 'year'])->string('view');
         $CALENDAR_FORMAT = $tree->getPreference('CALENDAR_FORMAT');
 
         $cal      = $request->getQueryParams()['cal'] ?? '';
@@ -89,7 +87,7 @@ class CalendarEvents implements RequestHandlerInterface
         $filterof = $request->getQueryParams()['filterof'] ?? 'all';
         $filtersx = $request->getQueryParams()['filtersx'] ?? '';
 
-        $ged_date = new Date("{$cal} {$day} {$month} {$year}");
+        $ged_date = new Date($cal . ' ' . $day . ' ' . $month . ' ' . $year);
         $cal_date = $ged_date->minimumDate();
         $today    = $cal_date->today();
 
@@ -156,9 +154,9 @@ class CalendarEvents implements RequestHandlerInterface
             $cal_facts[$d] = [];
             foreach ($facts as $fact) {
                 $xref = $fact->record()->xref();
-                $text = $fact->label() . ' — ' . $fact->date()->display(true, null, false);
+                $text = $fact->label() . ' — ' . $fact->date()->display($tree);
                 if ($fact->anniv > 0) {
-                    $text .= ' (' . I18N::translate('%s year anniversary', $fact->anniv) . ')';
+                    $text .= ' (' . I18N::translate('%s year anniversary', I18N::number($fact->anniv)) . ')';
                 }
                 if (empty($cal_facts[$d][$xref])) {
                     $cal_facts[$d][$xref] = $text;
@@ -171,7 +169,8 @@ class CalendarEvents implements RequestHandlerInterface
         $week_start    = (I18N::locale()->territory()->firstDay() + 6) % 7;
         $weekend_start = (I18N::locale()->territory()->weekendStart() + 6) % 7;
         $weekend_end   = (I18N::locale()->territory()->weekendEnd() + 6) % 7;
-        // The french  calendar has a 10-day week, which starts on primidi
+
+        // The French calendar has a 10-day week, which starts on primidi.
         if ($days_in_week === 10) {
             $week_start    = 0;
             $weekend_start = -1;
@@ -184,9 +183,9 @@ class CalendarEvents implements RequestHandlerInterface
         for ($week_day = 0; $week_day < $days_in_week; ++$week_day) {
             $day_name = $cal_date->dayNames(($week_day + $week_start) % $days_in_week);
             if ($week_day === $weekend_start || $week_day === $weekend_end) {
-                echo '<th class="wt-page-options-label weekend" width="' . (100 / $days_in_week) . '%">', $day_name, '</th>';
+                echo '<th class="wt-page-options-label weekend" width="', 100 / $days_in_week, '%">', $day_name, '</th>';
             } else {
-                echo '<th class="wt-page-options-label" width="' . (100 / $days_in_week) . '%">', $day_name, '</th>';
+                echo '<th class="wt-page-options-label" width="', 100 / $days_in_week, '%">', $day_name, '</th>';
             }
         }
         echo '</tr>';
@@ -209,13 +208,13 @@ class CalendarEvents implements RequestHandlerInterface
                 if (count($cal_facts[0]) > 0) {
                     echo '<div class="cal_day">', I18N::translate('Day not set'), '</div>';
                     echo '<div class="small" style="height: 180px; overflow: auto;">';
-                    echo $this->calendarListText($cal_facts[0], '', '', $tree);
+                    echo $this->calendarListText($cal_facts[0], $tree);
                     echo '</div>';
                     $cal_facts[0] = [];
                 }
             } else {
                 // Format the day number using the calendar
-                $tmp   = new Date($cal_date->format("%@ {$d} %O %E"));
+                $tmp   = new Date($cal_date->format('%@ ' . $d . ' %O %E'));
                 $d_fmt = $tmp->minimumDate()->format('%j');
                 echo '<div class="d-flex d-flex justify-content-between">';
                 if ($d === $today->day && $cal_date->month === $today->month) {
@@ -257,7 +256,7 @@ class CalendarEvents implements RequestHandlerInterface
                 }
                 echo '</div>';
                 echo '<div class="small" style="height: 180px; overflow: auto;">';
-                echo $this->calendarListText($cal_facts[$d], '', '', $tree);
+                echo $this->calendarListText($cal_facts[$d], $tree);
                 echo '</div>';
             }
             echo '</td>';
@@ -275,20 +274,18 @@ class CalendarEvents implements RequestHandlerInterface
      * Format a list of facts for display
      *
      * @param array<string> $list
-     * @param string        $tag1
-     * @param string        $tag2
      * @param Tree          $tree
      *
      * @return string
      */
-    private function calendarListText(array $list, string $tag1, string $tag2, Tree $tree): string
+    private function calendarListText(array $list, Tree $tree): string
     {
         $html = '';
 
         foreach ($list as $xref => $facts) {
             $tmp = Registry::gedcomRecordFactory()->make((string) $xref, $tree);
-            $html .= $tag1 . '<a href="' . e($tmp->url()) . '">' . $tmp->fullName() . '</a> ';
-            $html .= '<div class="indent">' . $facts . '</div>' . $tag2;
+            $html .= '<a href="' . e($tmp->url()) . '">' . $tmp->fullName() . '</a> ';
+            $html .= '<div class="indent">' . $facts . '</div>';
         }
 
         return $html;

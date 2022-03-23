@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,8 +27,15 @@ use Illuminate\Support\Collection;
  */
 trait ModuleSidebarTrait
 {
-    /** @var int The default position for this sidebar.  It can be changed in the control panel. */
-    protected $sidebar_order;
+    // The default position for this sidebar.  It can be changed in the control panel.
+    protected int $sidebar_order;
+
+    /**
+     * How should this module be identified in the control panel, etc.?
+     *
+     * @return string
+     */
+    abstract public function title(): string;
 
     /**
      * The text that appears on the sidebar's title.
@@ -37,7 +44,7 @@ trait ModuleSidebarTrait
      *
      * @return string
      */
-    public function sidebarTitle(Individual $individual): string
+    public function sidebarTitle(/** @scrutinizer ignore-unused */ Individual $individual): string
     {
         return $this->title();
     }
@@ -78,7 +85,7 @@ trait ModuleSidebarTrait
     /**
      * This module handles the following facts - so don't show them on the "Facts and events" tab.
      *
-     * @return Collection<string>
+     * @return Collection<int,string>
      */
     public function supportedFacts(): Collection
     {

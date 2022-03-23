@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2021 webtrees development team
+ * Copyright (C) 2022 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -54,8 +54,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
     // A regular expression that never matches.
     private const INVALID_REGEX = '/(?!)/';
 
-    /** @var DataFixService */
-    private $data_fix_service;
+    private DataFixService $data_fix_service;
 
     /**
      * FixMissingDeaths constructor.
@@ -134,7 +133,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
      * @param Tree                 $tree
      * @param array<string,string> $params
      *
-     * @return Collection<string>|null
+     * @return Collection<int,string>|null
      */
     protected function familiesToFix(Tree $tree, array $params): ?Collection
     {
@@ -155,7 +154,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
      * @param Tree                 $tree
      * @param array<string,string> $params
      *
-     * @return Collection<string>|null
+     * @return Collection<int,string>|null
      */
     protected function individualsToFix(Tree $tree, array $params): ?Collection
     {
@@ -178,7 +177,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
      * @param Tree                 $tree
      * @param array<string,string> $params
      *
-     * @return Collection<string>|null
+     * @return Collection<int,string>|null
      */
     protected function locationsToFix(Tree $tree, array $params): ?Collection
     {
@@ -202,7 +201,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
      * @param Tree                 $tree
      * @param array<string,string> $params
      *
-     * @return Collection<string>|null
+     * @return Collection<int,string>|null
      */
     protected function mediaToFix(Tree $tree, array $params): ?Collection
     {
@@ -225,7 +224,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
      * @param Tree                 $tree
      * @param array<string,string> $params
      *
-     * @return Collection<string>|null
+     * @return Collection<int,string>|null
      */
     protected function notesToFix(Tree $tree, array $params): ?Collection
     {
@@ -249,7 +248,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
      * @param Tree                 $tree
      * @param array<string,string> $params
      *
-     * @return Collection<string>|null
+     * @return Collection<int,string>|null
      */
     protected function repositoriesToFix(Tree $tree, array $params): ?Collection
     {
@@ -273,7 +272,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
      * @param Tree                 $tree
      * @param array<string,string> $params
      *
-     * @return Collection<string>|null
+     * @return Collection<int,string>|null
      */
     protected function sourcesToFix(Tree $tree, array $params): ?Collection
     {
@@ -295,7 +294,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
      * @param Tree                 $tree
      * @param array<string,string> $params
      *
-     * @return Collection<string>|null
+     * @return Collection<int,string>|null
      */
     protected function submittersToFix(Tree $tree, array $params): ?Collection
     {
