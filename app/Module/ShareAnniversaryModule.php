@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
-use Aura\Router\RouterContainer;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Date\GregorianDate;
 use Fisharebest\Webtrees\Fact;
@@ -36,8 +35,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sabre\VObject\Component\VCalendar;
 
-use function app;
-use function assert;
 use function response;
 use function route;
 use function strip_tags;
@@ -156,8 +153,8 @@ class ShareAnniversaryModule extends AbstractModule implements ModuleShareInterf
             $vevent->add('SUMMARY', strip_tags($record->fullName()) . ' — ' . $fact->label());
 
             return response($vcalendar->serialize())
-                ->withHeader('Content-Type', 'text/calendar')
-                ->withHeader('Content-Disposition', 'attachment; filename="' . $fact->id() . '.ics');
+                ->withHeader('content-type', 'text/calendar')
+                ->withHeader('content-disposition', 'attachment; filename="' . $fact->id() . '.ics');
         }
 
         throw new HttpNotFoundException();

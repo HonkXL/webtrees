@@ -22,6 +22,7 @@ namespace Fisharebest\Webtrees;
 use Closure;
 use Fisharebest\ExtCalendar\GregorianCalendar;
 use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\Elements\PedigreeLinkageType;
 use Fisharebest\Webtrees\Http\RequestHandlers\IndividualPage;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Support\Collection;
@@ -836,19 +837,25 @@ class Individual extends GedcomRecord
      */
     public function getChildFamilyLabel(Family $family): string
     {
-        preg_match('/\n1 FAMC @' . $family->xref() . '@(?:\n[2-9].*)*\n2 PEDI (.+)/', $this->gedcom(), $match);
+        $fact = $this->facts(['FAMC'])->first(static fn (Fact $fact): bool => $fact->target() === $family);
+
+        if ($fact instanceof Fact) {
+            $pedigree = $fact->attribute('PEDI');
+        } else {
+            $pedigree = '';
+        }
 
         $values = [
-            'birth'   => I18N::translate('Family with parents'),
-            'adopted' => I18N::translate('Family with adoptive parents'),
-            'foster'  => I18N::translate('Family with foster parents'),
-            'sealing' => /* I18N: “sealing” is a Mormon ceremony. */
-                I18N::translate('Family with sealing parents'),
-            'rada'    => /* I18N: “rada” is an Arabic word, pronounced “ra DAH”. It is child-to-parent pedigree, established by wet-nursing. */
-                I18N::translate('Family with rada parents'),
+            PedigreeLinkageType::VALUE_BIRTH   => I18N::translate('Family with parents'),
+            PedigreeLinkageType::VALUE_ADOPTED => I18N::translate('Family with adoptive parents'),
+            PedigreeLinkageType::VALUE_FOSTER  => I18N::translate('Family with foster parents'),
+            /* I18N: “sealing” is a Mormon ceremony. */
+            PedigreeLinkageType::VALUE_SEALING => I18N::translate('Family with sealing parents'),
+            /* I18N: “rada” is an Arabic word, pronounced “ra DAH”. It is child-to-parent pedigree, established by wet-nursing. */
+            PedigreeLinkageType::VALUE_RADA    => I18N::translate('Family with rada parents'),
         ];
 
-        return $values[$match[1] ?? 'birth'] ?? $values['birth'];
+        return $values[$pedigree] ?? $values[PedigreeLinkageType::VALUE_BIRTH];
     }
 
     /**

@@ -288,10 +288,10 @@ abstract class AbstractElement implements ElementInterface
 
         if ($values === []) {
             if (str_contains($value, "\n")) {
-                return '<bdi class="d-inline-block">' . nl2br(e($value, false)) . '</bdi>';
+                return '<span class="ut d-inline-block">' . nl2br(e($value, false)) . '</span>';
             }
 
-            return '<bdi>' . e($value) . '</bdi>';
+            return '<span class="ut">' . e($value) . '</span>';
         }
 
         $canonical = $this->canonical($value);
@@ -345,18 +345,10 @@ abstract class AbstractElement implements ElementInterface
 
         switch ($format) {
             case 'markdown':
-                $html = Registry::markdownFactory()->markdown($canonical, $tree);
-
-                return '<div class="markdown" dir="auto">' . $html . '</div>';
+                return Registry::markdownFactory()->markdown($canonical, $tree);
 
             default:
-                $html = Registry::markdownFactory()->autolink($canonical, $tree);
-
-                if (str_contains($html, "\n")) {
-                    return '<div class="markdown" dir="auto">' . $html . '</div>';
-                }
-
-                return '<span class="markdown" dir="auto">' . $html . '</span>';
+                return Registry::markdownFactory()->autolink($canonical, $tree);
         }
     }
 

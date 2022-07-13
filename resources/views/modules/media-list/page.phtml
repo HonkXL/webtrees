@@ -37,9 +37,7 @@ use League\Flysystem\FilesystemOperator;
 </h2>
 
 <form method="post" class="wt-page-options wt-page-options-media-list d-print-none">
-    <?= csrf_field() ?>
-
-    <div class="row form-group">
+    <div class="row">
         <label class="col-sm-3 col-form-label wt-page-options-label" for="folder">
             <?= I18N::translate('Folder') ?>
         </label>
@@ -56,7 +54,7 @@ use League\Flysystem\FilesystemOperator;
         </div>
     </div>
 
-    <div class="row form-group">
+    <div class="row">
         <label class="col-sm-3 col-form-label wt-page-options-label" for="format">
             <?= I18N::translate('Type') ?>
         </label>
@@ -70,7 +68,7 @@ use League\Flysystem\FilesystemOperator;
         <div class="col-sm-3 wt-page-options-value"></div>
     </div>
 
-    <div class="row form-group">
+    <div class="row">
         <label class="col-sm-3 col-form-label wt-page-options-label" for="filter">
             <?= I18N::translate('Search filters') ?>
         </label>
@@ -89,6 +87,8 @@ use League\Flysystem\FilesystemOperator;
             </a>
         </div>
     </div>
+
+    <?= csrf_field() ?>
 </form>
 
 <div class="wt-page-content">
@@ -133,11 +133,9 @@ use League\Flysystem\FilesystemOperator;
                                     if ($media_file->isExternal()) {
                                         echo Registry::elementFactory()->make('OBJE:FILE')->labelValue($media_file->filename(), $media_object->tree());
                                     } elseif ($media_file->fileExists($data_filesystem)) {
-                                        echo Registry::elementFactory()->make('OBJE:FILE:FORM')->labelValue($media_file->mimeType(), $media_object->tree());
                                         if (Auth::isEditor($tree)) {
                                             echo Registry::elementFactory()->make('OBJE:FILE')->labelValue($media_file->filename(), $media_object->tree());
-                                        }
-                                        if (Auth::isEditor($tree)) {
+
                                             foreach ($media_file->attributes($data_filesystem) as $label => $value) {
                                                 $label = '<span class="label">' . $label . '</span>';
                                                 $value = '<span class="value">' . $value . '</span>';

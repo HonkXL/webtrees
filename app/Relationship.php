@@ -20,6 +20,7 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees;
 
 use Closure;
+use Fisharebest\Webtrees\Elements\PedigreeLinkageType;
 
 use function abs;
 use function array_slice;
@@ -128,7 +129,7 @@ class Relationship
     {
         $this->matchers[] = static fn (array $nodes): bool => count($nodes) > 2 && $nodes[2]
                 ->facts(['FAMC'], false, Auth::PRIV_HIDE)
-                ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === 'adopted');
+                ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === PedigreeLinkageType::VALUE_ADOPTED);
 
         return $this;
     }
@@ -140,7 +141,7 @@ class Relationship
     {
         $this->matchers[] = static fn (array $nodes): bool => $nodes[0]
             ->facts(['FAMC'], false, Auth::PRIV_HIDE)
-            ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === 'adopted');
+            ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === PedigreeLinkageType::VALUE_ADOPTED);
 
         return $this;
     }
@@ -348,7 +349,7 @@ class Relationship
     {
         $this->matchers[] = static fn (array $nodes): bool => count($nodes) > 2 && $nodes[2]
                 ->facts(['FAMC'], false, Auth::PRIV_HIDE)
-                ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === 'foster');
+                ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === PedigreeLinkageType::VALUE_FOSTER);
 
         return $this;
     }
@@ -360,7 +361,7 @@ class Relationship
     {
         $this->matchers[] = static fn (array $nodes): bool => $nodes[0]
             ->facts(['FAMC'], false, Auth::PRIV_HIDE)
-            ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === 'foster');
+            ->contains(fn (Fact $fact): bool => $fact->value() === '@' . $nodes[1]->xref() . '@' && $fact->attribute('PEDI') === PedigreeLinkageType::VALUE_FOSTER);
 
         return $this;
     }

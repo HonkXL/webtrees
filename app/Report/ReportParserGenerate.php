@@ -23,6 +23,7 @@ use DomainException;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Date;
 use Fisharebest\Webtrees\Elements\UnknownElement;
+use Fisharebest\Webtrees\Factories\MarkdownFactory;
 use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\Gedcom;
 use Fisharebest\Webtrees\GedcomRecord;
@@ -1085,10 +1086,11 @@ class ReportParserGenerate extends ReportParserBase
                 $tmp = explode(':', $tag);
                 if (in_array(end($tmp), ['NOTE', 'TEXT'], true)) {
                     if ($this->tree->getPreference('FORMAT_TEXT') === 'markdown') {
-                        $value = strip_tags(Registry::markdownFactory()->markdown($value, $this->tree));
+                        $value = strip_tags(Registry::markdownFactory()->markdown($value, $this->tree), ['br']);
                     } else {
-                        $value = strip_tags(Registry::markdownFactory()->autolink($value, $this->tree));
+                        $value = strip_tags(Registry::markdownFactory()->autolink($value, $this->tree), ['br']);
                     }
+                    $value = strtr($value, [MarkdownFactory::BREAK => ' ']);
                 }
 
                 if (!empty($attrs['truncate'])) {
@@ -1747,8 +1749,8 @@ class ReportParserGenerate extends ReportParserBase
                 $perc  = $height / $attributes[1];
                 $width = round($attributes[0] * $perc);
             } else {
-                $width  = $attributes[0];
-                $height = $attributes[1];
+                $width  = (float) $attributes[0];
+                $height = (float) $attributes[1];
             }
             $image = $this->report_root->createImageFromObject($media_file, $left, $top, $width, $height, $align, $ln, $this->data_filesystem);
             $this->wt_report->addElement($image);
@@ -1799,8 +1801,8 @@ class ReportParserGenerate extends ReportParserBase
                         $perc  = $height / $attributes[1];
                         $width = round($attributes[0] * $perc);
                     } else {
-                        $width  = $attributes[0];
-                        $height = $attributes[1];
+                        $width  = (float) $attributes[0];
+                        $height = (float) $attributes[1];
                     }
                     $image = $this->report_root->createImageFromObject($media_file, $left, $top, $width, $height, $align, $ln, $this->data_filesystem);
                     $this->wt_report->addElement($image);

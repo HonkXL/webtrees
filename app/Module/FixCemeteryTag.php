@@ -57,7 +57,7 @@ class FixCemeteryTag extends AbstractModule implements ModuleDataFixInterface
     public function title(): string
     {
         /* I18N: Name of a module */
-        return I18N::translate('Convert CEME tags to GEDCOM 5.5.1');
+        return I18N::translate('Convert %s tags to GEDCOM 5.5.1', 'INDI:BURI:CEME');
     }
 
     /**

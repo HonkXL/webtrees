@@ -23,15 +23,12 @@ use Closure;
 use Exception;
 use Fisharebest\Webtrees\Contracts\TimestampInterface;
 use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\Elements\RestrictionNotice;
 use Fisharebest\Webtrees\Http\RequestHandlers\GedcomRecordPage;
 use Fisharebest\Webtrees\Services\PendingChangesService;
 use Illuminate\Database\Capsule\Manager as DB;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\Expression;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 
-use function addcslashes;
 use function app;
 use function array_combine;
 use function array_keys;
@@ -55,6 +52,7 @@ use function route;
 use function str_contains;
 use function str_ends_with;
 use function str_pad;
+use function str_starts_with;
 use function strtoupper;
 use function trim;
 use function view;
@@ -290,7 +288,10 @@ class GedcomRecord
             return true;
         }
 
-        return Auth::isEditor($this->tree) && !str_contains($this->gedcom, "\n1 RESN locked");
+        $fact   = $this->facts(['RESN'])->first();
+        $locked = $fact instanceof Fact && str_ends_with($fact->attribute('RESN'), RestrictionNotice::VALUE_LOCKED);
+
+        return Auth::isEditor($this->tree) && !$locked;
     }
 
     /**
@@ -631,7 +632,12 @@ class GedcomRecord
                 default:
                     $subtags = Registry::elementFactory()->make($this->tag())->subtags();
                     $subtags = array_map(fn (string $tag): string => $this->tag() . ':' . $tag, array_keys($subtags));
-                    $subtags = array_combine(range(1, count($subtags)), $subtags);
+
+                    if ($subtags !== []) {
+                        // Renumber keys from 1.
+                        $subtags = array_combine(range(1, count($subtags)), $subtags);
+                    }
+
 
                     $facts = $facts
                         ->sort(static function (Fact $x, Fact $y) use ($subtags): int {
@@ -1031,14 +1037,16 @@ class GedcomRecord
             if (preg_match_all('/^' . $level . ' (' . $fact_type . ') (.+)((\n[' . $sublevel . '-9].+)*)/m', $fact->gedcom(), $matches, PREG_SET_ORDER)) {
                 foreach ($matches as $match) {
                     // Treat 1 NAME / 2 TYPE married the same as _MARNM
-                    if ($match[1] === 'NAME' && str_contains($match[3], "\n2 TYPE married")) {
+                    if ($match[1] === 'NAME' && str_contains(strtoupper($match[3]), "\n2 TYPE MARRIED")) {
                         $this->addName('_MARNM', $match[2], $fact->gedcom());
                     } else {
                         $this->addName($match[1], $match[2], $fact->gedcom());
                     }
                     if ($match[3] && preg_match_all('/^' . $sublevel . ' (ROMN|FONE|_\w+) (.+)((\n[' . $subsublevel . '-9].+)*)/m', $match[3], $submatches, PREG_SET_ORDER)) {
                         foreach ($submatches as $submatch) {
-                            $this->addName($submatch[1], $submatch[2], $match[3]);
+                            if ($submatch[1] !== '_RUFNAME') {
+                                $this->addName($submatch[1], $submatch[2], $match[3]);
+                            }
                         }
                     }
                 }
@@ -1106,15 +1114,21 @@ class GedcomRecord
             return true;
         }
 
-        // Does this record have a RESN?
-        if (str_contains($this->gedcom, "\n1 RESN confidential")) {
-            return Auth::PRIV_NONE >= $access_level;
-        }
-        if (str_contains($this->gedcom, "\n1 RESN privacy")) {
-            return Auth::PRIV_USER >= $access_level;
-        }
-        if (str_contains($this->gedcom, "\n1 RESN none")) {
-            return true;
+        // Does this record have a restriction notice?
+        // Cannot use $this->>fact(), as that function calls this one.
+        if (preg_match('/\n1 RESN (.+)/', $this->gedcom(), $match)) {
+            $element     = new RestrictionNotice('');
+            $restriction = $element->canonical($match[1]);
+
+            if (str_starts_with($restriction, RestrictionNotice::VALUE_CONFIDENTIAL)) {
+                return Auth::PRIV_NONE >= $access_level;
+            }
+            if (str_starts_with($restriction, RestrictionNotice::VALUE_PRIVACY)) {
+                return Auth::PRIV_USER >= $access_level;
+            }
+            if (str_starts_with($restriction, RestrictionNotice::VALUE_NONE)) {
+                return true;
+            }
         }
 
         // Does this record have a default RESN?

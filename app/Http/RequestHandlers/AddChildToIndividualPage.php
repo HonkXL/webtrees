@@ -24,7 +24,6 @@ use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\GedcomEditService;
-use Fisharebest\Webtrees\SurnameTradition;
 use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -64,7 +63,8 @@ class AddChildToIndividualPage implements RequestHandlerInterface
         $individual = Auth::checkIndividualAccess($individual, true);
 
         // Name facts.
-        $surname_tradition = SurnameTradition::create($tree->getPreference('SURNAME_TRADITION'));
+        $surname_tradition = Registry::surnameTraditionFactory()
+            ->make($tree->getPreference('SURNAME_TRADITION'));
 
         switch ($individual->sex()) {
             case 'M':
@@ -93,7 +93,7 @@ class AddChildToIndividualPage implements RequestHandlerInterface
             'post_url'            => route(AddChildToIndividualAction::class, ['tree' => $tree->name(), 'xref' => $xref]),
             'title'               => $individual->fullName() . ' - ' . $title,
             'tree'                => $tree,
-            'url'                 => $request->getQueryParams()['url'] ?? $individual->url(),
+            'url'                 => Validator::queryParams($request)->isLocalUrl()->string('url', $individual->url()),
         ]);
     }
 }

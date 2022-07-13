@@ -24,7 +24,6 @@ use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\GedcomEditService;
-use Fisharebest\Webtrees\SurnameTradition;
 use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -74,8 +73,10 @@ class AddSpouseToIndividualPage implements RequestHandlerInterface
         $sex = self::OPPOSITE_SEX[$individual->sex()];
 
         // Name facts.
-        $surname_tradition = SurnameTradition::create($tree->getPreference('SURNAME_TRADITION'));
-        $names             = $surname_tradition->newSpouseNames($individual, $sex);
+        $surname_tradition = Registry::surnameTraditionFactory()
+            ->make($tree->getPreference('SURNAME_TRADITION'));
+
+        $names = $surname_tradition->newSpouseNames($individual, $sex);
 
         $facts = [
             'i' => $this->gedcom_edit_service->newIndividualFacts($tree, $sex, $names),
@@ -97,7 +98,7 @@ class AddSpouseToIndividualPage implements RequestHandlerInterface
             'post_url'            => route(AddSpouseToIndividualAction::class, ['tree' => $tree->name(), 'xref' => $xref]),
             'title'               => $individual->fullName() . ' - ' . $title,
             'tree'                => $tree,
-            'url'                 => $request->getQueryParams()['url'] ?? $individual->url(),
+            'url'                 => Validator::queryParams($request)->isLocalUrl()->string('url', $individual->url()),
         ]);
     }
 }

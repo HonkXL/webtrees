@@ -19,12 +19,10 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
-use Aura\Router\RouterContainer;
 use Fisharebest\Localization\Locale\LocaleInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
 use Fisharebest\Webtrees\Family;
-use Fisharebest\Webtrees\GedcomRecord;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Registry;
@@ -51,7 +49,6 @@ use function ob_get_clean;
 use function ob_start;
 use function redirect;
 use function route;
-use function usort;
 use function view;
 
 /**
@@ -292,7 +289,7 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
             $show     = 'indi'; // SURN list makes no sense here
         } elseif ($alpha === ',') {
             $show_all = 'no';
-            $legend   = I18N::translate('None');
+            $legend   = I18N::translate('No surname');
             $params   = [
                 'alpha' => $alpha,
                 'tree'  => $tree->name(),
@@ -519,7 +516,7 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
         }
 
         if ($initial === ',') {
-            return I18N::translate('None');
+            return I18N::translate('No surname');
         }
 
         return e($initial);
@@ -608,7 +605,7 @@ class IndividualListModule extends AbstractModule implements ModuleListInterface
             }
         }
 
-        // Empty surnames have a special code ',' - as we search for SURN.GIVN
+        // Empty surnames have a special code ',' - as we search for SURN,GIVN
         foreach ($specials as $special) {
             if ($rows->has($special)) {
                 $alphas[$special ?: ','] = (int) $rows[$special];

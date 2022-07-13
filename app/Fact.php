@@ -20,6 +20,7 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees;
 
 use Closure;
+use Fisharebest\Webtrees\Elements\RestrictionNotice;
 use Fisharebest\Webtrees\Services\GedcomService;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -34,6 +35,7 @@ use function preg_match;
 use function preg_match_all;
 use function preg_replace;
 use function str_contains;
+use function str_ends_with;
 use function usort;
 
 use const PREG_SET_ORDER;
@@ -118,6 +120,7 @@ class Fact
         'CONL',
         'ENDL',
         'SLGS',
+        'NO',
         'ADDR',
         'PHON',
         'EMAIL',
@@ -127,6 +130,7 @@ class Fact
         'WWW',
         'URL',
         '_URL',
+        '_FSFTID',
         'AFN',
         'REFN',
         '_PRMN',
@@ -136,6 +140,7 @@ class Fact
         'OBJE',
         'NOTE',
         'SOUR',
+        'CREA',
         'CHAN',
         '_TODO',
     ];
@@ -262,8 +267,10 @@ class Fact
      */
     public function attribute(string $tag): string
     {
-        if (preg_match('/\n2 ' . $tag . ' ?(.*(?:(?:\n3 CONT ?.*)*)*)/', $this->gedcom, $match)) {
-            return preg_replace("/\n3 CONT ?/", "\n", $match[1]);
+        if (preg_match('/\n2 ' . $tag . '\b ?(.*(?:(?:\n3 CONT ?.*)*)*)/', $this->gedcom, $match)) {
+            $value = preg_replace("/\n3 CONT ?/", "\n", $match[1]);
+
+            return Registry::elementFactory()->make($this->tag() . ':' . $tag)->canonical($value);
         }
 
         return '';
@@ -312,14 +319,17 @@ class Fact
     {
         $access_level = $access_level ?? Auth::accessLevel($this->record->tree());
 
-        // Does this record have an explicit RESN?
-        if (str_contains($this->gedcom, "\n2 RESN confidential")) {
+        // Does this record have an explicit restriction notice?
+        $restriction = $this->attribute('RESN');
+
+        if (str_ends_with($restriction, RestrictionNotice::VALUE_CONFIDENTIAL)) {
             return Auth::PRIV_NONE >= $access_level;
         }
-        if (str_contains($this->gedcom, "\n2 RESN privacy")) {
+
+        if (str_ends_with($restriction, RestrictionNotice::VALUE_PRIVACY)) {
             return Auth::PRIV_USER >= $access_level;
         }
-        if (str_contains($this->gedcom, "\n2 RESN none")) {
+        if (str_ends_with($restriction, RestrictionNotice::VALUE_NONE)) {
             return true;
         }
 
@@ -362,7 +372,7 @@ class Fact
         }
 
         // Members cannot edit RESN, CHAN and locked records
-        return Auth::isEditor($this->record->tree()) && !str_contains($this->gedcom, "\n2 RESN locked") && $this->tag !== 'RESN' && $this->tag !== 'CHAN';
+        return Auth::isEditor($this->record->tree()) && !str_ends_with($this->attribute('RESN'), RestrictionNotice::VALUE_LOCKED) && $this->tag !== 'RESN' && $this->tag !== 'CHAN';
     }
 
     /**
@@ -438,6 +448,10 @@ class Fact
      */
     public function label(): string
     {
+        if (str_ends_with($this->tag(), ':NOTE') && preg_match('/@' . Gedcom::REGEX_XREF . '@/', $this->value())) {
+            return I18N::translate('Shared note');
+        }
+
         // Marriages
         if ($this->tag() === 'FAM:MARR') {
             $element = Registry::elementFactory()->make('FAM:MARR:TYPE');
@@ -614,11 +628,11 @@ class Fact
             $class .= ' wt-old';
         }
 
-        return
-            '<div class="' . $class . '">' .
-            /* I18N: a label/value pair, such as “Occupation: Farmer”. Some languages may need to change the punctuation. */
-            I18N::translate('<span class="label">%1$s:</span> <span class="field" dir="auto">%2$s</span>', $this->label(), implode(' — ', $attributes)) .
-            '</div>';
+        $label = '<span class="label">' . $this->label() . '</span>';
+        $value = '<span class="field" dir="auto">' . implode(' — ', $attributes) . '</span>';
+
+        /* I18N: a label/value pair, such as “Occupation: Farmer”. Some languages may need to change the punctuation. */
+        return '<div class="' . $class . '">' . I18N::translate('%1$s: %2$s', $label, $value) . '</div>';
     }
 
     /**

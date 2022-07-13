@@ -181,7 +181,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
      */
     protected function locationsToFix(Tree $tree, array $params): ?Collection
     {
-        if ($params['type'] !== Note::RECORD_TYPE || $params['search'] === '') {
+        if ($params['type'] !== Location::RECORD_TYPE || $params['search'] === '') {
             return null;
         }
 
@@ -436,7 +436,7 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
 
             case 'regex':
                 // Substituting newlines seems to be necessary on *some* versions
-                //.of MySQL (e.g. 5.7), and harmless on others (e.g. 8.0).
+                // of MySQL (e.g. 5.7), and harmless on others (e.g. 8.0).
                 $search = strtr($search, ['\n' => "\n"]);
 
                 switch (DB::connection()->getDriverName()) {

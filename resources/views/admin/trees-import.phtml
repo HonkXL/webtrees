@@ -30,19 +30,16 @@ use Illuminate\Support\Collection;
 
 <form method="post" action="<?= e(route(ImportGedcomAction::class, ['tree' => $tree->name()])) ?>" class="form form-horizontal" enctype="multipart/form-data" onsubmit="return checkGedcomImportForm('<?= e(I18N::translate('You have selected a GEDCOM file with a different name. Is this correct?')) ?>');">
     <input type="hidden" id="gedcom_filename" value="<?= e($default_gedcom_file) ?>">
-    <?= csrf_field() ?>
 
     <h2><?= I18N::translate('Select a GEDCOM file to import') ?></h2>
 
-    <div class="row form-group mb-3">
+    <div class="row mb-3">
         <label class="col-sm-3">
             <input type="radio" name="source" id="import-computer" value="client" checked>
             <?= I18N::translate('A file on your computer') ?>
         </label>
         <div class="col-sm-9">
-            <div class="btn btn-default">
-                <input type="file" class="form-control-file" name="tree_name" id="import-computer-file">
-            </div>
+            <input type="file" class="form-control" name="tree_name" id="import-computer-file">
         </div>
     </div>
 
@@ -57,7 +54,7 @@ use Illuminate\Support\Collection;
                             <?= e($data_folder) ?>
                         </span>
 
-                <select name="tree_name" class="form-control" dir="ltr" id="import-server-file">
+                <select name="tree_name" class="form-select" dir="ltr" id="import-server-file">
                     <option value="">&nbsp;</option>
                     <?php foreach ($gedcom_files as $gedcom_file) : ?>
                         <option value="<?= e($gedcom_file) ?>" <?= $gedcom_file === $default_gedcom_file ? 'selected' : '' ?>>
@@ -137,6 +134,8 @@ use Illuminate\Support\Collection;
     <button type="submit" class="btn btn-primary">
         <?= /* I18N: A button label. */ I18N::translate('continue') ?>
     </button>
+
+    <?= csrf_field() ?>
 </form>
 
 <?php View::push('javascript') ?>

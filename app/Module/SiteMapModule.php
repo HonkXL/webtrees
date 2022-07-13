@@ -19,8 +19,6 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
-use Aura\Router\Route;
-use Aura\Router\RouterContainer;
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Family;
@@ -46,8 +44,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function app;
-use function assert;
 use function date;
 use function redirect;
 use function response;
@@ -192,7 +188,7 @@ class SiteMapModule extends AbstractModule implements ModuleConfigInterface, Req
             $content = view('modules/sitemap/sitemap-xsl');
 
             return response($content, StatusCodeInterface::STATUS_OK, [
-                'Content-Type' => 'application/xml',
+                'content-type' => 'application/xml',
             ]);
         }
 
@@ -291,7 +287,7 @@ class SiteMapModule extends AbstractModule implements ModuleConfigInterface, Req
         }, self::CACHE_LIFE);
 
         return response($content, StatusCodeInterface::STATUS_OK, [
-            'Content-Type' => 'application/xml',
+            'content-type' => 'application/xml',
         ]);
     }
 
@@ -324,7 +320,7 @@ class SiteMapModule extends AbstractModule implements ModuleConfigInterface, Req
         }, self::CACHE_LIFE);
 
         return response($content, StatusCodeInterface::STATUS_OK, [
-            'Content-Type' => 'application/xml',
+            'content-type' => 'application/xml',
         ]);
     }
 

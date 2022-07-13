@@ -44,17 +44,20 @@ use function dirname;
 use function explode;
 use function ini_get;
 use function intdiv;
+use function is_float;
 use function min;
 use function pathinfo;
 use function sha1;
 use function sort;
 use function str_contains;
-use function strtolower;
+use function strlen;
+use function strtoupper;
 use function strtr;
 use function substr;
 use function trim;
 
 use const PATHINFO_EXTENSION;
+use const PHP_INT_MAX;
 use const UPLOAD_ERR_OK;
 
 /**
@@ -63,8 +66,8 @@ use const UPLOAD_ERR_OK;
 class MediaFileService
 {
     public const EXTENSION_TO_FORM = [
-        'jpeg' => 'jpg',
-        'tiff' => 'tif',
+        'JPEG' => 'JPG',
+        'TIFF' => 'TIF',
     ];
 
     private const IGNORE_FOLDERS = [
@@ -106,19 +109,23 @@ class MediaFileService
     {
         $number = (int) $size;
 
-        switch (substr($size, -1)) {
-            case 'g':
-            case 'G':
-                return $number * 1073741824;
-            case 'm':
-            case 'M':
-                return $number * 1048576;
-            case 'k':
-            case 'K':
-                return $number * 1024;
-            default:
-                return $number;
+        $units = [
+            'g' => 1073741824,
+            'G' => 1073741824,
+            'm' => 1048576,
+            'M' => 1048576,
+            'k' => 1024,
+            'K' => 1024,
+        ];
+
+        $number *= $units[substr($size, -1)] ?? 1;
+
+        if (is_float($number)) {
+            // Probably a 32bit version of PHP, with an INI setting >= 2GB
+            return PHP_INT_MAX;
         }
+
+        return $number;
     }
 
     /**
@@ -244,10 +251,14 @@ class MediaFileService
     {
         $gedcom = '1 FILE ' . $file;
 
-        $format = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-        $format = self::EXTENSION_TO_FORM[$format] ?? $format;
+        if (str_contains($file, '://')) {
+            $format = '';
+        } else {
+            $format = strtoupper(pathinfo($file, PATHINFO_EXTENSION));
+            $format = self::EXTENSION_TO_FORM[$format] ?? $format;
+        }
 
-        if ($format !== '') {
+        if ($format !== '' && strlen($format) <= 4) {
             $gedcom .= "\n2 FORM " . $format;
         } elseif ($type !== '') {
             $gedcom .= "\n2 FORM";
@@ -390,6 +401,7 @@ class MediaFileService
 
         return $disk_folders->concat($db_folders)
             ->uniqueStrict()
+            ->sort(I18N::comparator())
             ->mapWithKeys(static function (string $folder): array {
                 return [$folder => $folder];
             });

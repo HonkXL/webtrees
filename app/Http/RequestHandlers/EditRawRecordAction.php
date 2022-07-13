@@ -28,9 +28,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function assert;
 use function explode;
-use function is_string;
+use function in_array;
+use function preg_replace;
+use function redirect;
+use function trim;
 
 /**
  * Edit the raw GEDCOM of a record.
@@ -79,7 +81,7 @@ class EditRawRecordAction implements RequestHandlerInterface
         }
         // Append the updated facts
         foreach ($facts as $fact) {
-            $gedcom .= "\n" . $fact;
+            $gedcom .= "\n" . trim($fact);
         }
 
         // Empty lines and MSDOS line endings.

@@ -20,14 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Elements\PedigreeLinkageType;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function assert;
-use function is_string;
 use function redirect;
 
 /**
@@ -69,13 +68,13 @@ class LinkChildToFamilyAction implements RequestHandlerInterface
             case '':
                 $gedcom = "1 FAMC @$famid@";
                 break;
-            case 'adopted':
+            case PedigreeLinkageType::VALUE_ADOPTED:
                 $gedcom = "1 FAMC @$famid@\n2 PEDI $PEDI\n1 ADOP\n2 FAMC @$famid@\n3 ADOP BOTH";
                 break;
-            case 'sealing':
+            case PedigreeLinkageType::VALUE_SEALING:
                 $gedcom = "1 FAMC @$famid@\n2 PEDI $PEDI\n1 SLGC\n2 FAMC @$famid@";
                 break;
-            case 'foster':
+            case PedigreeLinkageType::VALUE_FOSTER:
                 $gedcom = "1 FAMC @$famid@\n2 PEDI $PEDI\n1 EVEN\n2 TYPE $PEDI";
                 break;
             default:

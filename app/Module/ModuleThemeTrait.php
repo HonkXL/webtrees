@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
-use Aura\Router\Route;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
 use Fisharebest\Webtrees\Fact;
@@ -282,10 +281,9 @@ trait ModuleThemeTrait
         assert($request instanceof ServerRequestInterface);
 
         // Return to this page after login...
-        $redirect = $request->getQueryParams()['url'] ?? (string) $request->getUri();
-
-        $tree  = Validator::attributes($request)->treeOptional();
-        $route = Validator::attributes($request)->route();
+        $redirect = Validator::queryParams($request)->string('url', (string) $request->getUri());
+        $tree     = Validator::attributes($request)->treeOptional();
+        $route    = Validator::attributes($request)->route();
 
         // ...but switch from the tree-page to the user-page
         if ($route->name === TreePage::class) {

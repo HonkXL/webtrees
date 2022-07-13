@@ -19,6 +19,8 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\SurnameTradition;
 
+use Fisharebest\Webtrees\Elements\NameType;
+use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 
 /**
@@ -30,6 +32,27 @@ use Fisharebest\Webtrees\Individual;
  */
 class PortugueseSurnameTradition extends DefaultSurnameTradition
 {
+    /**
+     * The name of this surname tradition
+     *
+     * @return string
+     */
+    public function name(): string
+    {
+        return I18N::translateContext('Surname tradition', 'Portuguese');
+    }
+
+    /**
+     * A short description of this surname tradition
+     *
+     * @return string
+     */
+    public function description(): string
+    {
+        /* I18N: In the Portuguese surname tradition, ... */
+        return I18N::translate('Children take one surname from the mother and one surname from the father.');
+    }
+
     /**
      * A default/empty name
      *
@@ -65,7 +88,7 @@ class PortugueseSurnameTradition extends DefaultSurnameTradition
 
         return [
             $this->buildName('/' . $father_surname . '/ /' . $mother_surname . '/', [
-                'TYPE' => 'birth',
+                'TYPE' => NameType::VALUE_BIRTH,
                 'SURN' => trim($father_surname . ',' . $mother_surname, ','),
             ]),
         ];
@@ -86,7 +109,7 @@ class PortugueseSurnameTradition extends DefaultSurnameTradition
                 case 'M':
                     return [
                         $this->buildName('// /' . $match['SURN1'] . '/', [
-                            'TYPE' => 'birth',
+                            'TYPE' => NameType::VALUE_BIRTH,
                             'SURN' => $match['SURN1'],
                         ]),
                     ];
@@ -94,7 +117,7 @@ class PortugueseSurnameTradition extends DefaultSurnameTradition
                 case 'F':
                     return [
                         $this->buildName('// /' . $match['SURN2'] . '/', [
-                            'TYPE' => 'birth',
+                            'TYPE' => NameType::VALUE_BIRTH,
                             'SURN' => $match['SURN2'],
                         ]),
                     ];
@@ -102,7 +125,7 @@ class PortugueseSurnameTradition extends DefaultSurnameTradition
         }
 
         return [
-            $this->buildName('// //', ['TYPE' => 'birth']),
+            $this->buildName('// //', ['TYPE' => NameType::VALUE_BIRTH]),
         ];
     }
 
@@ -117,7 +140,7 @@ class PortugueseSurnameTradition extends DefaultSurnameTradition
     public function newSpouseNames(Individual $spouse, string $sex): array
     {
         return [
-            $this->buildName('// //', ['TYPE' => 'birth']),
+            $this->buildName('// //', ['TYPE' => NameType::VALUE_BIRTH]),
         ];
     }
 }

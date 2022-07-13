@@ -50,7 +50,7 @@ use Psr\Http\Message\ServerRequestInterface;
         <!--IE11/Edge-->
         <meta name="msapplication-config" content="<?= e(route(BrowserconfigXml::class)) ?>">
 
-        <link rel="manifest" href="<?= e(route(WebmanifestJson::class)) ?>">
+        <link rel="manifest" href="<?= e(route(WebmanifestJson::class)) ?>" crossorigin="use-credentials">
 
         <link rel="stylesheet" href="<?= e(asset('css/vendor.min.css')) ?>">
         <?php foreach (app(ModuleThemeInterface::class)->stylesheets() as $stylesheet) : ?>
@@ -80,18 +80,18 @@ use Psr\Http\Message\ServerRequestInterface;
                         <h1 class="col wt-site-title"><?= e($tree->title()) ?></h1>
 
                         <div class="col wt-header-search">
-                            <form method="post"
-                                  action="<?= e(route(SearchQuickAction::class, ['tree' => $tree->name()])) ?>"
-                                  class="wt-header-search-form" role="search">
-                                <?= csrf_field() ?>
+                            <form method="post" action="<?= e(route(SearchQuickAction::class, ['tree' => $tree->name()])) ?>" class="wt-header-search-form" role="search">
                                 <div class="input-group">
                                     <label class="visually-hidden" for="quick-search"><?= I18N::translate('Search') ?></label>
-                                    <input type="search" class="form-control wt-header-search-field" id="quick-search"
-                                           name="query" size="15" placeholder="<?= I18N::translate('Search') ?>">
+
+                                    <input type="search" class="form-control wt-header-search-field" id="quick-search" name="query" size="15" placeholder="<?= I18N::translate('Search') ?>">
+
                                     <button type="submit" class="btn btn-primary wt-header-search-button" aria-label="<?= I18N::translate('Search') ?>">
                                         <?= view('icons/search') ?>
                                     </button>
                                 </div>
+
+                                <?= csrf_field() ?>
                             </form>
                         </div>
                     <?php endif ?>

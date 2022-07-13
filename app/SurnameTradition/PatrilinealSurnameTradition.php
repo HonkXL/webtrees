@@ -19,6 +19,8 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\SurnameTradition;
 
+use Fisharebest\Webtrees\Elements\NameType;
+use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 
 /**
@@ -26,6 +28,28 @@ use Fisharebest\Webtrees\Individual;
  */
 class PatrilinealSurnameTradition extends DefaultSurnameTradition
 {
+    /**
+     * The name of this surname tradition
+     *
+     * @return string
+     */
+    public function name(): string
+    {
+        /* I18N: A system where children take their father’s surname */
+        return I18N::translate('patrilineal');
+    }
+
+    /**
+     * A short description of this surname tradition
+     *
+     * @return string
+     */
+    public function description(): string
+    {
+        /* I18N: In the patrilineal surname tradition, ... */
+        return I18N::translate('Children take their father’s surname.');
+    }
+
     /**
      * What name is given to a new child
      *
@@ -43,7 +67,7 @@ class PatrilinealSurnameTradition extends DefaultSurnameTradition
             $surn = $match['SURN'];
 
             return [
-                $this->buildName($name, ['TYPE' => 'birth', 'SPFX' => $spfx, 'SURN' => $surn]),
+                $this->buildName($name, ['TYPE' => NameType::VALUE_BIRTH, 'SPFX' => $spfx, 'SURN' => $surn]),
             ];
         }
 
@@ -66,7 +90,7 @@ class PatrilinealSurnameTradition extends DefaultSurnameTradition
             $surn = $match['SURN'];
 
             return [
-                $this->buildName($name, ['TYPE' => 'birth', 'SPFX' => $spfx, 'SURN' => $surn]),
+                $this->buildName($name, ['TYPE' => NameType::VALUE_BIRTH, 'SPFX' => $spfx, 'SURN' => $surn]),
             ];
         }
 

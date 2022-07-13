@@ -36,7 +36,7 @@ use function md5;
 use function pathinfo;
 use function random_bytes;
 use function str_contains;
-use function strtolower;
+use function strtoupper;
 
 use const PATHINFO_EXTENSION;
 
@@ -79,7 +79,6 @@ class MediaFile
 
         if (preg_match('/^\d FILE (.+)/m', $gedcom, $match)) {
             $this->multimedia_file_refn = $match[1];
-            $this->multimedia_format    = pathinfo($match[1], PATHINFO_EXTENSION);
         }
 
         if (preg_match('/^\d FORM (.+)/m', $gedcom, $match)) {
@@ -272,7 +271,7 @@ class MediaFile
      */
     public function mimeType(): string
     {
-        $extension = strtolower(pathinfo($this->multimedia_file_refn, PATHINFO_EXTENSION));
+        $extension = strtoupper(pathinfo($this->multimedia_file_refn, PATHINFO_EXTENSION));
 
         return Mime::TYPES[$extension] ?? Mime::DEFAULT_TYPE;
     }

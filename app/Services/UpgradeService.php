@@ -22,10 +22,13 @@ namespace Fisharebest\Webtrees\Services;
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Http\Exceptions\HttpServerErrorException;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Log;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\Webtrees;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Support\Collection;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
@@ -35,6 +38,7 @@ use League\Flysystem\StorageAttributes;
 use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
 use League\Flysystem\ZipArchive\ZipArchiveAdapter;
+use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use ZipArchive;
 
@@ -247,7 +251,7 @@ class UpgradeService
      */
     public function isUpgradeAvailable(): bool
     {
-        // If the latest version is unavailable, we will have an empty sting which equates to version 0.
+        // If the latest version is unavailable, we will have an empty string which equates to version 0.
 
         return version_compare(Webtrees::VERSION, $this->fetchLatestVersion()) < 0;
     }
@@ -332,6 +336,7 @@ class UpgradeService
             } catch (GuzzleException $ex) {
                 // Can't connect to the server?
                 // Use the existing information about latest versions.
+                Log::addErrorLog('Cannot fetch latest webtrees version. ' . $ex->getMessage());
             }
         }
 
@@ -345,12 +350,20 @@ class UpgradeService
      */
     private function serverParameters(): array
     {
-        $operating_system = DIRECTORY_SEPARATOR === '/' ? 'u' : 'w';
+        $site_uuid = Site::getPreference('SITE_UUID');
+
+        if ($site_uuid === '') {
+            $site_uuid = Registry::idFactory()->uuid();
+            Site::setPreference('SITE_UUID', $site_uuid);
+        }
+
+        $database_type = DB::connection()->getDriverName();
 
         return [
             'w' => Webtrees::VERSION,
             'p' => PHP_VERSION,
-            'o' => $operating_system,
+            's' => $site_uuid,
+            'd' => $database_type,
         ];
     }
 }

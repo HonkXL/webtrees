@@ -15,7 +15,6 @@ use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\View;
 use Illuminate\Support\Collection;
-use Ramsey\Uuid\Uuid;
 
 /**
  * @var Collection<int,Individual> $individuals
@@ -24,7 +23,7 @@ use Ramsey\Uuid\Uuid;
  */
 
 // lists requires a unique ID in case there are multiple lists per page
-$table_id = 'table-indi-' . Uuid::uuid4()->toString();
+$table_id = Registry::idFactory()->id();
 
 $today_jd          = Registry::timestampFactory()->now()->julianDay();
 $hundred_years_ago = Registry::timestampFactory()->now()->subtractYears(100)->julianDay();
@@ -108,6 +107,7 @@ for ($age = 0; $age <= $max_age; $age++) {
     $deat_by_age[$age]['M'] = 0;
     $deat_by_age[$age]['F'] = 0;
     $deat_by_age[$age]['U'] = 0;
+    $deat_by_age[$age]['X'] = 0;
 }
 $birt_by_decade = [];
 $deat_by_decade = [];
@@ -115,9 +115,11 @@ for ($year = 1400; $year < 2050; $year += 10) {
     $birt_by_decade[$year]['M'] = 0;
     $birt_by_decade[$year]['F'] = 0;
     $birt_by_decade[$year]['U'] = 0;
+    $birt_by_decade[$year]['X'] = 0;
     $deat_by_decade[$year]['M'] = 0;
     $deat_by_decade[$year]['F'] = 0;
     $deat_by_decade[$year]['U'] = 0;
+    $deat_by_decade[$year]['X'] = 0;
 }
 
 $birthData = [

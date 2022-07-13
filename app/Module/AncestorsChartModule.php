@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
-use Aura\Router\RouterContainer;
 use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\I18N;
@@ -32,8 +31,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function app;
-use function assert;
 use function route;
 
 /**
@@ -51,8 +48,8 @@ class AncestorsChartModule extends AbstractModule implements ModuleChartInterfac
     public const CHART_STYLE_FAMILIES    = 'families';
 
     // Defaults
-    protected const DEFAULT_GENERATIONS = '4';
-    protected const DEFAULT_STYLE       = self::CHART_STYLE_TREE;
+    public const DEFAULT_GENERATIONS = '4';
+    public const DEFAULT_STYLE       = self::CHART_STYLE_TREE;
     protected const DEFAULT_PARAMETERS  = [
         'generations' => self::DEFAULT_GENERATIONS,
         'style'       => self::DEFAULT_STYLE,

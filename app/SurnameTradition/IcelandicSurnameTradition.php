@@ -19,6 +19,8 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\SurnameTradition;
 
+use Fisharebest\Webtrees\Elements\NameType;
+use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 
 /**
@@ -29,6 +31,27 @@ use Fisharebest\Webtrees\Individual;
  */
 class IcelandicSurnameTradition extends DefaultSurnameTradition
 {
+    /**
+     * The name of this surname tradition
+     *
+     * @return string
+     */
+    public function name(): string
+    {
+        return I18N::translateContext('Surname tradition', 'Icelandic');
+    }
+
+    /**
+     * A short description of this surname tradition
+     *
+     * @return string
+     */
+    public function description(): string
+    {
+        /* I18N: In the Icelandic surname tradition, ... */
+        return I18N::translate('Children take a patronym instead of a surname.');
+    }
+
     /**
      * A default/empty name
      *
@@ -56,20 +79,20 @@ class IcelandicSurnameTradition extends DefaultSurnameTradition
                     $givn = $match['GIVN'] . 'sson';
 
                     return [
-                        $this->buildName($givn, ['TYPE' => 'birth', 'GIVN' => $givn]),
+                        $this->buildName($givn, ['TYPE' => NameType::VALUE_BIRTH, 'GIVN' => $givn]),
                     ];
 
                 case 'F':
                     $givn = $match['GIVN'] . 'sdottir';
 
                     return [
-                        $this->buildName($givn, ['TYPE' => 'birth', 'GIVN' => $givn]),
+                        $this->buildName($givn, ['TYPE' => NameType::VALUE_BIRTH, 'GIVN' => $givn]),
                     ];
             }
         }
 
         return [
-            $this->buildName('', ['TYPE' => 'birth']),
+            $this->buildName('', ['TYPE' => NameType::VALUE_BIRTH]),
         ];
     }
 
@@ -85,18 +108,18 @@ class IcelandicSurnameTradition extends DefaultSurnameTradition
     {
         if ($sex === 'M' && preg_match('~(?<GIVN>[^ /]+)(:?sson)$~', $this->extractName($child), $match)) {
             return [
-                $this->buildName($match['GIVN'], ['TYPE' => 'birth', 'GIVN' => $match['GIVN']]),
+                $this->buildName($match['GIVN'], ['TYPE' => NameType::VALUE_BIRTH, 'GIVN' => $match['GIVN']]),
             ];
         }
 
         if ($sex === 'F' && preg_match('~(?<GIVN>[^ /]+)(:?sdottir)$~', $this->extractName($child), $match)) {
             return [
-                $this->buildName($match['GIVN'], ['TYPE' => 'birth', 'GIVN' => $match['GIVN']]),
+                $this->buildName($match['GIVN'], ['TYPE' => NameType::VALUE_BIRTH, 'GIVN' => $match['GIVN']]),
             ];
         }
 
         return [
-            $this->buildName('', ['TYPE' => 'birth']),
+            $this->buildName('', ['TYPE' => NameType::VALUE_BIRTH]),
         ];
     }
 
@@ -111,7 +134,7 @@ class IcelandicSurnameTradition extends DefaultSurnameTradition
     public function newSpouseNames(Individual $spouse, string $sex): array
     {
         return [
-            $this->buildName('', ['TYPE' => 'birth']),
+            $this->buildName('', ['TYPE' => NameType::VALUE_BIRTH]),
         ];
     }
 }

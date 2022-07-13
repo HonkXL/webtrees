@@ -19,6 +19,8 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\SurnameTradition;
 
+use Fisharebest\Webtrees\Elements\NameType;
+use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 
 /**
@@ -26,6 +28,29 @@ use Fisharebest\Webtrees\Individual;
  */
 class PaternalSurnameTradition extends PatrilinealSurnameTradition
 {
+    /**
+     * The name of this surname tradition
+     *
+     * @return string
+     */
+    public function name(): string
+    {
+        return I18N::translateContext('Surname tradition', 'paternal');
+    }
+
+    /**
+     * A short description of this surname tradition
+     *
+     * @return string
+     */
+    public function description(): string
+    {
+        /* I18N: In the paternal surname tradition, ... */
+        return
+            I18N::translate('Children take their father’s surname.') . ' ' .
+            I18N::translate('Wives take their husband’s surname.');
+    }
+
     /**
      * What name is given to a new parent
      *
@@ -42,8 +67,8 @@ class PaternalSurnameTradition extends PatrilinealSurnameTradition
             $surn = $match['SURN'];
 
             return [
-                $this->buildName('//', ['TYPE' => 'birth']),
-                $this->buildName($name, ['TYPE' => 'married', 'SPFX' => $spfx, 'SURN' => $surn]),
+                $this->buildName('//', ['TYPE' => NameType::VALUE_BIRTH]),
+                $this->buildName($name, ['TYPE' => NameType::VALUE_MARRIED, 'SPFX' => $spfx, 'SURN' => $surn]),
             ];
         }
 
@@ -66,8 +91,8 @@ class PaternalSurnameTradition extends PatrilinealSurnameTradition
             $surn = $match['SURN'];
 
             return [
-                $this->buildName('//', ['TYPE' => 'birth']),
-                $this->buildName($name, ['TYPE' => 'married', 'SPFX' => $spfx, 'SURN' => $surn]),
+                $this->buildName('//', ['TYPE' => NameType::VALUE_BIRTH]),
+                $this->buildName($name, ['TYPE' => NameType::VALUE_MARRIED, 'SPFX' => $spfx, 'SURN' => $surn]),
             ];
         }
 

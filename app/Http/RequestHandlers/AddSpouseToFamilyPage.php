@@ -25,14 +25,11 @@ use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\GedcomEditService;
-use Fisharebest\Webtrees\SurnameTradition;
 use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function assert;
-use function is_string;
 use function route;
 
 /**
@@ -68,10 +65,16 @@ class AddSpouseToFamilyPage implements RequestHandlerInterface
         $family = Auth::checkFamilyAccess($family, true);
 
         // Name facts.
-        $surname_tradition = SurnameTradition::create($tree->getPreference('SURNAME_TRADITION'));
-        $spouse            = $family->spouses()->first();
-        assert($spouse instanceof Individual);
-        $names      = $surname_tradition->newSpouseNames($spouse, $sex);
+        $surname_tradition = Registry::surnameTraditionFactory()
+            ->make($tree->getPreference('SURNAME_TRADITION'));
+
+        $spouse = $family->spouses()->first();
+
+        if ($spouse instanceof Individual) {
+            $names = $surname_tradition->newSpouseNames($spouse, $sex);
+        } else {
+            $names = ['1 NAME ' . $surname_tradition->defaultName()];
+        }
 
         $facts = [
             'i' => $this->gedcom_edit_service->newIndividualFacts($tree, $sex, $names),
@@ -91,7 +94,7 @@ class AddSpouseToFamilyPage implements RequestHandlerInterface
             'post_url'            => route(AddSpouseToFamilyAction::class, ['tree' => $tree->name(), 'xref' => $xref]),
             'title'               => $title,
             'tree'                => $tree,
-            'url'                 => $request->getQueryParams()['url'] ?? $family->url(),
+            'url'                 => Validator::queryParams($request)->isLocalUrl()->string('url', $family->url()),
         ]);
     }
 }

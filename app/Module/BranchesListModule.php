@@ -19,10 +19,10 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
-use Aura\Router\RouterContainer;
 use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\Elements\PedigreeLinkageType;
 use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\GedcomRecord;
 use Fisharebest\Webtrees\I18N;
@@ -410,7 +410,7 @@ class BranchesListModule extends AbstractModule implements ModuleListInterface, 
                 if ($fact->target() === $parents) {
                     $pedi = $fact->attribute('PEDI');
 
-                    if ($pedi !== '' && $pedi !== 'birth') {
+                    if ($pedi !== '' && $pedi !== PedigreeLinkageType::VALUE_BIRTH) {
                         $pedigree  = Registry::elementFactory()->make('INDI:FAMC:PEDI')->value($pedi, $tree);
                         $indi_html = '<span class="red">' . $pedigree . '</span> ' . $indi_html;
                     }

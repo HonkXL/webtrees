@@ -20,8 +20,8 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Elements\DateValue;
 use Fisharebest\Webtrees\Elements\ResearchTask;
-use Fisharebest\Webtrees\Elements\TransmissionDate;
 use Fisharebest\Webtrees\Elements\WebtreesUser;
 use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\GedcomRecord;
@@ -48,6 +48,9 @@ class ResearchTaskModule extends AbstractModule implements ModuleBlockInterface
     private const DEFAULT_SHOW_UNASSIGNED = '1';
     private const DEFAULT_SHOW_FUTURE     = '1';
 
+    // 31 DEC 9999
+    private const MAXIMUM_JULIAN_DAY = 5373484;
+
     // Pagination
     private const LIMIT_LOW  = 10;
     private const LIMIT_HIGH = 20;
@@ -57,12 +60,12 @@ class ResearchTaskModule extends AbstractModule implements ModuleBlockInterface
      */
     public function boot(): void
     {
-        Registry::elementFactory()->register([
+        Registry::elementFactory()->registerTags([
             'FAM:_TODO'           => new ResearchTask(I18N::translate('Research task')),
-            'FAM:_TODO:DATE'      => new TransmissionDate(I18N::translate('Date')),
+            'FAM:_TODO:DATE'      => new DateValue(I18N::translate('Date')),
             'FAM:_TODO:_WT_USER'  => new WebtreesUser(I18N::translate('User')),
             'INDI:_TODO'          => new ResearchTask(I18N::translate('Research task')),
-            'INDI:_TODO:DATE'     => new TransmissionDate(I18N::translate('Date')),
+            'INDI:_TODO:DATE'     => new DateValue(I18N::translate('Date')),
             'INDI:_TODO:_WT_USER' => new WebtreesUser(I18N::translate('User')),
         ]);
 
@@ -99,7 +102,7 @@ class ResearchTaskModule extends AbstractModule implements ModuleBlockInterface
 
         extract($config, EXTR_OVERWRITE);
 
-        $end_jd      = $show_future ? PHP_INT_MAX : Registry::timestampFactory()->now()->julianDay();
+        $end_jd      = $show_future ? self::MAXIMUM_JULIAN_DAY : Registry::timestampFactory()->now()->julianDay();
         $individuals = $this->individualsWithTasks($tree, $end_jd);
         $families    = $this->familiesWithTasks($tree, $end_jd);
 

@@ -110,8 +110,8 @@ use Illuminate\Support\Collection;
                             </a>
 
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                <?php foreach ($active[$place->key] as $link): ?>
-                                    <a class="dropdown-item" href="<?= e($list_module->listUrl($all_trees->get($active[$place->key][0]->tree_name), ['place_id' => $link->p_id])) ?>">
+                                <?php foreach ($active[$place->key] as $n => $link): ?>
+                                    <a class="dropdown-item" href="<?= e($list_module->listUrl($all_trees->get($active[$place->key][$n]->tree_name), ['place_id' => $link->p_id])) ?>">
                                         <?= e($link->tree_title) ?>
                                     </a>
                                 <?php endforeach ?>
@@ -124,10 +124,11 @@ use Illuminate\Support\Collection;
             <td>
                 <?php if (!array_key_exists($place->key, $active)): ?>
                     <form method="post" action="<?= e(route(MapDataDelete::class, ['place_id' => $place->id])) ?>">
-                        <?= csrf_field() ?>
                         <button type="submit" class="btn btn-danger" aria-label="<?= I18N::translate('delete') ?>" data-wt-confirm="<?= I18N::translate('Remove this location?') ?>">
                             <?= view('icons/delete') ?>
                         </button>
+
+                        <?= csrf_field() ?>
                     </form>
                 <?php endif ?>
             </td>
@@ -165,12 +166,13 @@ use Illuminate\Support\Collection;
             </td>
             <td colspan="2">
                 <?php if (count($active) !== count($placelist)) : ?>
-                    <form class="form-inline d-inline" method="post" action="<?= route(MapDataDeleteUnused::class) ?>">
-                        <?= csrf_field() ?>
+                    <form class="d-inline" method="post" action="<?= route(MapDataDeleteUnused::class) ?>">
                         <button type="submit" class="btn btn-danger">
                             <?= view('icons/delete') ?>
                             <?= I18N::translate('Delete unused locations') ?>
                         </button>
+
+                        <?= csrf_field() ?>
                     </form>
                 <?php endif ?>
             </td>

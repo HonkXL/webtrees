@@ -31,14 +31,12 @@ use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\Services\UserService;
-use Fisharebest\Webtrees\SurnameTradition;
 use Fisharebest\Webtrees\Validator;
 use Illuminate\Support\Collection;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function app;
 use function e;
 use function explode;
 use function in_array;
@@ -139,7 +137,7 @@ class TreePreferencesPage implements RequestHandlerInterface
             return Auth::isMember($tree, $user);
         });
 
-        $ignore_facts = ['CHAN', 'CHIL', 'FAMC', 'FAMS', 'HUSB', 'NOTE', 'OBJE', 'SOUR', 'SUBM', 'WIFE'];
+        $ignore_facts = ['CHAN', 'CHIL', 'FAMC', 'FAMS', 'HUSB', 'NOTE', 'OBJE', 'SOUR', 'SUBM', 'WIFE', 'NAME', 'SEX'];
 
         $all_family_facts = Collection::make(Registry::elementFactory()->make('FAM')->subtags())
             ->filter(static fn (string $value, string $key): bool => !in_array($key, $ignore_facts, true))
@@ -157,7 +155,7 @@ class TreePreferencesPage implements RequestHandlerInterface
             ->map(static fn (ElementInterface $element): string => $element->label())
             ->sort(I18N::comparator());
 
-        $all_surname_traditions = SurnameTradition::allDescriptions();
+        $all_surname_traditions = Registry::surnameTraditionFactory()->list();
 
         $tree_count = $this->tree_service->all()->count();
 

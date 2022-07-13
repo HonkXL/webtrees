@@ -19,11 +19,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Statistics\Repository;
 
-use Fisharebest\Webtrees\Family;
-use Fisharebest\Webtrees\Gedcom;
 use Fisharebest\Webtrees\I18N;
-use Fisharebest\Webtrees\Individual;
-use Fisharebest\Webtrees\Location;
 use Fisharebest\Webtrees\Place;
 use Fisharebest\Webtrees\Statistics\Google\ChartDistribution;
 use Fisharebest\Webtrees\Statistics\Repository\Interfaces\IndividualRepositoryInterface;
@@ -36,10 +32,7 @@ use Illuminate\Database\Query\JoinClause;
 
 use function array_key_exists;
 use function arsort;
-use function end;
-use function explode;
 use function preg_match;
-use function trim;
 use function view;
 
 /**
@@ -210,7 +203,7 @@ class PlaceRepository implements PlaceRepositoryInterface
             ->orderByDesc(new Expression('COUNT(*)'))
             ->orderBy('p_place')
             ->pluck(new Expression('COUNT(*)'), 'p_place')
-            ->map(static fn(string $col): int => (int) $col)
+            ->map(static fn (string $col): int => (int) $col)
             ->all();
 
         if ($countries === []) {

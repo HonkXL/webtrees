@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
-use Aura\Router\RouterContainer;
 use Fig\Http\Message\RequestMethodInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\I18N;
@@ -32,10 +31,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function app;
-use function assert;
-use function max;
-use function min;
 use function route;
 use function view;
 
@@ -55,8 +50,8 @@ class PedigreeChartModule extends AbstractModule implements ModuleChartInterface
     public const STYLE_DOWN  = 'down';
 
     // Defaults
-    protected const DEFAULT_GENERATIONS = '4';
-    protected const DEFAULT_STYLE       = self::STYLE_RIGHT;
+    public const    DEFAULT_GENERATIONS = '4';
+    public const    DEFAULT_STYLE       = self::STYLE_RIGHT;
     protected const DEFAULT_PARAMETERS  = [
         'generations' => self::DEFAULT_GENERATIONS,
         'style'       => self::DEFAULT_STYLE,
