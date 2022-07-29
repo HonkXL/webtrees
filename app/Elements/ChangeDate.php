@@ -27,26 +27,22 @@ use Fisharebest\Webtrees\Tree;
  * <DATE_EXACT>
  * The date that this data was changed.
  */
-class ChangeDate extends AbstractElement
+class ChangeDate extends DateValueToday
 {
     protected const SUBTAGS = [
         'TIME' => '1:1',
     ];
 
     /**
-     * Display the value of this type of element.
+     * Escape @ signs in a GEDCOM export.
+     * This value should not include calendar escapes, so override special logic for date fields.
      *
      * @param string $value
-     * @param Tree   $tree
      *
      * @return string
      */
-    public function value(string $value, Tree $tree): string
+    public function escape(string $value): string
     {
-        $canonical = $this->canonical($value);
-
-        $date = new Date($canonical);
-
-        return $date->display();
+        return strtr($value, ['@' => '@@']);
     }
 }
