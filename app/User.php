@@ -212,7 +212,7 @@ class User implements UserInterface
      *
      * @return User
      */
-    public function setPassword(string $password): User
+    public function setPassword(#[\SensitiveParameter] string $password): User
     {
         DB::table('user')
             ->where('user_id', '=', $this->user_id)
@@ -231,7 +231,7 @@ class User implements UserInterface
      *
      * @return bool
      */
-    public function checkPassword(string $password): bool
+    public function checkPassword(#[\SensitiveParameter] string $password): bool
     {
         $password_hash = DB::table('user')
             ->where('user_id', '=', $this->id())
@@ -255,8 +255,6 @@ class User implements UserInterface
      */
     public static function rowMapper(): Closure
     {
-        return static function (object $row): User {
-            return new self((int) $row->user_id, $row->user_name, $row->real_name, $row->email);
-        };
+        return static fn (object $row): User => new self((int) $row->user_id, $row->user_name, $row->real_name, $row->email);
     }
 }

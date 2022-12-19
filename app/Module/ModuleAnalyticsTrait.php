@@ -112,7 +112,7 @@ trait ModuleAnalyticsTrait
      *
      * @return ResponseInterface
      */
-    public function getAdminAction(/** @scrutinizer ignore-unused */ ServerRequestInterface $request): ResponseInterface
+    public function getAdminAction(ServerRequestInterface $request): ResponseInterface
     {
         $this->layout = 'layouts/administration';
 
@@ -141,7 +141,7 @@ trait ModuleAnalyticsTrait
      *
      * @return string
      */
-    public function analyticsSnippet(/** @scrutinizer ignore-unused */ array $parameters): string
+    public function analyticsSnippet(array $parameters): string
     {
         return '';
     }
@@ -163,10 +163,8 @@ trait ModuleAnalyticsTrait
      */
     public function postAdminAction(ServerRequestInterface $request): ResponseInterface
     {
-        $params = (array) $request->getParsedBody();
-
         foreach (array_keys($this->analyticsParameters()) as $parameter) {
-            $new_value = $params[$parameter];
+            $new_value = Validator::parsedBody($request)->string($parameter);
 
             $this->setPreference($parameter, $new_value);
         }

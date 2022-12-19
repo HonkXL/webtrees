@@ -549,24 +549,31 @@
   };
 
   /**
-   * Persistent checkbox options to hide/show extra data.
-   * @param {HTMLInputElement} element
+   * Make bootstrap "collapse" elements persistent.
+   *
+   * @param {HTMLElement} element
    */
   webtrees.persistentToggle = function (element) {
-    if (element instanceof HTMLInputElement && element.type === 'checkbox') {
-      const key = 'state-of-' + element.dataset.wtPersist;
-      const state = localStorage.getItem(key);
+    const key = 'state-of-' + element.dataset.wtPersist;
+    const previous_state = localStorage.getItem(key);
 
-      // Previously selected? Select again now.
-      if (state === 'true') {
-        element.click();
-      }
+    // Accordion buttons have aria-expanded.  Checkboxes are checked/unchecked
+    const current_state = element.getAttribute('aria-expanded') ?? element.checked.toString();
 
-      // Remember state for the next page load.
-      element.addEventListener('change', function () {
-        localStorage.setItem(key, element.checked.toString());
-      });
+    // Previously selected? Select again now.
+    if (previous_state !== null && previous_state !== current_state) {
+      element.click();
     }
+
+    // Remember state for the next page load.
+    element.addEventListener('click', function () {
+      if (element.type === 'checkbox') {
+        localStorage.setItem(key, element.checked.toString());
+      }
+      if (element.type === 'button') {
+        localStorage.setItem(key, element.getAttribute('aria-expanded'));
+      }
+    });
   };
 
   /**
@@ -678,18 +685,32 @@
       options: {
         position: 'topleft',
       },
-      onAdd: function (map) {
-        let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-        container.onclick = resetCallback;
-        let reset = config.i18n.reset;
-        let anchor = L.DomUtil.create('a', 'leaflet-control-reset', container);
-        anchor.setAttribute('aria-label', reset);
+      onAdd: () => {
+        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        const anchor = L.DomUtil.create('a', 'leaflet-control-reset', container);
+
         anchor.href = '#';
-        anchor.title = reset;
+        anchor.setAttribute('aria-label', config.i18n.reset); /* Firefox doesn't yet support element.ariaLabel */
+        anchor.title = config.i18n.reset;
         anchor.role = 'button';
-        L.DomEvent.addListener(anchor, 'click', L.DomEvent.preventDefault);
-        let image = L.DomUtil.create('i', 'fas fa-redo', anchor);
-        image.alt = reset;
+        anchor.innerHTML = config.icons.reset;
+        anchor.onclick = resetCallback;
+
+        return container;
+      },
+    });
+
+    const fullscreenControl = L.Control.extend({
+      options: {
+        position: 'topleft',
+      },
+      onAdd: (map) => {
+        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        const anchor = L.DomUtil.create('a', 'leaflet-control-fullscreen', container);
+
+        anchor.setAttribute('role', 'button');
+        anchor.dataset.wtFullscreen = '.wt-fullscreen-container';
+        anchor.innerHTML = config.icons.fullScreen;
 
         return container;
       },
@@ -721,6 +742,7 @@
       zoomControl: false,
     })
       .addControl(zoomControl)
+      .addControl(new fullscreenControl)
       .addControl(new resetControl())
       .addLayer(defaultLayer)
       .addControl(L.control.layers.tree(config.mapProviders, null, {
@@ -1001,7 +1023,7 @@ document.addEventListener('submit', function (event) {
   }
 });
 
-// Convert data-wt-confirm and data-wt-post-url/data-wt-reload-url attributes into useful behavior.
+// Convert data-wt-* attributes into useful behavior.
 document.addEventListener('click', (event) => {
   const target = event.target.closest('a,button');
 
@@ -1026,5 +1048,19 @@ document.addEventListener('click', (event) => {
     }).catch((error) => {
       alert(error);
     });
+  }
+
+  if (('wtFullscreen' in target.dataset)) {
+    event.stopPropagation();
+
+    const element = target.closest(target.dataset.wtFullscreen);
+
+    if (document.fullscreenElement === element) {
+      document.exitFullscreen()
+        .catch((error) => alert(error));
+    } else {
+      element.requestFullscreen()
+        .catch((error) => alert(error));
+    }
   }
 });

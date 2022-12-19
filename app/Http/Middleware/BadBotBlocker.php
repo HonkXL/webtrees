@@ -22,6 +22,8 @@ namespace Fisharebest\Webtrees\Http\Middleware;
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Validator;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Iodev\Whois\Loaders\CurlLoader;
 use Iodev\Whois\Modules\Asn\AsnRouteInfo;
 use Iodev\Whois\Whois;
@@ -50,6 +52,9 @@ use function str_ends_with;
  */
 class BadBotBlocker implements MiddlewareInterface
 {
+    private const REGEX_OCTET = '(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)';
+    private const REGEX_IPV4  = '/\\b' . self::REGEX_OCTET . '(?:\\.' . self::REGEX_OCTET . '){3}\\b/';
+
     // Cache whois requests.  Try to avoid all caches expiring at the same time.
     private const WHOIS_TTL_MIN = 28 * 86400;
     private const WHOIS_TTL_MAX = 35 * 86400;
@@ -60,19 +65,26 @@ class BadBotBlocker implements MiddlewareInterface
         'admantx',
         'Adsbot',
         'AhrefsBot',
+        'Amazonbot', // Until it understands crawl-delay and noindex / nofollow
         'AspiegelBot',
         'Barkrowler',
         'BLEXBot',
         'DataForSEO',
         'DotBot',
         'Grapeshot',
+        'Honolulu-bot', // Aggressive crawer, no info available
         'ia_archiver',
+        'linabot', // Aggressive crawer, no info available
         'Linguee',
         'MJ12bot',
+        'netEstate NE',
         'panscient',
         'PetalBot',
         'proximic',
         'SemrushBot',
+        'serpstatbot',
+        'SEOkicks',
+        'SiteKiosk',
         'Turnitin',
         'XoviBot',
         'ZoominfoBot',
@@ -81,16 +93,22 @@ class BadBotBlocker implements MiddlewareInterface
     /**
      * Some search engines use reverse/forward DNS to verify the IP address.
      *
+     * @see https://developer.amazon.com/support/amazonbot
      * @see https://support.google.com/webmasters/answer/80553?hl=en
      * @see https://www.bing.com/webmaster/help/which-crawlers-does-bing-use-8c184ec0
      * @see https://www.bing.com/webmaster/help/how-to-verify-bingbot-3905dc26
      * @see https://yandex.com/support/webmaster/robot-workings/check-yandex-robots.html
+     * @see https://www.mojeek.com/bot.html
+     * @see https://support.apple.com/en-gb/HT204683
      */
     private const ROBOT_REV_FWD_DNS = [
+        'Amazonbot'   => ['.crawl.amazon.com'],
+        'Applebot'    => ['.applebot.apple.com'],
         'bingbot'     => ['.search.msn.com'],
         'BingPreview' => ['.search.msn.com'],
         'Google'      => ['.google.com', '.googlebot.com'],
-        'Mail.RU_Bot' => ['mail.ru'],
+        'MojeekBot'   => ['.mojeek.com'],
+        'Mail.RU_Bot' => ['.mail.ru'],
         'msnbot'      => ['.search.msn.com'],
         'Qwantify'    => ['.search.qwant.com'],
         'Sogou'       => ['.crawl.sogou.com'],
@@ -103,11 +121,13 @@ class BadBotBlocker implements MiddlewareInterface
      *
      * @see https://help.baidu.com/question?prod_id=99&class=0&id=3001
      * @see https://napoveda.seznam.cz/en/full-text-search/seznambot-crawler
+     * @see https://www.ionos.de/terms-gtc/faq-crawler
      */
     private const ROBOT_REV_ONLY_DNS = [
         'Baiduspider' => ['.baidu.com', '.baidu.jp'],
         'FreshBot'    => ['.seznam.cz'],
-        'Seznam'      => ['.seznam.cz'],
+        'IonCrawl'    => ['.1und1.org'],
+        'Neevabot'    => ['.neeva.com'],
     ];
 
     /**
@@ -146,6 +166,15 @@ class BadBotBlocker implements MiddlewareInterface
             '54.208.102.37',
             '107.21.1.8',
         ],
+    ];
+
+    /**
+     * Some search engines operate from designated IP addresses.
+     *
+     * @see https://bot.seekport.com/
+     */
+    private const ROBOT_IP_FILES = [
+        'SeekportBot' => 'https://bot.seekport.com/seekportbot_ips.txt',
     ];
 
     /**
@@ -190,10 +219,26 @@ class BadBotBlocker implements MiddlewareInterface
             }
         }
 
-        foreach (self::ROBOT_IPS as $robot => $valid_ips) {
+        foreach (self::ROBOT_IPS as $robot => $valid_ip_ranges) {
             if (str_contains($ua, $robot)) {
-                foreach ($valid_ips as $ip) {
-                    $range = IPFactory::parseRangeString($ip);
+                foreach ($valid_ip_ranges as $ip_range) {
+                    $range = IPFactory::parseRangeString($ip_range);
+
+                    if ($range instanceof RangeInterface && $range->contains($address)) {
+                        continue 2;
+                    }
+                }
+
+                return $this->response();
+            }
+        }
+
+        foreach (self::ROBOT_IP_FILES as $robot => $url) {
+            if (str_contains($ua, $robot)) {
+                $valid_ip_ranges = $this->fetchIpRangesForUrl($robot, $url);
+
+                foreach ($valid_ip_ranges as $ip_range) {
+                    $range = IPFactory::parseRangeString($ip_range);
 
                     if ($range instanceof RangeInterface && $range->contains($address)) {
                         continue 2;
@@ -279,7 +324,32 @@ class BadBotBlocker implements MiddlewareInterface
                 $ranges = array_map($mapper, $routes);
 
                 return array_filter($ranges);
-            } catch (Throwable $ex) {
+            } catch (Throwable) {
+                return [];
+            }
+        }, random_int(self::WHOIS_TTL_MIN, self::WHOIS_TTL_MAX));
+    }
+
+    /**
+     * Fetch a list of IP addresses from a remote file.
+     *
+     * @param string $ua
+     * @param string $url
+     *
+     * @return array<string>
+     */
+    private function fetchIpRangesForUrl(string $ua, string $url): array
+    {
+        return Registry::cache()->file()->remember('url-ip-list-' . $ua, static function () use ($url): array {
+            try {
+                $client   = new Client();
+                $response = $client->get($url, ['timeout' => 5]);
+                $contents = $response->getBody()->getContents();
+
+                preg_match_all(self::REGEX_IPV4, $contents, $matches);
+
+                return $matches[0];
+            } catch (GuzzleException) {
                 return [];
             }
         }, random_int(self::WHOIS_TTL_MIN, self::WHOIS_TTL_MAX));

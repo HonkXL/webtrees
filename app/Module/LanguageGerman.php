@@ -21,6 +21,8 @@ namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Localization\Locale\LocaleDe;
 use Fisharebest\Localization\Locale\LocaleInterface;
+use Fisharebest\Webtrees\Encodings\UTF8;
+use Illuminate\Database\Query\Builder;
 
 /**
  * Class LanguageGerman.
@@ -35,5 +37,24 @@ class LanguageGerman extends AbstractModule implements ModuleLanguageInterface
     public function locale(): LocaleInterface
     {
         return new LocaleDe();
+    }
+
+    /**
+     * Letters with diacritics that are considered distinct letters in this language.
+     *
+     * @return array<string,string>
+     */
+    protected function normalizeExceptions(): array
+    {
+        return [
+            'A' . UTF8::COMBINING_DIAERESIS    => 'AE',
+            'O' . UTF8::COMBINING_DIAERESIS    => 'OE',
+            'U' . UTF8::COMBINING_DIAERESIS    => 'UE',
+            UTF8::LATIN_CAPITAL_LETTER_SHARP_S => 'SS',
+            'a' . UTF8::COMBINING_DIAERESIS    => 'ae',
+            'o' . UTF8::COMBINING_DIAERESIS    => 'oe',
+            'u' . UTF8::COMBINING_DIAERESIS    => 'ue',
+            UTF8::LATIN_SMALL_LETTER_SHARP_S   => 'ss',
+        ];
     }
 }

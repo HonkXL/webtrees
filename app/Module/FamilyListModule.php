@@ -21,6 +21,7 @@ namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -76,6 +77,23 @@ class FamilyListModule extends IndividualListModule
 
         Auth::checkComponentAccess($this, ModuleListInterface::class, $tree, $user);
 
-        return $this->createResponse($tree, $user, $request->getQueryParams(), true);
+        $surname_param = Validator::queryParams($request)->string('surname', '');
+        $surname       = I18N::strtoupper(I18N::language()->normalize($surname_param));
+
+        $params = [
+            'alpha'               => Validator::queryParams($request)->string('alpha', ''),
+            'falpha'              => Validator::queryParams($request)->string('falpha', ''),
+            'show'                => Validator::queryParams($request)->string('show', 'surn'),
+            'show_all'            => Validator::queryParams($request)->string('show_all', 'no'),
+            'show_all_firstnames' => Validator::queryParams($request)->string('show_all_firstnames', 'no'),
+            'show_marnm'          => Validator::queryParams($request)->string('show_marnm', ''),
+            'surname'             => $surname,
+        ];
+
+        if ($surname_param !== $surname) {
+            return Registry::responseFactory()->redirectUrl($this->listUrl($tree, $params));
+        }
+
+        return $this->createResponse($tree, $user, $params, true);
     }
 }

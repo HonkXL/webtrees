@@ -203,7 +203,7 @@ class I18N
     // Punctuation used to separate list items, typically a comma
     public static string $list_separator;
 
-    private static ?ModuleLanguageInterface $language;
+    private static ModuleLanguageInterface $language;
 
     private static LocaleInterface $locale;
 
@@ -232,25 +232,6 @@ class I18N
     }
 
     /**
-     * Which MySQL collation should be used for this locale?
-     *
-     * @return string
-     */
-    public static function collation(): string
-    {
-        $collation = self::$locale->collation();
-        switch ($collation) {
-            case 'croatian_ci':
-            case 'german2_ci':
-            case 'vietnamese_ci':
-                // Only available in MySQL 5.6
-                return 'utf8_unicode_ci';
-            default:
-                return 'utf8_' . $collation;
-        }
-    }
-
-    /**
      * What format is used to display dates in the current locale?
      *
      * @return string
@@ -269,7 +250,7 @@ class I18N
      *
      * @return string
      */
-    public static function digits($n): string
+    public static function digits(string|int $n): string
     {
         return self::$locale->digits((string) $n);
     }
@@ -302,7 +283,7 @@ class I18N
         try {
             $translation  = new Translation($translation_file);
             $translations = $translation->asArray();
-        } catch (Exception $ex) {
+        } catch (Exception) {
             // The translations files are created during the build process, and are
             // not included in the source code.
             // Assuming we are using dev code, and build (or rebuild) the files.
@@ -323,7 +304,7 @@ class I18N
                 }, $translations);
 
             self::$language = $module_service
-                ->findByInterface(ModuleLanguageInterface::class)
+                ->findByInterface(ModuleLanguageInterface::class, true)
                 ->first(fn (ModuleLanguageInterface $module): bool => $module->locale()->languageTag() === $code);
         }
 
@@ -335,13 +316,18 @@ class I18N
 
         // Create a collator
         try {
+            // Symfony provides a very incomplete polyfill - which cannot be used.
             if (class_exists('Collator')) {
-                // Symfony provides a very incomplete polyfill - which cannot be used.
-                self::$collator = new Collator(self::$locale->code());
+                // Need phonebook collation rules for German Ä, Ö and Ü.
+                if (str_contains(self::$locale->code(), '@')) {
+                    self::$collator = new Collator(self::$locale->code() . ';collation=phonebook');
+                } else {
+                    self::$collator = new Collator(self::$locale->code() . '@collation=phonebook');
+                }
                 // Ignore upper/lower case differences
                 self::$collator->setStrength(Collator::SECONDARY);
             }
-        } catch (Exception $ex) {
+        } catch (Exception) {
             // PHP-INTL is not installed?  We'll use a fallback later.
         }
     }
@@ -564,8 +550,10 @@ class I18N
      */
     public static function comparator(): Closure
     {
-        if (self::$collator instanceof Collator) {
-            return static fn (string $x, string $y): int => (int) self::$collator->compare($x, $y);
+        $collator = self::$collator;
+
+        if ($collator instanceof Collator) {
+            return static fn (string $x, string $y): int => (int) $collator->compare($x, $y);
         }
 
         return static fn (string $x, string $y): int => strcmp(self::strtolower($x), self::strtolower($y));

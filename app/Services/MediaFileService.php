@@ -65,11 +65,6 @@ use const UPLOAD_ERR_OK;
  */
 class MediaFileService
 {
-    public const EXTENSION_TO_FORM = [
-        'JPEG' => 'JPG',
-        'TIFF' => 'TIF',
-    ];
-
     private const IGNORE_FOLDERS = [
         // Old versions of webtrees
         'thumbs',
@@ -131,12 +126,11 @@ class MediaFileService
     /**
      * A list of media files not already linked to a media object.
      *
-     * @param Tree               $tree
-     * @param FilesystemOperator $data_filesystem
+     * @param Tree $tree
      *
      * @return array<string>
      */
-    public function unusedFiles(Tree $tree, FilesystemOperator $data_filesystem): array
+    public function unusedFiles(Tree $tree): array
     {
         $used_files = DB::table('media_file')
             ->where('m_file', '=', $tree->id())
@@ -145,7 +139,7 @@ class MediaFileService
             ->pluck('multimedia_file_refn')
             ->all();
 
-        $media_filesystem = $tree->mediaFilesystem($data_filesystem);
+        $media_filesystem = $tree->mediaFilesystem();
         $disk_files       = $this->allFilesOnDisk($media_filesystem, '', FilesystemReader::LIST_DEEP)->all();
         $unused_files     = array_diff($disk_files, $used_files);
 
@@ -165,16 +159,12 @@ class MediaFileService
      */
     public function uploadFile(ServerRequestInterface $request): string
     {
-        $tree = Validator::attributes($request)->tree();
-
-        $data_filesystem = Registry::filesystem()->data();
-
-        $params        = (array) $request->getParsedBody();
-        $file_location = $params['file_location'];
+        $tree          = Validator::attributes($request)->tree();
+        $file_location = Validator::parsedBody($request)->string('file_location');
 
         switch ($file_location) {
             case 'url':
-                $remote = $params['remote'];
+                $remote = Validator::parsedBody($request)->string('remote');
 
                 if (str_contains($remote, '://')) {
                     return $remote;
@@ -183,19 +173,18 @@ class MediaFileService
                 return '';
 
             case 'unused':
-                $unused = $params['unused'];
+                $unused = Validator::parsedBody($request)->string('unused');
 
-                if ($tree->mediaFilesystem($data_filesystem)->fileExists($unused)) {
+                if ($tree->mediaFilesystem()->fileExists($unused)) {
                     return $unused;
                 }
 
                 return '';
 
             case 'upload':
-            default:
-                $folder   = $params['folder'];
-                $auto     = $params['auto'];
-                $new_file = $params['new_file'];
+                $folder   = Validator::parsedBody($request)->string('folder');
+                $auto     = Validator::parsedBody($request)->string('auto');
+                $new_file = Validator::parsedBody($request)->string('new_file');
 
                 $uploaded_file = $request->getUploadedFiles()['file'] ?? null;
 
@@ -219,22 +208,24 @@ class MediaFileService
                 }
 
                 // Generate a unique name for the file?
-                if ($auto === '1' || $tree->mediaFilesystem($data_filesystem)->fileExists($folder . $file)) {
+                if ($auto === '1' || $tree->mediaFilesystem()->fileExists($folder . $file)) {
                     $folder    = '';
                     $extension = pathinfo($uploaded_file->getClientFilename(), PATHINFO_EXTENSION);
                     $file      = sha1((string) $uploaded_file->getStream()) . '.' . $extension;
                 }
 
                 try {
-                    $tree->mediaFilesystem($data_filesystem)->writeStream($folder . $file, $uploaded_file->getStream()->detach());
+                    $tree->mediaFilesystem()->writeStream($folder . $file, $uploaded_file->getStream()->detach());
 
                     return $folder . $file;
-                } catch (RuntimeException | InvalidArgumentException $ex) {
+                } catch (RuntimeException | InvalidArgumentException) {
                     FlashMessages::addMessage(I18N::translate('There was an error uploading your file.'));
 
                     return '';
                 }
         }
+
+        return '';
     }
 
     /**
@@ -255,26 +246,26 @@ class MediaFileService
             $format = '';
         } else {
             $format = strtoupper(pathinfo($file, PATHINFO_EXTENSION));
-            $format = self::EXTENSION_TO_FORM[$format] ?? $format;
+            $format = Registry::elementFactory()->make('OBJE:FILE:FORM')->canonical($format);
         }
 
-        if ($format !== '' && strlen($format) <= 4) {
-            $gedcom .= "\n2 FORM " . $format;
+        if ($format !== '') {
+            $gedcom .= "\n2 FORM " . strtr($format, ["\n" => "\n3 CONT "]);
         } elseif ($type !== '') {
             $gedcom .= "\n2 FORM";
         }
 
         if ($type !== '') {
-            $gedcom .= "\n3 TYPE " . $type;
+            $gedcom .= "\n3 TYPE " . strtr($type, ["\n" => "\n4 CONT "]);
         }
 
         if ($title !== '') {
-            $gedcom .= "\n2 TITL " . $title;
+            $gedcom .= "\n2 TITL " . strtr($title, ["\n" => "\n3 CONT "]);
         }
 
         if ($note !== '') {
             // Convert HTML line endings to GEDCOM continuations
-            $gedcom .= "\n1 NOTE " . strtr($note, ["\r\n" => "\n2 CONT "]);
+            $gedcom .= "\n1 NOTE " . strtr($note, ["\n" => "\n2 CONT "]);
         }
 
         return $gedcom;
@@ -298,7 +289,7 @@ class MediaFileService
                 ->filter(fn (StorageAttributes $attributes): bool => !$this->ignorePath($attributes->path()))
                 ->map(fn (StorageAttributes $attributes): string => $attributes->path())
                 ->toArray();
-        } catch (FilesystemException $ex) {
+        } catch (FilesystemException) {
             $files = [];
         }
 
@@ -342,7 +333,7 @@ class MediaFileService
      */
     public function mediaFolders(Tree $tree): Collection
     {
-        $folders = Registry::filesystem()->media($tree)
+        $folders = $tree->mediaFilesystem()
             ->listContents('', FilesystemReader::LIST_DEEP)
             ->filter(fn (StorageAttributes $attributes): bool => $attributes->isDir())
             ->filter(fn (StorageAttributes $attributes): bool => !$this->ignorePath($attributes->path()))

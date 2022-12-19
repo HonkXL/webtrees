@@ -51,10 +51,10 @@ use function explode;
 use function fclose;
 use function fopen;
 use function fwrite;
+use function is_string;
 use function pathinfo;
 use function preg_match_all;
 use function rewind;
-use function str_contains;
 use function stream_filter_append;
 use function stream_get_meta_data;
 use function strlen;
@@ -94,12 +94,14 @@ class GedcomExportService
     }
 
     /**
-     * @param Tree                        $tree           - Export data from this tree
-     * @param bool                        $sort_by_xref   - Write GEDCOM records in XREF order
-     * @param string                      $encoding       - Convert from UTF-8 to other encoding
-     * @param string                      $privacy        - Filter records by role
-     * @param string                      $filename       - Name of download file, without an extension
-     * @param string                      $format         - One of: gedcom, zip, zipmedia, gedzip
+     * @param Tree            $tree         - Export data from this tree
+     * @param bool            $sort_by_xref - Write GEDCOM records in XREF order
+     * @param string          $encoding     - Convert from UTF-8 to other encoding
+     * @param string          $privacy      - Filter records by role
+     * @param string          $line_endings
+     * @param string          $filename     - Name of download file, without an extension
+     * @param string          $format       - One of: gedcom, zip, zipmedia, gedzip
+     * @param Collection|null $records
      *
      * @return ResponseInterface
      */
@@ -227,7 +229,7 @@ class GedcomExportService
             ];
         }
 
-        $media_filesystem = Registry::filesystem()->media($tree);
+        $media_filesystem = $tree->mediaFilesystem();
 
         foreach ($data as $rows) {
             foreach ($rows as $datum) {
@@ -326,32 +328,6 @@ class GedcomExportService
             foreach ($header->facts(['SUBM', 'SUBN']) as $fact) {
                 $gedcom .= "\n" . $fact->gedcom();
             }
-        }
-
-        return $gedcom;
-    }
-
-    /**
-     * Prepend a media path, such as might have been removed during import.
-     *
-     * @param string $gedcom
-     * @param string $media_path
-     *
-     * @return string
-     */
-    private function convertMediaPath(string $gedcom, string $media_path): string
-    {
-        if (preg_match('/^0 @[^@]+@ OBJE/', $gedcom)) {
-            return preg_replace_callback('/\n1 FILE (.+)/', static function (array $match) use ($media_path): string {
-                $filename = $match[1];
-
-                // Don’t modify external links
-                if (!str_contains($filename, '://')) {
-                    $filename = $media_path . $filename;
-                }
-
-                return "\n1 FILE " . $filename;
-            }, $gedcom);
         }
 
         return $gedcom;

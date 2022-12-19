@@ -125,7 +125,7 @@ class SiteMapModule extends AbstractModule implements ModuleConfigInterface, Req
      *
      * @return ResponseInterface
      */
-    public function getAdminAction(/** @scrutinizer ignore-unused */ ServerRequestInterface $request): ResponseInterface
+    public function getAdminAction(ServerRequestInterface $request): ResponseInterface
     {
         $this->layout = 'layouts/administration';
 
@@ -163,10 +163,8 @@ class SiteMapModule extends AbstractModule implements ModuleConfigInterface, Req
      */
     public function postAdminAction(ServerRequestInterface $request): ResponseInterface
     {
-        $params = (array) $request->getParsedBody();
-
         foreach ($this->tree_service->all() as $tree) {
-            $include_in_sitemap = (bool) ($params['sitemap' . $tree->id()] ?? false);
+            $include_in_sitemap = Validator::parsedBody($request)->boolean('sitemap' . $tree->id(), false);
             $tree->setPreference('include_in_sitemap', (string) $include_in_sitemap);
         }
 
@@ -204,7 +202,7 @@ class SiteMapModule extends AbstractModule implements ModuleConfigInterface, Req
      *
      * @return ResponseInterface
      */
-    private function siteMapIndex(/** @scrutinizer ignore-unused */ ServerRequestInterface $request): ResponseInterface
+    private function siteMapIndex(ServerRequestInterface $request): ResponseInterface
     {
         $content = Registry::cache()->file()->remember('sitemap.xml', function (): string {
             // Which trees have sitemaps enabled?

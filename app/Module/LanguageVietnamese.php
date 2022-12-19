@@ -21,6 +21,7 @@ namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Localization\Locale\LocaleInterface;
 use Fisharebest\Localization\Locale\LocaleVi;
+use Illuminate\Database\Query\Builder;
 
 /**
  * Class LanguageVietnamese.

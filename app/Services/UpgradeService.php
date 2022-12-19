@@ -38,7 +38,6 @@ use League\Flysystem\StorageAttributes;
 use League\Flysystem\UnableToDeleteFile;
 use League\Flysystem\ZipArchive\FilesystemZipArchiveProvider;
 use League\Flysystem\ZipArchive\ZipArchiveAdapter;
-use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use ZipArchive;
 
@@ -55,7 +54,6 @@ use function time;
 use function unlink;
 use function version_compare;
 
-use const DIRECTORY_SEPARATOR;
 use const PHP_VERSION;
 
 /**
@@ -230,7 +228,7 @@ class UpgradeService
                     if ($path['type'] === 'file' && !$files_to_keep->contains($path['path'])) {
                         try {
                             $filesystem->delete($path['path']);
-                        } catch (FilesystemException | UnableToDeleteFile $ex) {
+                        } catch (FilesystemException | UnableToDeleteFile) {
                             // Skip to the next file.
                         }
                     }
@@ -240,7 +238,7 @@ class UpgradeService
                         return;
                     }
                 }
-            } catch (FilesystemException $ex) {
+            } catch (FilesystemException) {
                 // Skip to the next folder.
             }
         }

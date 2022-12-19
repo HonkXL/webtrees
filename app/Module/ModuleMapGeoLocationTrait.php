@@ -30,6 +30,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 use function json_decode;
+use function strlen;
 
 use const JSON_THROW_ON_ERROR;
 
@@ -115,7 +116,7 @@ trait ModuleMapGeoLocationTrait
 
         try {
             return json_decode($body, false, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $ex) {
+        } catch (JsonException) {
             return [];
         }
     }

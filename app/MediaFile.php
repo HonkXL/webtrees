@@ -22,7 +22,6 @@ namespace Fisharebest\Webtrees;
 use Fisharebest\Webtrees\Http\RequestHandlers\MediaFileDownload;
 use Fisharebest\Webtrees\Http\RequestHandlers\MediaFileThumbnail;
 use League\Flysystem\FilesystemException;
-use League\Flysystem\FilesystemOperator;
 use League\Flysystem\UnableToCheckFileExistence;
 use League\Flysystem\UnableToReadFile;
 use League\Flysystem\UnableToRetrieveMetadata;
@@ -30,7 +29,9 @@ use League\Flysystem\UnableToRetrieveMetadata;
 use function bin2hex;
 use function getimagesizefromstring;
 use function http_build_query;
+use function in_array;
 use function intdiv;
+use function is_array;
 use function ksort;
 use function md5;
 use function pathinfo;
@@ -298,28 +299,25 @@ class MediaFile
     /**
      * A list of image attributes
      *
-     * @param FilesystemOperator $data_filesystem
-     *
      * @return array<string,string>
      */
-    public function attributes(FilesystemOperator $data_filesystem): array
+    public function attributes(): array
     {
         $attributes = [];
 
-        if (!$this->isExternal() || $this->fileExists($data_filesystem)) {
+        if (!$this->isExternal() || $this->fileExists()) {
             try {
-                $bytes = $this->media()->tree()->mediaFilesystem($data_filesystem)->fileSize($this->filename());
+                $bytes = $this->media()->tree()->mediaFilesystem()->fileSize($this->filename());
                 $kb    = intdiv($bytes + 1023, 1024);
                 $text  = I18N::translate('%s KB', I18N::number($kb));
 
                 $attributes[I18N::translate('File size')] = $text;
-            } catch (FilesystemException | UnableToRetrieveMetadata $ex) {
+            } catch (FilesystemException | UnableToRetrieveMetadata) {
                 // External/missing files have no size.
             }
 
-            $filesystem = $this->media()->tree()->mediaFilesystem($data_filesystem);
             try {
-                $data       = $filesystem->read($this->filename());
+                $data       = $this->media()->tree()->mediaFilesystem()->read($this->filename());
                 $image_size = getimagesizefromstring($data);
 
                 if (is_array($image_size)) {
@@ -329,7 +327,7 @@ class MediaFile
 
                     $attributes[I18N::translate('Image dimensions')] = $text;
                 }
-            } catch (FilesystemException | UnableToReadFile $ex) {
+            } catch (FilesystemException | UnableToReadFile) {
                 // Cannot read the file.
             }
         }
@@ -340,15 +338,13 @@ class MediaFile
     /**
      * Read the contents of a media file.
      *
-     * @param FilesystemOperator $data_filesystem
-     *
      * @return string
      */
-    public function fileContents(FilesystemOperator $data_filesystem): string
+    public function fileContents(): string
     {
         try {
-            return $this->media->tree()->mediaFilesystem($data_filesystem)->read($this->multimedia_file_refn);
-        } catch (FilesystemException | UnableToReadFile $ex) {
+            return $this->media->tree()->mediaFilesystem()->read($this->multimedia_file_refn);
+        } catch (FilesystemException | UnableToReadFile) {
             return '';
         }
     }
@@ -356,15 +352,13 @@ class MediaFile
     /**
      * Check if the file exists on this server
      *
-     * @param FilesystemOperator $data_filesystem
-     *
      * @return bool
      */
-    public function fileExists(FilesystemOperator $data_filesystem): bool
+    public function fileExists(): bool
     {
         try {
-            return $this->media->tree()->mediaFilesystem($data_filesystem)->fileExists($this->multimedia_file_refn);
-        } catch (FilesystemException | UnableToCheckFileExistence $ex) {
+            return $this->media->tree()->mediaFilesystem()->fileExists($this->multimedia_file_refn);
+        } catch (FilesystemException | UnableToCheckFileExistence) {
             return false;
         }
     }

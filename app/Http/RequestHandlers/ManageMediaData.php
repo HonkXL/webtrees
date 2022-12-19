@@ -28,6 +28,7 @@ use Fisharebest\Webtrees\Services\DatatablesService;
 use Fisharebest\Webtrees\Services\LinkedRecordService;
 use Fisharebest\Webtrees\Services\MediaFileService;
 use Fisharebest\Webtrees\Services\TreeService;
+use Fisharebest\Webtrees\Validator;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
@@ -94,13 +95,13 @@ class ManageMediaData implements RequestHandlerInterface
     {
         $data_filesystem = Registry::filesystem()->data();
 
-        $files = $request->getQueryParams()['files']; // local|external|unused
+        $files = Validator::queryParams($request)->isInArray(['local', 'external', 'unused'])->string('files');
 
         // Files within this folder
-        $media_folder = $request->getQueryParams()['media_folder'];
+        $media_folder = Validator::queryParams($request)->string('media_folder');
 
         // Show sub-folders within $media_folder
-        $subfolders = $request->getQueryParams()['subfolders']; // include|exclude
+        $subfolders = Validator::queryParams($request)->isInArray(['include', 'exclude'])->string('subfolders');
 
         $search_columns = ['multimedia_file_refn', 'descriptive_title'];
 
@@ -131,7 +132,7 @@ class ManageMediaData implements RequestHandlerInterface
 
                 try {
                     $mime_type = Registry::filesystem()->data()->mimeType($path);
-                } catch (UnableToRetrieveMetadata $ex) {
+                } catch (UnableToRetrieveMetadata) {
                     $mime_type = Mime::DEFAULT_TYPE;
                 }
 
@@ -144,7 +145,7 @@ class ManageMediaData implements RequestHandlerInterface
 
                 $url = route(AdminMediaFileDownload::class, ['path' => $path]);
                 $img = '<a href="' . e($url) . '" type="' . $mime_type . '" class="gallery">' . $img . '</a>';
-            } catch (UnableToReadFile $ex) {
+            } catch (UnableToReadFile) {
                 $url = route(AdminMediaFileThumbnail::class, ['path' => $path]);
                 $img = '<img src="' . e($url) . '">';
             }
@@ -230,7 +231,7 @@ class ManageMediaData implements RequestHandlerInterface
                 $callback = function (array $row) use ($data_filesystem, $media_trees): array {
                     try {
                         $mime_type = $data_filesystem->mimeType($row[0]) ?: Mime::DEFAULT_TYPE;
-                    } catch (FilesystemException | UnableToRetrieveMetadata $ex) {
+                    } catch (FilesystemException | UnableToRetrieveMetadata) {
                         $mime_type = Mime::DEFAULT_TYPE;
                     }
 
@@ -346,14 +347,14 @@ class ManageMediaData implements RequestHandlerInterface
 
         try {
             $file_exists = $data_filesystem->fileExists($file);
-        } catch (FilesystemException | UnableToCheckFileExistence $ex) {
+        } catch (FilesystemException | UnableToCheckFileExistence) {
             $file_exists = false;
         }
 
         if ($file_exists) {
             try {
                 $size = $data_filesystem->fileSize($file);
-            } catch (FilesystemException | UnableToRetrieveMetadata $ex) {
+            } catch (FilesystemException | UnableToRetrieveMetadata) {
                 $size = 0;
             }
             $size = intdiv($size + 1023, 1024); // Round up to next KB
@@ -369,7 +370,7 @@ class ManageMediaData implements RequestHandlerInterface
                 $html .= '<dt>' . I18N::translate('Image dimensions') . '</dt>';
                 /* I18N: image dimensions, width × height */
                 $html .= '<dd>' . I18N::translate('%1$s × %2$s pixels', I18N::number($imgsize['0']), I18N::number($imgsize['1'])) . '</dd>';
-            } catch (FilesystemException | UnableToReadFile | Throwable $ex) {
+            } catch (FilesystemException | UnableToReadFile | Throwable) {
                 // Not an image, or not a valid image?
             }
         }

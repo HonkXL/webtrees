@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
+use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Services\MediaFileService;
 use Fisharebest\Webtrees\Services\SearchService;
 use Fisharebest\Webtrees\Validator;
@@ -34,7 +35,8 @@ class AutoCompleteFolder extends AbstractAutocompleteHandler
     private MediaFileService $media_file_service;
 
     /**
-     * @param SearchService $search_service
+     * @param MediaFileService $media_file_service
+     * @param SearchService    $search_service
      */
     public function __construct(MediaFileService $media_file_service, SearchService $search_service)
     {
@@ -55,8 +57,10 @@ class AutoCompleteFolder extends AbstractAutocompleteHandler
 
         try {
             return $this->media_file_service->mediaFolders($tree)
-                ->filter(fn (string $path): bool => stripos($path, $query) !== false);
-        } catch (FilesystemException $ex) {
+                ->filter(fn (string $path): bool => stripos($path, $query) !== false)
+                ->sort(I18N::comparator())
+                ->values();
+        } catch (FilesystemException) {
             return new Collection();
         }
     }

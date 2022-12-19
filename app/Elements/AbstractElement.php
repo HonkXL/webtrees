@@ -30,7 +30,6 @@ use function array_map;
 use function e;
 use function is_numeric;
 use function nl2br;
-use function preg_replace;
 use function str_contains;
 use function str_starts_with;
 use function strip_tags;
@@ -45,6 +44,26 @@ abstract class AbstractElement implements ElementInterface
     // HTML attributes for an <input>
     protected const MAXIMUM_LENGTH = false;
     protected const PATTERN        = false;
+
+    private const WHITESPACE_LINE = [
+        "\t"       => ' ',
+        "\n"       => ' ',
+        "\r"       => ' ',
+        "\v"       => ' ', // Vertical tab
+        "\u{85}"   => ' ', // NEL - newline
+        "\u{2028}" => ' ', // LS - line separator
+        "\u{2029}" => ' ', // PS - paragraph separator
+    ];
+
+    private const WHITESPACE_TEXT = [
+        "\t"       => ' ',
+        "\r\n"     => "\n",
+        "\r"       => "\n",
+        "\v"       => "\n",
+        "\u{85}"   => "\n",
+        "\u{2028}" => "\n",
+        "\u{2029}" => "\n\n",
+    ];
 
     // Which child elements can appear under this element.
     protected const SUBTAGS = [];
@@ -76,7 +95,7 @@ abstract class AbstractElement implements ElementInterface
      */
     public function canonical(string $value): string
     {
-        $value = strtr($value, ["\t" => ' ', "\r" => ' ', "\n" => ' ']);
+        $value = strtr($value, self::WHITESPACE_LINE);
 
         while (str_contains($value, '  ')) {
             $value = strtr($value, ['  ' => ' ']);
@@ -94,13 +113,9 @@ abstract class AbstractElement implements ElementInterface
      */
     protected function canonicalText(string $value): string
     {
-        // Browsers use MS-DOS line endings in multi-line data.
-        $value = strtr($value, ["\t" => ' ', "\r\n" => "\n", "\r" => "\n"]);
+        $value = strtr($value, self::WHITESPACE_TEXT);
 
-        // Remove blank lines at start/end
-        $value = preg_replace('/^( *\n)+/', '', $value);
-
-        return preg_replace('/(\n *)+$/', '', $value);
+        return trim($value, "\n");
     }
 
     /**
@@ -322,11 +337,16 @@ abstract class AbstractElement implements ElementInterface
 
         if (str_contains($canonical, 'http://') || str_contains($canonical, 'https://')) {
             $html = Registry::markdownFactory()->autolink($canonical);
-
-            return strip_tags($html, ['a']);
+            $html = strip_tags($html, ['a', 'br']);
+        } else {
+            $html = nl2br(e($canonical), false);
         }
 
-        return e($canonical);
+        if (str_contains($html, '<br>')) {
+            return '<span class="ut d-inline-block">' . $html . '</span>';
+        }
+
+        return '<span class="ut">' . $html . '</span>';
     }
 
     /**

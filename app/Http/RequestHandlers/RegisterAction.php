@@ -90,17 +90,14 @@ class RegisterAction implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $tree = Validator::attributes($request)->treeOptional();
-
         $this->checkRegistrationAllowed();
 
-        $params = (array) $request->getParsedBody();
-
-        $comments = $params['comments'] ?? '';
-        $email    = $params['email'] ?? '';
-        $password = $params['password'] ?? '';
-        $realname = $params['realname'] ?? '';
-        $username = $params['username'] ?? '';
+        $tree     = Validator::attributes($request)->treeOptional();
+        $comments = Validator::parsedBody($request)->string('comments');
+        $email    = Validator::parsedBody($request)->string('email');
+        $password = Validator::parsedBody($request)->string('password');
+        $realname = Validator::parsedBody($request)->string('realname');
+        $username = Validator::parsedBody($request)->string('username');
 
         try {
             if ($this->captcha_service->isRobot($request)) {
@@ -150,7 +147,7 @@ class RegisterAction implements RequestHandlerInterface
         $verify_url = route(VerifyEmail::class, [
             'username' => $user->userName(),
             'token'    => $token,
-            'tree'     => $tree instanceof Tree ? $tree->name() : null,
+            'tree'     => $tree?->name(),
         ]);
 
         // Send a verification message to the user.
@@ -247,8 +244,14 @@ class RegisterAction implements RequestHandlerInterface
      * @return void
      * @throws Exception
      */
-    private function doValidateRegistration(ServerRequestInterface $request, string $username, string $email, string $realname, string $comments, string $password): void
-    {
+    private function doValidateRegistration(
+        ServerRequestInterface $request,
+        string $username,
+        string $email,
+        string $realname,
+        string $comments,
+        #[\SensitiveParameter] string $password
+    ): void {
         // All fields are required
         if ($username === '' || $email === '' || $realname === '' || $comments === '' || $password === '') {
             throw new Exception(I18N::translate('All fields must be completed.'));

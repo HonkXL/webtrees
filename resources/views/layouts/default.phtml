@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\Http\RequestHandlers\AppleTouchIconPng;
 use Fisharebest\Webtrees\Http\RequestHandlers\BrowserconfigXml;
@@ -64,7 +66,7 @@ use Psr\Http\Message\ServerRequestInterface;
         })->implode('') ?>
     </head>
 
-    <body class="wt-global wt-theme-<?= e(app(ModuleThemeInterface::class)->name()) ?> wt-route-<?= e(substr(strrchr($route = Validator::attributes($request)->route()->name ?? 'no-route', '\\'),1)) ?>">
+    <body class="wt-global wt-theme-<?= e(app(ModuleThemeInterface::class)->name()) ?> wt-route-<?= e(basename(strtr(Validator::attributes($request)->route()->name ?? '/', ['\\' => '/']))) ?>">
         <header class="wt-header-wrapper d-print-none">
             <div class="container-lg wt-header-container">
                 <div class="row wt-header-content">
@@ -152,11 +154,11 @@ use Psr\Http\Message\ServerRequestInterface;
                     width: "85%",
                     height: "85%",
                     current: "",
-                    previous: '<i class="fas fa-arrow-left wt-icon-flip-rtl" title="<?= I18N::translate('previous') ?>"></i>',
-                    next: '<i class="fas fa-arrow-right wt-icon-flip-rtl" title="<?= I18N::translate('next') ?>"></i>',
-                    slideshowStart: '<i class="fas fa-play" title="<?= I18N::translate('Play') ?>"></i>',
-                    slideshowStop: '<i class="fas fa-stop" title="<?= I18N::translate('Stop') ?>"></i>',
-                    close: '<i class="fas fa-times" title="<?= I18N::translate('close') ?>"></i>',
+                    previous: '<i class="fa-solid fa-arrow-left wt-icon-flip-rtl" title="<?= I18N::translate('previous') ?>"></i>',
+                    next: '<i class="fa-solid fa-arrow-right wt-icon-flip-rtl" title="<?= I18N::translate('next') ?>"></i>',
+                    slideshowStart: '<i class="fa-solid fa-play" title="<?= I18N::translate('Play') ?>"></i>',
+                    slideshowStop: '<i class="fa-solid fa-stop" title="<?= I18N::translate('Stop') ?>"></i>',
+                    close: '<i class="fa-solid fa-times" title="<?= I18N::translate('close') ?>"></i>',
                     title: function () {
                         return this.dataset.title;
                     },
@@ -164,6 +166,7 @@ use Psr\Http\Message\ServerRequestInterface;
                     rel: "gallery", // Turn all images on the page into a slideshow
                     slideshow: true,
                     slideshowAuto: false,
+                    slideshowSpeed: 4000,
                     // Add wheelzoom to the displayed image
                     onComplete: function () {
                         // Disable click on image triggering next image

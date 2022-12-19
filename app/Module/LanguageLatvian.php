@@ -21,6 +21,7 @@ namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Localization\Locale\LocaleInterface;
 use Fisharebest\Localization\Locale\LocaleLv;
+use Illuminate\Database\Query\Builder;
 
 /**
  * Class LanguageLatvian.

@@ -20,7 +20,6 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Elements\SourceMediaType;
-use Fisharebest\Webtrees\Factories\ImageFactory;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Media;
 use Fisharebest\Webtrees\Registry;
@@ -52,6 +51,9 @@ class SlideShowModule extends AbstractModule implements ModuleBlockInterface
 
     // How long to show each slide (seconds)
     private const DELAY = 6;
+
+    // New data is normalized.  Old data may contain jpg/jpeg, tif/tiff.
+    private const SUPPORTED_FORMATS = ['bmp', 'gif', 'jpeg', 'jpg', 'png', 'tif', 'tiff', 'webp'];
 
     private LinkedRecordService $linked_record_service;
 
@@ -87,10 +89,10 @@ class SlideShowModule extends AbstractModule implements ModuleBlockInterface
     public function getBlock(Tree $tree, int $block_id, string $context, array $config = []): string
     {
         $request       = app(ServerRequestInterface::class);
-        $default_start = $this->getBlockSetting($block_id, 'start');
+        $default_start = (bool) $this->getBlockSetting($block_id, 'start');
         $filter_links  = $this->getBlockSetting($block_id, 'filter', self::LINK_ALL);
         $controls      = $this->getBlockSetting($block_id, 'controls', '1');
-        $start         = (bool) ($request->getQueryParams()['start'] ?? $default_start);
+        $start         = Validator::queryParams($request)->boolean('start', $default_start);
 
         $filter_types = [
             $this->getBlockSetting($block_id, 'filter_audio', '0') ? SourceMediaType::VALUE_AUDIO : null,
@@ -128,7 +130,7 @@ class SlideShowModule extends AbstractModule implements ModuleBlockInterface
                     ->on('media_file.m_id', '=', 'media.m_id');
             })
             ->where('media.m_file', '=', $tree->id())
-            ->whereIn('media_file.multimedia_format', ImageFactory::SUPPORTED_FORMATS)
+            ->whereIn('media_file.multimedia_format', self::SUPPORTED_FORMATS)
             ->whereIn('media_file.source_media_type', $filter_types)
             ->select('media.*')
             ->get()

@@ -22,10 +22,10 @@ namespace Fisharebest\Webtrees\Services;
 use Closure;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
-use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Http\RequestHandlers\ContactPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\MessagePage;
 use Fisharebest\Webtrees\Individual;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\User;
 use Fisharebest\Webtrees\Validator;
 use Illuminate\Database\Capsule\Manager as DB;
@@ -333,7 +333,7 @@ class UserService
      *
      * @return User
      */
-    public function create(string $user_name, string $real_name, string $email, string $password): User
+    public function create(string $user_name, string $real_name, string $email, #[\SensitiveParameter] string $password): User
     {
         DB::table('user')->insert([
             'user_name' => $user_name,
