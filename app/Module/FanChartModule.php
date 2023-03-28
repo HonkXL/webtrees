@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -44,7 +44,6 @@ use function hexdec;
 use function imagecolorallocate;
 use function imagecolortransparent;
 use function imagecreate;
-use function imagedestroy;
 use function imagefilledarc;
 use function imagefilledrectangle;
 use function imagepng;
@@ -474,7 +473,6 @@ class FanChartModule extends AbstractModule implements ModuleChartInterface, Req
 
         ob_start();
         imagepng($image);
-        imagedestroy($image);
         $png = ob_get_clean();
 
         return response(view('modules/fanchart/chart', [
@@ -552,6 +550,13 @@ class FanChartModule extends AbstractModule implements ModuleChartInterface, Req
      */
     protected function textWidthInPixels(string $text): int
     {
+        // If PHP is compiled with --enable-gd-jis-conv, then the function
+        // imagettftext() is modified to expect EUC-JP encoding instead of UTF-8.
+        // Attempt to detect and convert...
+        if (gd_info()['JIS-mapped Japanese Font Support'] ?? false) {
+            $text = mb_convert_encoding($text, 'EUC-JP', 'UTF-8');
+        }
+
         $bounding_box = imagettfbbox(self::TEXT_SIZE_POINTS, 0, self::FONT, $text);
 
         return $bounding_box[4] - $bounding_box[0];

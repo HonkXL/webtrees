@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,14 +19,17 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Elements;
 
+use Fisharebest\Webtrees\TestCase;
+
 /**
- * An event which never happened.
+ * Test harness for the class NonEvent
+ *
+ * @covers Fisharebest\Webtrees\Elements\FamilyNonEvent
  */
-class NonEvent extends AbstractElement
+class FamilyNonEventTest extends TestCase
 {
-    protected const SUBTAGS = [
-        'DATE' => '0:1',
-        'NOTE' => '0:1',
-        'SOUR' => '0:1',
-    ];
+    public function testClass(): void
+    {
+        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Elements\FamilyNonEvent::class));
+    }
 }

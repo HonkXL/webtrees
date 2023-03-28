@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -61,7 +61,7 @@ class CreateMediaObjectFromFile implements RequestHandlerInterface
         $title = Validator::parsedBody($request)->string('title');
         $note  = Validator::parsedBody($request)->string('note');
 
-        $file  = Registry::elementFactory()->make('OBJE:NOTE')->canonical($file);
+        $file  = Registry::elementFactory()->make('OBJE:FILE')->canonical($file);
         $note  = Registry::elementFactory()->make('OBJE:NOTE')->canonical($note);
         $type  = Registry::elementFactory()->make('OBJE:FILE:FORM:TYPE')->canonical($type);
         $title = Registry::elementFactory()->make('OBJE:FILE:TITL')->canonical($title);

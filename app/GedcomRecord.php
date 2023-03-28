@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -115,7 +115,7 @@ class GedcomRecord
     /**
      * A closure which will filter out private records.
      *
-     * @return Closure
+     * @return Closure(GedcomRecord):bool
      */
     public static function accessFilter(): Closure
     {
@@ -127,7 +127,7 @@ class GedcomRecord
     /**
      * A closure which will compare records by name.
      *
-     * @return Closure
+     * @return Closure(GedcomRecord,GedcomRecord):int
      */
     public static function nameComparator(): Closure
     {
@@ -153,7 +153,7 @@ class GedcomRecord
      *
      * @param int $direction +1 to sort ascending, -1 to sort descending
      *
-     * @return Closure
+     * @return Closure(GedcomRecord,GedcomRecord):int
      */
     public static function lastChangeComparator(int $direction = 1): Closure
     {
@@ -248,7 +248,7 @@ class GedcomRecord
      */
     public function canShow(int $access_level = null): bool
     {
-        $access_level = $access_level ?? Auth::accessLevel($this->tree);
+        $access_level ??= Auth::accessLevel($this->tree);
 
         // We use this value to bypass privacy checks. For example,
         // when downloading data or when calculating privacy itself.
@@ -614,7 +614,7 @@ class GedcomRecord
         int $access_level = null,
         bool $ignore_deleted = false
     ): Collection {
-        $access_level = $access_level ?? Auth::accessLevel($this->tree);
+        $access_level ??= Auth::accessLevel($this->tree);
 
         // Convert BIRT into INDI:BIRT, etc.
         $filter = array_map(fn (string $tag): string => $this->tag() . ':' . $tag, $filter);

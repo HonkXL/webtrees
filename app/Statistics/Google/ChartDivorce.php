@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -61,7 +61,7 @@ class ChartDivorce
     private function queryRecords(): Collection
     {
         return DB::table('dates')
-            ->selectRaw('ROUND((d_year + 49) / 100) AS century')
+            ->selectRaw('ROUND((d_year + 49) / 100, 0) AS century')
             ->selectRaw('COUNT(*) AS total')
             ->where('d_file', '=', $this->tree->id())
             ->where('d_year', '<>', 0)
@@ -88,8 +88,8 @@ class ChartDivorce
      */
     public function chartDivorce(string $color_from = null, string $color_to = null): string
     {
-        $color_from = $color_from ?? 'ffffff';
-        $color_to   = $color_to ?? '84beff';
+        $color_from ??= 'ffffff';
+        $color_to ??= '84beff';
 
         $data = [
             [

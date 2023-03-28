@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -196,7 +196,7 @@ class Place
             ->where('p_file', '=', $this->tree->id())
             ->where('p_parent_id', '=', $this->id())
             ->pluck('p_place')
-            ->sortBy(I18N::comparator())
+            ->sort(I18N::comparator())
             ->map(function (string $place) use ($parent_text): Place {
                 return new self($place . $parent_text, $this->tree);
             })

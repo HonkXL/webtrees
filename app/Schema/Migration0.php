@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -394,36 +394,22 @@ class Migration0 implements MigrationInterface
             $table->timestamp('session_time')->useCurrent();
             $table->integer('user_id');
             $table->ipAddress('ip_address');
-            $table->binary('session_data');
+            $table->longText('session_data');
 
             $table->primary('session_id');
             $table->index('session_time');
             $table->index(['user_id', 'ip_address']);
         });
 
-        // See https://github.com/laravel/framework/issues/3544
-        if (DB::connection()->getDriverName() === 'mysql') {
-            $table = DB::connection()->getSchemaGrammar()->wrapTable('session');
-            $sql   = 'ALTER TABLE ' . $table . ' MODIFY session_data LONGBLOB';
-            DB::connection()->statement($sql);
-        }
-
         DB::schema()->create('gedcom_chunk', static function (Blueprint $table): void {
             $table->integer('gedcom_chunk_id', true);
             $table->integer('gedcom_id');
-            $table->binary('chunk_data');
+            $table->longText('chunk_data');
             $table->boolean('imported')->default(0);
 
             $table->index(['gedcom_id', 'imported']);
 
             $table->foreign('gedcom_id')->references('gedcom_id')->on('gedcom');
         });
-
-        // See https://github.com/laravel/framework/issues/3544
-        if (DB::connection()->getDriverName() === 'mysql') {
-            $table = DB::connection()->getSchemaGrammar()->wrapTable('gedcom_chunk');
-            $sql   = 'ALTER TABLE ' . $table . ' MODIFY chunk_data LONGBLOB';
-            DB::connection()->statement($sql);
-        }
     }
 }

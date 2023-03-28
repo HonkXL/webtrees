@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -46,9 +46,9 @@ class ChartSex
         string $color_male = null,
         string $color_unknown = null
     ): string {
-        $color_female  = $color_female  ?? '#ffd1dc';
-        $color_male    = $color_male    ?? '#84beff';
-        $color_unknown = $color_unknown ?? '#777777';
+        $color_female ??= '#ffd1dc';
+        $color_male ??= '#84beff';
+        $color_unknown ??= '#777777';
 
         $data = [
             [

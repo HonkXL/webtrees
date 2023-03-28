@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -55,7 +55,7 @@ class ChartChildren
     {
         return DB::table('families')
             ->selectRaw('AVG(f_numchil) AS total')
-            ->selectRaw('ROUND((d_year + 49) / 100) AS century')
+            ->selectRaw('ROUND((d_year + 49) / 100, 0) AS century')
             ->join('dates', static function (JoinClause $join): void {
                 $join->on('d_file', '=', 'f_file')
                     ->on('d_gid', '=', 'f_id');

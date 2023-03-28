@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -169,8 +169,8 @@ class ResearchTaskModule extends AbstractModule implements ModuleBlockInterface
             ->where('i_file', '=', $tree->id())
             ->where('d_fact', '=', '_TODO')
             ->where('d_julianday1', '<', $max_julian_day)
-            ->select(['individuals.*'])
             ->distinct()
+            ->select(['individuals.*'])
             ->get()
             ->map(Registry::individualFactory()->mapper($tree))
             ->filter(GedcomRecord::accessFilter());
@@ -193,8 +193,8 @@ class ResearchTaskModule extends AbstractModule implements ModuleBlockInterface
             ->where('f_file', '=', $tree->id())
             ->where('d_fact', '=', '_TODO')
             ->where('d_julianday1', '<', $max_julian_day)
-            ->select(['families.*'])
             ->distinct()
+            ->select(['families.*'])
             ->get()
             ->map(Registry::familyFactory()->mapper($tree))
             ->filter(GedcomRecord::accessFilter());

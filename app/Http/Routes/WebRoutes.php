@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -62,6 +62,7 @@ use Fisharebest\Webtrees\Http\RequestHandlers\CalendarEvents;
 use Fisharebest\Webtrees\Http\RequestHandlers\CalendarPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ChangeFamilyMembersAction;
 use Fisharebest\Webtrees\Http\RequestHandlers\ChangeFamilyMembersPage;
+use Fisharebest\Webtrees\Http\RequestHandlers\CheckForNewVersionNow;
 use Fisharebest\Webtrees\Http\RequestHandlers\CheckTree;
 use Fisharebest\Webtrees\Http\RequestHandlers\CleanDataFolder;
 use Fisharebest\Webtrees\Http\RequestHandlers\ContactAction;
@@ -352,6 +353,7 @@ class WebRoutes
                 ]);
 
                 $router->get(ControlPanel::class, '');
+                $router->post(CheckForNewVersionNow::class, '/check-now');
                 $router->get(BroadcastPage::class, '/broadcast/{to}');
                 $router->post(BroadcastAction::class, '/broadcast/{to}');
                 $router->get(CleanDataFolder::class, '/clean');

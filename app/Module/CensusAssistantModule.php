@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -92,7 +92,7 @@ class CensusAssistantModule extends AbstractModule
         $census       = new $census_class();
 
         // No head of household?  Create a fake one.
-        $head = $head ?? Registry::individualFactory()->new('X', '0 @X@ INDI', null, $tree);
+        $head ??= Registry::individualFactory()->new('X', '0 @X@ INDI', null, $tree);
 
         // Generate columns (e.g. relationship name) using the correct language.
         I18N::init($census->censusLanguage());

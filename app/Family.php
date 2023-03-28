@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -66,7 +66,7 @@ class Family extends GedcomRecord
     /**
      * A closure which will compare families by marriage date.
      *
-     * @return Closure
+     * @return Closure(Family,Family):int
      */
     public static function marriageDateComparator(): Closure
     {
@@ -219,7 +219,7 @@ class Family extends GedcomRecord
      */
     public function children(int $access_level = null): Collection
     {
-        $access_level = $access_level ?? Auth::accessLevel($this->tree);
+        $access_level ??= Auth::accessLevel($this->tree);
 
         if ($this->tree->getPreference('SHOW_PRIVATE_RELATIONSHIPS') === '1') {
             $access_level = Auth::PRIV_HIDE;

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -322,7 +322,7 @@ class PlaceHierarchyListModule extends AbstractModule implements ModuleListInter
     {
         $places = $this->search_service->searchPlaces($tree, '')
             ->sort(static function (Place $x, Place $y): int {
-                return $x->gedcomName() <=> $y->gedcomName();
+                return I18N::comparator()($x->gedcomName(), $y->gedcomName());
             })
             ->all();
 

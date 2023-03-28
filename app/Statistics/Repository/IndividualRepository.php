@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1543,6 +1543,18 @@ class IndividualRepository implements IndividualRepositoryInterface
     }
 
     /**
+     * Count the total media.
+     *
+     * @return int
+     */
+    private function totalMediaQuery(): int
+    {
+        return DB::table('media')
+            ->where('m_file', '=', $this->tree->id())
+            ->count();
+    }
+
+    /**
      * Returns the total number of records.
      *
      * @return int
@@ -1551,6 +1563,7 @@ class IndividualRepository implements IndividualRepositoryInterface
     {
         return $this->totalIndividualsQuery()
             + $this->totalFamiliesQuery()
+            + $this->totalMediaQuery()
             + $this->totalNotesQuery()
             + $this->totalRepositoriesQuery()
             + $this->totalSourcesQuery();
@@ -1682,11 +1695,33 @@ class IndividualRepository implements IndividualRepositoryInterface
     /**
      * @return string
      */
+    public function totalIndisWithSourcesPercentage(): string
+    {
+        return $this->getPercentage(
+            $this->totalIndisWithSourcesQuery(),
+            $this->totalIndividualsQuery()
+        );
+    }
+
+    /**
+     * @return string
+     */
     public function totalFamiliesPercentage(): string
     {
         return $this->getPercentage(
             $this->totalFamiliesQuery(),
             $this->totalRecordsQuery()
+        );
+    }
+
+    /**
+     * @return string
+     */
+    public function totalFamsWithSourcesPercentage(): string
+    {
+        return $this->getPercentage(
+            $this->totalFamsWithSourcesQuery(),
+            $this->totalFamiliesQuery()
         );
     }
 

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,7 +27,7 @@ class Divorce extends AbstractEventElement
     protected const SUBTAGS = [
         'TYPE'  => '0:1:?',
         'DATE'  => '0:1',
-        'HUSB'  => '0:?',
+        'HUSB'  => '0:1',
         'WIFE'  => '0:1',
         'PLAC'  => '0:1',
         'ADDR'  => '0:1',

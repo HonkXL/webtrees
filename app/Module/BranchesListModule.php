@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -139,7 +139,7 @@ class BranchesListModule extends AbstractModule implements ModuleListInterface, 
             $individual = Registry::individualFactory()->make($xref, $tree);
 
             if ($individual instanceof Individual && $individual->canShow()) {
-                $parameters['surname'] = $parameters['surname'] ?? $individual->getAllNames()[0]['surn'] ?? null;
+                $parameters['surname'] ??= $individual->getAllNames()[0]['surn'] ?? null;
             }
         }
 
@@ -328,8 +328,8 @@ class BranchesListModule extends AbstractModule implements ModuleListInterface, 
                     }
                 }
             })
-            ->select(['individuals.*'])
             ->distinct()
+            ->select(['individuals.*'])
             ->get()
             ->map(Registry::individualFactory()->mapper($tree))
             ->filter(GedcomRecord::accessFilter())

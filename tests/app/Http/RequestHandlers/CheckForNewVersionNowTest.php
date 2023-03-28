@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,19 +17,19 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Module;
+namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\TestCase;
 
 /**
- * Test harness for the class OrdnanceSurveyHistoricMaps
+ * Test harness for the class CheckForNewVersionNow
  *
- * @covers Fisharebest\Webtrees\Module\OrdnanceSurveyHistoricMaps
+ * @covers Fisharebest\Webtrees\Http\RequestHandlers\CheckForNewVersionNow
  */
-class OrdnanceSurveyHistoricMapsTest extends TestCase
+class CheckForNewVersionNowTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Module\OrdnanceSurveyHistoricMaps::class));
+        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\CheckForNewVersionNow::class));
     }
 }

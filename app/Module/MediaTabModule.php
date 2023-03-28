@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -131,7 +131,7 @@ class MediaTabModule extends AbstractModule implements ModuleTabInterface
      */
     protected function getFactsWithMedia(Individual $individual): Collection
     {
-        return Registry::cache()->array()->remember(__CLASS__ . ':' . __METHOD__, static function () use ($individual): Collection {
+        return Registry::cache()->array()->remember(self::class . ':' . __METHOD__, static function () use ($individual): Collection {
             $facts = $individual->facts();
 
             foreach ($individual->spouseFamilies() as $family) {

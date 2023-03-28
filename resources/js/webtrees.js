@@ -1,6 +1,6 @@
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -692,7 +692,7 @@
         anchor.href = '#';
         anchor.setAttribute('aria-label', config.i18n.reset); /* Firefox doesn't yet support element.ariaLabel */
         anchor.title = config.i18n.reset;
-        anchor.role = 'button';
+        anchor.setAttribute('role', 'button');
         anchor.innerHTML = config.icons.reset;
         anchor.onclick = resetCallback;
 
@@ -708,6 +708,7 @@
         const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
         const anchor = L.DomUtil.create('a', 'leaflet-control-fullscreen', container);
 
+        anchor.href = '#';
         anchor.setAttribute('role', 'button');
         anchor.dataset.wtFullscreen = '.wt-fullscreen-container';
         anchor.innerHTML = config.icons.fullScreen;
@@ -733,7 +734,7 @@
 
     if (defaultLayer === null) {
       console.log('No default map layer defined - using the first one.');
-      let defaultLayer = config.mapProviders[0].children[0].layer;
+      defaultLayer = config.mapProviders[0].children[0].layer;
     }
 
 
@@ -742,7 +743,7 @@
       zoomControl: false,
     })
       .addControl(zoomControl)
-      .addControl(new fullscreenControl)
+      .addControl(new fullscreenControl())
       .addControl(new resetControl())
       .addLayer(defaultLayer)
       .addControl(L.control.layers.tree(config.mapProviders, null, {

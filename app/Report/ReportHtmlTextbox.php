@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -220,7 +220,7 @@ class ReportHtmlTextbox extends ReportBaseTextbox
         if ($cH < $renderer->lastCellHeight) {
             $cH = $renderer->lastCellHeight;
         }
-        // Update max Y incase of a pagebreak
+        // Update max Y in case of a pagebreak
         // We don't want to over write any images or other stuff
         $renderer->addMaxY($this->top + $cH);
 

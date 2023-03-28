@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -47,8 +47,8 @@ class SourceFactory extends AbstractGedcomRecordFactory implements SourceFactory
      */
     public function make(string $xref, Tree $tree, string $gedcom = null): ?Source
     {
-        return Registry::cache()->array()->remember(__CLASS__ . $xref . '@' . $tree->id(), function () use ($xref, $tree, $gedcom) {
-            $gedcom  = $gedcom ?? $this->gedcom($xref, $tree);
+        return Registry::cache()->array()->remember(self::class . $xref . '@' . $tree->id(), function () use ($xref, $tree, $gedcom) {
+            $gedcom ??= $this->gedcom($xref, $tree);
             $pending = $this->pendingChanges($tree)->get($xref);
 
             if ($gedcom === null && ($pending === null || !preg_match(self::TYPE_CHECK_REGEX, $pending))) {
@@ -66,7 +66,7 @@ class SourceFactory extends AbstractGedcomRecordFactory implements SourceFactory
      *
      * @param Tree $tree
      *
-     * @return Closure
+     * @return Closure(object):Source
      */
     public function mapper(Tree $tree): Closure
     {

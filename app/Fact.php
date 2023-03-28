@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -314,7 +314,7 @@ class Fact
      */
     public function canShow(int $access_level = null): bool
     {
-        $access_level = $access_level ?? Auth::accessLevel($this->record->tree());
+        $access_level ??= Auth::accessLevel($this->record->tree());
 
         // Does this record have an explicit restriction notice?
         $element     = new RestrictionNotice('');
@@ -374,7 +374,7 @@ class Fact
     }
 
     /**
-     * The place where the event occured.
+     * The place where the event occurred.
      *
      * @return Place
      */
@@ -605,7 +605,7 @@ class Fact
     /**
      * Helper functions to sort facts
      *
-     * @return Closure
+     * @return Closure(Fact,Fact):int
      */
     private static function dateComparator(): Closure
     {
@@ -635,7 +635,7 @@ class Fact
     /**
      * Helper functions to sort facts.
      *
-     * @return Closure
+     * @return Closure(Fact,Fact):int
      */
     public static function typeComparator(): Closure
     {
@@ -653,8 +653,9 @@ class Fact
                 return $a->sortOrder <=> $b->sortOrder;
             }
 
-            $atag = $a->tag;
-            $btag = $b->tag;
+            // NO events sort as the non-event itself.
+            $atag = $a->tag === 'NO' ? $a->value() : $a->tag;
+            $btag = $b->tag === 'NO' ? $b->value() : $b->tag;
 
             // Events not in the above list get mapped onto one that is.
             if (!array_key_exists($atag, $factsort)) {

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -55,7 +55,7 @@ class Individual extends GedcomRecord
     /**
      * A closure which will compare individuals by birth date.
      *
-     * @return Closure
+     * @return Closure(Individual,Individual):int
      */
     public static function birthDateComparator(): Closure
     {
@@ -67,7 +67,7 @@ class Individual extends GedcomRecord
     /**
      * A closure which will compare individuals by death date.
      *
-     * @return Closure
+     * @return Closure(Individual,Individual):int
      */
     public static function deathDateComparator(): Closure
     {
@@ -85,7 +85,7 @@ class Individual extends GedcomRecord
      */
     public function canShowName(int $access_level = null): bool
     {
-        $access_level = $access_level ?? Auth::accessLevel($this->tree);
+        $access_level ??= Auth::accessLevel($this->tree);
 
         return (int) $this->tree->getPreference('SHOW_LIVING_NAMES') >= $access_level || $this->canShow($access_level);
     }
@@ -266,7 +266,7 @@ class Individual extends GedcomRecord
             return true;
         }
 
-        // If any event occured more than $MAX_ALIVE_AGE years ago, then assume the individual is dead
+        // If any event occurred more than $MAX_ALIVE_AGE years ago, then assume the individual is dead
         if (preg_match_all('/\n2 DATE (.+)/', $this->gedcom, $date_matches)) {
             foreach ($date_matches[1] as $date_match) {
                 $date = new Date($date_match);
@@ -698,7 +698,7 @@ class Individual extends GedcomRecord
      */
     public function spouseFamilies(int $access_level = null): Collection
     {
-        $access_level = $access_level ?? Auth::accessLevel($this->tree);
+        $access_level ??= Auth::accessLevel($this->tree);
 
         if ($this->tree->getPreference('SHOW_PRIVATE_RELATIONSHIPS') === '1') {
             $access_level = Auth::PRIV_HIDE;
@@ -764,7 +764,7 @@ class Individual extends GedcomRecord
      */
     public function childFamilies(int $access_level = null): Collection
     {
-        $access_level = $access_level ?? Auth::accessLevel($this->tree);
+        $access_level ??= Auth::accessLevel($this->tree);
 
         if ($this->tree->getPreference('SHOW_PRIVATE_RELATIONSHIPS') === '1') {
             $access_level = Auth::PRIV_HIDE;

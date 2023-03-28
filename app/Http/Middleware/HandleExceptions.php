@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -186,7 +186,7 @@ class HandleExceptions implements MiddlewareInterface, StatusCodeInterface
         $tree = Validator::attributes($request)->treeOptional();
 
         $default = Site::getPreference('DEFAULT_GEDCOM');
-        $tree = $tree ?? $this->tree_service->all()[$default] ?? $this->tree_service->all()->first();
+        $tree ??= $this->tree_service->all()[$default] ?? $this->tree_service->all()->first();
 
         if ($request->getHeaderLine('X-Requested-With') !== '') {
             $this->layout = 'layouts/ajax';

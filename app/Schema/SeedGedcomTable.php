@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -34,10 +34,19 @@ class SeedGedcomTable implements SeedInterface
     public function run(): void
     {
         // Add a "default" tree, to store default settings
+
+        if (DB::connection()->getDriverName() === 'sqlsrv') {
+            DB::connection()->unprepared('SET IDENTITY_INSERT [' . DB::connection()->getTablePrefix() . 'gedcom] ON');
+        }
+
         DB::table('gedcom')->updateOrInsert([
             'gedcom_id'   => -1,
         ], [
             'gedcom_name'  => 'DEFAULT_TREE',
         ]);
+
+        if (DB::connection()->getDriverName() === 'sqlsrv') {
+            DB::connection()->unprepared('SET IDENTITY_INSERT [' . DB::connection()->getTablePrefix() . 'gedcom] OFF');
+        }
     }
 }

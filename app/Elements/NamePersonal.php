@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -47,7 +47,7 @@ use function view;
  * /Parry/ (surname only)
  * William Lee /Parry/
  * William Lee /Mac Parry/ (both parts (Mac and Parry) are surname parts
- * William /Lee/ Parry (surname imbedded in the name string)
+ * William /Lee/ Parry (surname embedded in the name string)
  * William Lee /Pa.../
  */
 class NamePersonal extends AbstractElement
@@ -148,7 +148,8 @@ class NamePersonal extends AbstractElement
         return
             '<div class="input-group">' .
             view('edit/input-addon-edit-name', ['id' => $id]) .
-            '<input class="form-control" type="text" id="' . e($id) . '" name="' . e($name) . '" value="' . e($value) . '" readonly="readonly" />' .
+            '<input class="form-control" type="text" id="' . e($id) . '-disabled" name="' . e($name) . '" value="' . e($value) . '" readonly="readonly" disabled="disabled" />' .
+            '<input class="form-control d-none" type="text" id="' . e($id) . '" name="' . e($name) . '" value="' . e($value) . '" />' .
             view('edit/input-addon-keyboard', ['id' => $id]) .
             view('edit/input-addon-help', ['topic' => 'NAME']) .
             '</div>';

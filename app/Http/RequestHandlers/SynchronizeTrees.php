@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -98,7 +98,7 @@ class SynchronizeTrees implements RequestHandlerInterface
                     FlashMessages::addMessage(I18N::translate('The GEDCOM file “%s” has been imported.', e($gedcom_file)), 'success');
 
                     if ($this->timeout_service->isTimeNearlyUp(10.0)) {
-                        return redirect(route(__CLASS__), StatusCodeInterface::STATUS_TEMPORARY_REDIRECT);
+                        return redirect(route(self::class), StatusCodeInterface::STATUS_TEMPORARY_REDIRECT);
                     }
                 }
             } catch (FilesystemException | UnableToRetrieveMetadata | UnableToReadFile) {
@@ -112,7 +112,7 @@ class SynchronizeTrees implements RequestHandlerInterface
                 FlashMessages::addMessage(I18N::translate('The family tree “%s” has been deleted.', e($tree->title())), 'success');
 
                 if ($this->timeout_service->isTimeNearlyUp(10.0)) {
-                    return redirect(route(__CLASS__), StatusCodeInterface::STATUS_TEMPORARY_REDIRECT);
+                    return redirect(route(self::class), StatusCodeInterface::STATUS_TEMPORARY_REDIRECT);
                 }
             }
         }

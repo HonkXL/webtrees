@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -59,7 +59,7 @@ class MapLinkOpenStreetMap extends AbstractModule implements ModuleMapLinkInterf
         $latitude  = $fact->latitude();
         $longitude = $fact->longitude();
 
-        // mlat/mlon is the marker postion
+        // mlat/mlon is the marker position
         return 'https://www.openstreetmap.org/?mlat=' . $latitude . '&mlon=' . $longitude . '#map=10/' . $latitude . '/' . $longitude;
     }
 }

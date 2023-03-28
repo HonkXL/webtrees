@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -153,7 +153,7 @@ class UserService
     /**
      * Callback to sort users by their last-login (or registration) time.
      *
-     * @return Closure
+     * @return Closure(UserInterface,UserInterface):int
      */
     public function sortByLastLogin(): Closure
     {
@@ -172,7 +172,7 @@ class UserService
      *
      * @param int $timestamp
      *
-     * @return Closure
+     * @return Closure(UserInterface):bool
      */
     public function filterInactive(int $timestamp): Closure
     {
@@ -228,8 +228,8 @@ class UserService
             ->where('user_gedcom_setting.setting_name', '=', UserInterface::PREF_TREE_ROLE)
             ->where('user_gedcom_setting.setting_value', '=', UserInterface::ROLE_MANAGER)
             ->where('user.user_id', '>', 0)
-            ->groupBy(['user.user_id'])
             ->orderBy('real_name')
+            ->distinct()
             ->select(['user.*'])
             ->get()
             ->map(User::rowMapper());
@@ -247,8 +247,8 @@ class UserService
             ->where('user_gedcom_setting.setting_name', '=', UserInterface::PREF_TREE_ROLE)
             ->where('user_gedcom_setting.setting_value', '=', UserInterface::ROLE_MODERATOR)
             ->where('user.user_id', '>', 0)
-            ->groupBy(['user.user_id'])
             ->orderBy('real_name')
+            ->distinct()
             ->select(['user.*'])
             ->get()
             ->map(User::rowMapper());
@@ -315,8 +315,8 @@ class UserService
             ->join('session', 'session.user_id', '=', 'user.user_id')
             ->where('user.user_id', '>', 0)
             ->orderBy('real_name')
-            ->select(['user.*'])
             ->distinct()
+            ->select(['user.*'])
             ->get()
             ->map(User::rowMapper());
     }

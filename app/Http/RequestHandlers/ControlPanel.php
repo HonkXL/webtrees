@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -151,6 +151,8 @@ class ControlPanel implements RequestHandlerInterface
             'server_errors'                     => $this->server_check_service->serverErrors(),
             'server_warnings'                   => $this->server_check_service->serverWarnings(),
             'latest_version'                    => $this->upgrade_service->latestVersion(),
+            'latest_version_error'              => $this->upgrade_service->latestVersionError(),
+            'latest_version_timestamp'          => $this->upgrade_service->latestVersionTimestamp(),
             'all_users'                         => $this->user_service->all(),
             'administrators'                    => $this->user_service->administrators(),
             'managers'                          => $this->user_service->managers(),

@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,8 +19,11 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
+use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\FlashMessages;
+use Fisharebest\Webtrees\Http\Exceptions\HttpServerErrorException;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -108,36 +111,56 @@ class BingMaps extends AbstractModule implements ModuleConfigInterface, ModuleMa
     {
         $api_key = $this->getPreference('api_key');
 
+        if ($api_key === '') {
+            $message = I18N::translate('This service requires an API key.');
+
+            if (Auth::isAdmin()) {
+                $message = '<a href="' . e($this->getConfigLink()) . '">' . $message . '</a>';
+            }
+
+            throw new HttpServerErrorException($message);
+        }
+
         return [
             (object) [
                 'bingMapsKey' => $api_key,
                 'default'     => false,
                 'imagerySet'  => 'Aerial',
                 'label'       => 'Aerial',
+                'maxZoom'     => 15,
+                'minZoom'     => 2,
             ],
             (object) [
                 'bingMapsKey' => $api_key,
                 'default'     => false,
                 'imagerySet'  => 'CanvasDark',
                 'label'       => 'Dark',
+                'maxZoom'     => 15,
+                'minZoom'     => 2,
             ],
             (object) [
                 'bingMapsKey' => $api_key,
                 'default'     => false,
                 'imagerySet'  => 'CanvasGray',
                 'label'       => 'Grey',
+                'maxZoom'     => 15,
+                'minZoom'     => 2,
             ],
             (object) [
                 'bingMapsKey' => $api_key,
                 'default'     => true,
                 'imagerySet'  => 'CanvasLight',
                 'label'       => 'Light',
+                'maxZoom'     => 15,
+                'minZoom'     => 2,
             ],
             (object) [
                 'bingMapsKey' => $api_key,
                 'default'     => false,
                 'imagerySet'  => 'Road',
                 'label'       => 'Road',
+                'maxZoom'     => 15,
+                'minZoom'     => 2,
             ],
         ];
     }

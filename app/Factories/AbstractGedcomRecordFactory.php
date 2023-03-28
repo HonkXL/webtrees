@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -46,7 +46,7 @@ abstract class AbstractGedcomRecordFactory
         }
 
         // Caution - this cache can be overwritten by GedcomExportService
-        return Registry::cache()->array()->remember(__CLASS__ . $tree->id(), static function () use ($tree): Collection {
+        return Registry::cache()->array()->remember(self::class . $tree->id(), static function () use ($tree): Collection {
             return DB::table('change')
                 ->where('gedcom_id', '=', $tree->id())
                 ->where('status', '=', 'pending')

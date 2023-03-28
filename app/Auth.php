@@ -2,7 +2,7 @@
 
 /**
  * webtrees: online genealogy
- * Copyright (C) 2022 webtrees development team
+ * Copyright (C) 2023 webtrees development team
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -58,7 +58,7 @@ class Auth
      */
     public static function isAdmin(UserInterface $user = null): bool
     {
-        $user = $user ?? self::user();
+        $user ??= self::user();
 
         return $user->getPreference(UserInterface::PREF_IS_ADMINISTRATOR) === '1';
     }
@@ -73,7 +73,7 @@ class Auth
      */
     public static function isManager(Tree $tree, UserInterface $user = null): bool
     {
-        $user = $user ?? self::user();
+        $user ??= self::user();
 
         return self::isAdmin($user) || $tree->getUserPreference($user, UserInterface::PREF_TREE_ROLE) === UserInterface::ROLE_MANAGER;
     }
@@ -88,7 +88,7 @@ class Auth
      */
     public static function isModerator(Tree $tree, UserInterface $user = null): bool
     {
-        $user = $user ?? self::user();
+        $user ??= self::user();
 
         return
             self::isManager($tree, $user) ||
@@ -105,7 +105,7 @@ class Auth
      */
     public static function isEditor(Tree $tree, UserInterface $user = null): bool
     {
-        $user = $user ?? self::user();
+        $user ??= self::user();
 
         return
             self::isModerator($tree, $user) ||
@@ -122,7 +122,7 @@ class Auth
      */
     public static function isMember(Tree $tree, UserInterface $user = null): bool
     {
-        $user = $user ?? self::user();
+        $user ??= self::user();
 
         return
             self::isEditor($tree, $user) ||
@@ -139,7 +139,7 @@ class Auth
      */
     public static function accessLevel(Tree $tree, UserInterface $user = null): int
     {
-        $user = $user ?? self::user();
+        $user ??= self::user();
 
         if (self::isManager($tree, $user)) {
             return self::PRIV_NONE;
@@ -201,8 +201,10 @@ class Auth
     }
 
     /**
+     * @template T of ModuleInterface
+     *
      * @param ModuleInterface $module
-     * @param string          $interface
+     * @param class-string<T> $interface
      * @param Tree            $tree
      * @param UserInterface   $user
      *
