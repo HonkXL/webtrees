@@ -17,19 +17,14 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Http\RequestHandlers;
+namespace Fisharebest\Webtrees\Contracts;
 
-use Fisharebest\Webtrees\TestCase;
+use Psr\Container\ContainerInterface as Psr11ContainerInterface;
 
 /**
- * Test harness for the class RedirectDescendencyPhp
- *
- * @covers Fisharebest\Webtrees\Http\RequestHandlers\RedirectDescendencyPhp
+ * Extend the PSR-11 container interface with a method to add items.
  */
-class RedirectDescendencyPhpTest extends TestCase
+interface ContainerInterface extends Psr11ContainerInterface
 {
-    public function testClass(): void
-    {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\RedirectDescendencyPhp::class));
-    }
+    public function set(string $id, object $object): static;
 }

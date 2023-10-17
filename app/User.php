@@ -21,7 +21,6 @@ namespace Fisharebest\Webtrees;
 
 use Closure;
 use Fisharebest\Webtrees\Contracts\UserInterface;
-use Illuminate\Database\Capsule\Manager as DB;
 
 use function is_string;
 
@@ -42,8 +41,6 @@ class User implements UserInterface
     private array $preferences;
 
     /**
-     * User constructor.
-     *
      * @param int    $user_id
      * @param string $user_name
      * @param string $real_name

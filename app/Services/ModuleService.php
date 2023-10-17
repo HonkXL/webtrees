@@ -22,6 +22,7 @@ namespace Fisharebest\Webtrees\Services;
 use Closure;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\DB;
 use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Module\AhnentafelReportModule;
@@ -97,6 +98,7 @@ use Fisharebest\Webtrees\Module\InteractiveTreeModule;
 use Fisharebest\Webtrees\Module\LanguageAfrikaans;
 use Fisharebest\Webtrees\Module\LanguageAlbanian;
 use Fisharebest\Webtrees\Module\LanguageArabic;
+use Fisharebest\Webtrees\Module\LanguageBasque;
 use Fisharebest\Webtrees\Module\LanguageBosnian;
 use Fisharebest\Webtrees\Module\LanguageBulgarian;
 use Fisharebest\Webtrees\Module\LanguageCatalan;
@@ -256,13 +258,10 @@ use Fisharebest\Webtrees\Module\YahrzeitModule;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\Webtrees;
-use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Support\Collection;
 use Psr\Http\Server\MiddlewareInterface;
 use Throwable;
 
-use function app;
-use function assert;
 use function basename;
 use function dirname;
 use function glob;
@@ -404,6 +403,7 @@ class ModuleService
         'language-en-US'          => LanguageEnglishUnitedStates::class,
         'language-es'             => LanguageSpanish::class,
         'language-et'             => LanguageEstonian::class,
+        'language-eu'             => LanguageBasque::class,
         'language-fa'             => LanguageFarsi::class,
         'language-fi'             => LanguageFinnish::class,
         'language-fo'             => LanguageFaroese::class,
@@ -670,8 +670,7 @@ class ModuleService
     {
         return Collection::make(self::CORE_MODULES)
             ->map(static function (string $class, string $name): ModuleInterface {
-                $module = app($class);
-                assert($module instanceof ModuleInterface);
+                $module = Registry::container()->get($class);
 
                 $module->setName($name);
 

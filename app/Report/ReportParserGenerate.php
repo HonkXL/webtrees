@@ -22,6 +22,7 @@ namespace Fisharebest\Webtrees\Report;
 use DomainException;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Date;
+use Fisharebest\Webtrees\DB;
 use Fisharebest\Webtrees\Elements\UnknownElement;
 use Fisharebest\Webtrees\Factories\MarkdownFactory;
 use Fisharebest\Webtrees\Family;
@@ -35,12 +36,10 @@ use Fisharebest\Webtrees\Note;
 use Fisharebest\Webtrees\Place;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Tree;
-use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Str;
-use League\Flysystem\FilesystemOperator;
 use LogicException;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
@@ -61,6 +60,7 @@ use function imagecreatefromstring;
 use function imagesx;
 use function imagesy;
 use function in_array;
+use function ltrim;
 use function method_exists;
 use function preg_match;
 use function preg_match_all;
@@ -71,10 +71,12 @@ use function reset;
 use function round;
 use function sprintf;
 use function str_contains;
+use function str_ends_with;
 use function str_replace;
 use function str_starts_with;
 use function strip_tags;
 use function strlen;
+use function strpos;
 use function strtoupper;
 use function substr;
 use function trim;
@@ -89,6 +91,7 @@ use function xml_parser_set_option;
 use function xml_set_character_data_handler;
 use function xml_set_element_handler;
 
+use const PREG_OFFSET_CAPTURE;
 use const PREG_SET_ORDER;
 use const XML_OPTION_CASE_FOLDING;
 
@@ -100,7 +103,7 @@ class ReportParserGenerate extends ReportParserBase
     /** Are we collecting data from <Footnote> elements */
     private bool $process_footnote = true;
 
-    /** Are we currently outputing data? */
+    /** Are we currently outputting data? */
     private bool $print_data = false;
 
     /** @var array<int,bool> Push-down stack of $print_data */
@@ -1889,7 +1892,7 @@ class ReportParserGenerate extends ReportParserBase
             case 'pending':
                 $this->list = DB::table('change')
                     ->whereIn('change_id', function (Builder $query): void {
-                        $query->select(new Expression('MAX(change_id)'))
+                        $query->select([new Expression('MAX(change_id)')])
                             ->from('change')
                             ->where('gedcom_id', '=', $this->tree->id())
                             ->where('status', '=', 'pending')
@@ -1938,7 +1941,7 @@ class ReportParserGenerate extends ReportParserBase
                             });
                             // Search the DB only if there is any name supplied
                             $names = explode(' ', $match[1]);
-                            foreach ($names as $n => $name) {
+                            foreach ($names as $name) {
                                 $query->where($attr . '.n_full', 'LIKE', '%' . addcslashes($name, '\\%_') . '%');
                             }
 
@@ -2038,7 +2041,7 @@ class ReportParserGenerate extends ReportParserBase
                                 // Search the DB only if there is any name supplied
                                 if ($match[1] != '') {
                                     $names = explode(' ', $match[1]);
-                                    foreach ($names as $n => $name) {
+                                    foreach ($names as $name) {
                                         $query->where($attr . '.n_full', 'LIKE', '%' . addcslashes($name, '\\%_') . '%');
                                     }
                                 }
@@ -2803,6 +2806,10 @@ class ReportParserGenerate extends ReportParserBase
             }
             if ($level !== 0 || $t !== 'NOTE') {
                 $value .= self::getCont($level + 1, $subrec);
+            }
+
+            if ($tag === 'NAME' || $tag === '_MARNM' || $tag === '_AKA') {
+                return strtr($value, ['/' => '']);
             }
 
             return $value;

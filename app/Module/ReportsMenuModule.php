@@ -22,13 +22,11 @@ namespace Fisharebest\Webtrees\Module;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Menu;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ServerRequestInterface;
-
-use function app;
-use function assert;
 
 /**
  * Class ReportsMenuModule - provide a menu option for the reports
@@ -40,8 +38,6 @@ class ReportsMenuModule extends AbstractModule implements ModuleMenuInterface
     private ModuleService $module_service;
 
     /**
-     * ChartsMenuModule constructor.
-     *
      * @param ModuleService $module_service
      */
     public function __construct(ModuleService $module_service)
@@ -90,9 +86,7 @@ class ReportsMenuModule extends AbstractModule implements ModuleMenuInterface
      */
     public function getMenu(Tree $tree): ?Menu
     {
-        $request = app(ServerRequestInterface::class);
-        assert($request instanceof ServerRequestInterface);
-
+        $request    = Registry::container()->get(ServerRequestInterface::class);
         $xref       = Validator::attributes($request)->isXref()->string('xref', '');
         $individual = $tree->significantIndividual(Auth::user(), $xref);
         $submenus   = $this->module_service->findByComponent(ModuleReportInterface::class, $tree, Auth::user())

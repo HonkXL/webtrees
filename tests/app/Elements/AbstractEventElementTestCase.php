@@ -17,19 +17,23 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Http\Middleware;
-
-use Fisharebest\Webtrees\TestCase;
+namespace Fisharebest\Webtrees\Elements;
 
 /**
- * Test harness for the class PhpEnvironment
+ * Test harness for the class AbstractEventElement
  *
- * @covers Fisharebest\Webtrees\Http\Middleware\PhpEnvironment
+ * @covers \Fisharebest\Webtrees\Elements\AbstractElement
+ * @covers \Fisharebest\Webtrees\Elements\AbstractEventElement
  */
-class PhpEnvironmentTest extends TestCase
+class AbstractEventElementTestCase extends AbstractElementTestCase
 {
-    public function testClass(): void
+    /**
+     * Standard tests for all elements.
+     */
+    public static function setupBeforeClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\Middleware\PhpEnvironment::class));
+        parent::setUpBeforeClass();
+
+        self::$element = new AbstractEventElement('label');
     }
 }

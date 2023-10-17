@@ -137,19 +137,19 @@ class Validator
     }
 
     /**
-     * @param array<string> $values
+     * @param array<int|string,int|string> $values
      *
      * @return self
      */
     public function isInArray(array $values): self
     {
-        $this->rules[] = static fn (/*int|string|null*/ $value)/*: int|string|null*/ => $value !== null && in_array($value, $values, true) ? $value : null;
+        $this->rules[] = static fn (int|string|null $value): int|string|null => in_array($value, $values, true) ? $value : null;
 
         return $this;
     }
 
     /**
-     * @param array<string> $values
+     * @param array<int|string,int|string> $values
      *
      * @return self
      */
@@ -282,6 +282,33 @@ class Validator
         $callback = static fn (?array $value, Closure $rule): ?array => $rule($value);
 
         return array_reduce($this->rules, $callback, $value) ?? [];
+    }
+
+    /**
+     * @param string   $parameter
+     * @param float|null $default
+     *
+     * @return float
+     */
+    public function float(string $parameter, float $default = null): float
+    {
+        $value = $this->parameters[$parameter] ?? null;
+
+        if (is_numeric($value)) {
+            $value = (float) $value;
+        } else {
+            $value = null;
+        }
+
+        $callback = static fn (?float $value, Closure $rule): ?float => $rule($value);
+
+        $value = array_reduce($this->rules, $callback, $value) ?? $default;
+
+        if ($value === null) {
+            throw new HttpBadRequestException(I18N::translate('The parameter “%s” is missing.', $parameter));
+        }
+
+        return $value;
     }
 
     /**

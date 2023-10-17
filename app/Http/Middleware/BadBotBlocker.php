@@ -70,9 +70,15 @@ class BadBotBlocker implements MiddlewareInterface
         'Awario', // Brand management
         'Barkrowler',
         'BLEXBot',
+        'Bytespider',
+        'CCBot', // Used to train a number of LLMs
+        'ChatGPT-User', // Used by ChatGPT during operation
         'DataForSEO',
         'DataForSeoBot', // https://dataforseo.com/dataforseo-bot
         'DotBot',
+        'FacebookBot', // Collects training data for Facebook's LLM translator.
+        'Google-Extended', // Collects training data for Google Bard
+        'GPTBot', // Collects training data for ChatGPT
         'Grapeshot',
         'Honolulu-bot', // Aggressive crawer, no info available
         'ia_archiver',
@@ -81,6 +87,7 @@ class BadBotBlocker implements MiddlewareInterface
         'MegaIndex.ru',
         'MJ12bot',
         'netEstate NE',
+        'Omgilibot', // Collects training data for LLMs
         'panscient',
         'PetalBot',
         'proximic',
@@ -89,9 +96,11 @@ class BadBotBlocker implements MiddlewareInterface
         'serpstatbot',
         'SEOkicks',
         'SiteKiosk',
+        'TinyTestBot',
         'Turnitin',
         'wp_is_mobile', // Nothing to do with wordpress
         'XoviBot',
+        'YisouSpider',
         'ZoominfoBot',
     ];
 

@@ -23,10 +23,8 @@ use Fisharebest\Webtrees\Module\ModuleInterface;
 use Fisharebest\Webtrees\Module\ModuleListInterface;
 use Fisharebest\Webtrees\Module\PlaceHierarchyListModule;
 use Fisharebest\Webtrees\Services\ModuleService;
-use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Support\Collection;
 
-use function app;
 use function e;
 use function is_object;
 use function preg_split;
@@ -211,7 +209,7 @@ class Place
     public function url(): string
     {
         //find a module providing the place hierarchy
-        $module = app(ModuleService::class)
+        $module = Registry::container()->get(ModuleService::class)
             ->findByComponent(ModuleListInterface::class, $this->tree, Auth::user())
             ->first(static function (ModuleInterface $module): bool {
                 return $module instanceof PlaceHierarchyListModule;

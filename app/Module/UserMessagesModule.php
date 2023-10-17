@@ -21,6 +21,7 @@ namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\DB;
 use Fisharebest\Webtrees\Http\RequestHandlers\TreePage;
 use Fisharebest\Webtrees\Http\RequestHandlers\UserPage;
 use Fisharebest\Webtrees\I18N;
@@ -29,7 +30,6 @@ use Fisharebest\Webtrees\Services\MessageService;
 use Fisharebest\Webtrees\Services\UserService;
 use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\Validator;
-use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Support\Str;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -47,8 +47,6 @@ class UserMessagesModule extends AbstractModule implements ModuleBlockInterface
     private UserService $user_service;
 
     /**
-     * UserMessagesModule constructor.
-     *
      * @param UserService $user_service
      */
     public function __construct(UserService $user_service)

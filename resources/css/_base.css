@@ -20,15 +20,14 @@
 @import "_blocks.css";
 @import "_charts.css";
 @import "_colorbox.css";
-@import "_leaflet.css";
 @import "_lists.css";
 @import "_markdown.css";
+@import "_maps.css";
 @import "_mime-type-icons.css";
 @import "_on-screen-keyboard.css";
 @import "_pages.css";
 @import "_sortable.css";
 @import "_tab-album.css";
-@import "_tab-places.css";
 @import "_tab-relatives.css";
 
 /* Some icons need to be reversed on right-to-left pages */
@@ -147,4 +146,9 @@ a:hover, .btn-link:hover, .nav-link:hover {
 }
 :fullscreen .wt-icon-enter-fullscreen {
     display: none;
+}
+
+/* Leaflet sets this to 1000, which conflicts with bootstrap dropdowns */
+.leaflet-bottom, .leaflet-top {
+    z-index: 999;
 }

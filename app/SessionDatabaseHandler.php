@@ -19,7 +19,6 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees;
 
-use Illuminate\Database\Capsule\Manager as DB;
 use Psr\Http\Message\ServerRequestInterface;
 use SessionHandlerInterface;
 
@@ -36,8 +35,6 @@ class SessionDatabaseHandler implements SessionHandlerInterface
     private ?object $row;
 
     /**
-     * SessionDatabaseHandler constructor.
-     *
      * @param ServerRequestInterface $request
      */
     public function __construct(ServerRequestInterface $request)

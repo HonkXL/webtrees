@@ -19,32 +19,45 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\Middleware;
 
+use Fig\Http\Message\StatusCodeInterface;
+use Fisharebest\Webtrees\Mime;
+use Fisharebest\Webtrees\Webtrees;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function date_default_timezone_set;
-use function mb_internal_encoding;
+use function file_exists;
+use function file_get_contents;
+use function pathinfo;
+use function response;
+use function str_starts_with;
+use function strtoupper;
+
+use const PATHINFO_EXTENSION;
 
 /**
- * Middleware to set the PHP environment.
+ * Provide access to files in the folder /public, for cli-server requests and in case the web-server doesn't do this.
  */
-class PhpEnvironment implements MiddlewareInterface
+class PublicFiles implements MiddlewareInterface
 {
-    /**
-     * @param ServerRequestInterface  $request
-     * @param RequestHandlerInterface $handler
-     *
-     * @return ResponseInterface
-     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        // All modern software uses UTF-8 encoding.
-        mb_internal_encoding('UTF-8');
+        $path = $request->getUri()->getPath();
+        if (str_starts_with($path, '/public/') && !str_contains($path, '..')) {
+            $file = Webtrees::ROOT_DIR . $path;
 
-        // We use UTC internally and convert to local time when displaying datetimes.
-        date_default_timezone_set('UTC');
+            if (file_exists($file)) {
+                $content   = file_get_contents($file);
+                $extension = strtoupper(pathinfo($file, PATHINFO_EXTENSION));
+                $mime_type = Mime::TYPES[$extension] ?? Mime::DEFAULT_TYPE;
+
+                return response($content, StatusCodeInterface::STATUS_OK, [
+                    'cache-control' => 'public,max-age=31536000',
+                    'content-type'  => $mime_type,
+                ]);
+            }
+        }
 
         return $handler->handle($request);
     }

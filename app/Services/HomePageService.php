@@ -21,12 +21,12 @@ namespace Fisharebest\Webtrees\Services;
 
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\DB;
 use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
 use Fisharebest\Webtrees\Module\ModuleBlockInterface;
 use Fisharebest\Webtrees\Module\ModuleInterface;
 use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\Validator;
-use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Support\Collection;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -41,8 +41,6 @@ class HomePageService
     private ModuleService $module_service;
 
     /**
-     * HomePageController constructor.
-     *
      * @param ModuleService $module_service
      */
     public function __construct(ModuleService $module_service)

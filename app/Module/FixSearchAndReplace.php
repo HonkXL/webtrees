@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
+use Fisharebest\Webtrees\DB;
 use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\GedcomRecord;
 use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
@@ -32,7 +33,6 @@ use Fisharebest\Webtrees\Services\DataFixService;
 use Fisharebest\Webtrees\Source;
 use Fisharebest\Webtrees\Submitter;
 use Fisharebest\Webtrees\Tree;
-use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -57,8 +57,6 @@ class FixSearchAndReplace extends AbstractModule implements ModuleDataFixInterfa
     private DataFixService $data_fix_service;
 
     /**
-     * FixMissingDeaths constructor.
-     *
      * @param DataFixService $data_fix_service
      */
     public function __construct(DataFixService $data_fix_service)

@@ -1,3 +1,5 @@
+<?php
+
 /**
  * webtrees: online genealogy
  * Copyright (C) 2023 webtrees development team
@@ -10,27 +12,19 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Formatting for LeafletJS based maps.
+declare(strict_types=1);
+
+namespace Fisharebest\Webtrees\Exceptions;
+
+use Psr\Container\NotFoundExceptionInterface;
+use RuntimeException;
+
+/**
+ * Exception thrown when a file upload fails.
  */
-
-.leaflet-control-layers-selector {
-    margin-right: 2px;
-}
-
-/* Default is 12px - a bit too small */
-.leaflet-container {
-    font-size: 0.8rem;
-}
-
-/* No way to target parents-only... */
-.leaflet-layerstree-header-name {
-    font-weight: bold;
-}
-
-.leaflet-layerstree-node .leaflet-layerstree-node .leaflet-layerstree-header-name {
-    font-weight: normal;
+class NotFoundInContainerException extends RuntimeException implements NotFoundExceptionInterface
+{
 }

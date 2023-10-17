@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Services;
 
+use Fisharebest\Webtrees\DB;
 use Fisharebest\Webtrees\Module\ModuleAnalyticsInterface;
 use Fisharebest\Webtrees\Module\ModuleBlockInterface;
 use Fisharebest\Webtrees\Module\ModuleChartInterface;
@@ -32,7 +33,6 @@ use Fisharebest\Webtrees\Module\ModuleSidebarInterface;
 use Fisharebest\Webtrees\Module\ModuleTabInterface;
 use Fisharebest\Webtrees\Module\ModuleThemeInterface;
 use Fisharebest\Webtrees\TestCase;
-use Illuminate\Database\Capsule\Manager as DB;
 
 /**
  * Test the modules
@@ -48,7 +48,6 @@ class ModuleServiceTest extends TestCase
      * @covers \Fisharebest\Webtrees\Services\ModuleService::coreModules
      * @covers \Fisharebest\Webtrees\Services\ModuleService::customModules
      * @covers \Fisharebest\Webtrees\Services\ModuleService::moduleComparator
-     * @return void
      */
     public function testAll(): void
     {
@@ -62,7 +61,6 @@ class ModuleServiceTest extends TestCase
      * @covers \Fisharebest\Webtrees\Services\ModuleService::menuComparator
      * @covers \Fisharebest\Webtrees\Services\ModuleService::sidebarComparator
      * @covers \Fisharebest\Webtrees\Services\ModuleService::tabComparator
-     * @return void
      */
     public function testFindByComponent(): void
     {
@@ -82,7 +80,6 @@ class ModuleServiceTest extends TestCase
 
     /**
      * @covers \Fisharebest\Webtrees\Services\ModuleService::findByInterface
-     * @return void
      */
     public function testFindByInterface(): void
     {
@@ -106,7 +103,6 @@ class ModuleServiceTest extends TestCase
 
     /**
      * @covers \Fisharebest\Webtrees\Services\ModuleService::otherModules
-     * @return void
      */
     public function testOtherModules(): void
     {
@@ -123,7 +119,6 @@ class ModuleServiceTest extends TestCase
 
     /**
      * @covers \Fisharebest\Webtrees\Services\ModuleService::deletedModules
-     * @return void
      */
     public function testDeletedModules(): void
     {

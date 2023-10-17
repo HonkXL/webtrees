@@ -17,23 +17,28 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Elements;
+namespace Fisharebest\Webtrees;
+
+use Illuminate\Database\Capsule\Manager;
 
 /**
- * Test harness for the class AbstractEventElement
- *
- * @covers \Fisharebest\Webtrees\Elements\AbstractElement
- * @covers \Fisharebest\Webtrees\Elements\AbstractEventElement
+ * Database abstraction
  */
-class AbstractEventElementTest extends AbstractElementTestCase
+class DB extends Manager
 {
     /**
-     * Standard tests for all elements.
+     * @internal
      */
-    public static function setupBeforeClass(): void
+    public static function caseInsensitiveLikeOperator(): string
     {
-        parent::setUpBeforeClass();
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            return 'ILIKE';
+        }
 
-        self::$element = new AbstractEventElement('label');
+        if (DB::connection()->getDriverName() === 'sqlsrv') {
+            return 'COLLATE SQL_UTF8_General_CI_AI LIKE';
+        }
+
+        return 'LIKE';
     }
 }

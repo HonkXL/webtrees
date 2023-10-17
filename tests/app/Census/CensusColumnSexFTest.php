@@ -25,7 +25,7 @@ use Fisharebest\Webtrees\TestCase;
 /**
  * Test harness for the class CensusColumnSexF
  *
- * X is the value expected for Female, as only the M or F colum is expected
+ * X is the value expected for Female, as only the M or F column is expected
  * to be marked.
  */
 class CensusColumnSexFTest extends TestCase
@@ -33,8 +33,6 @@ class CensusColumnSexFTest extends TestCase
     /**
      * @covers \Fisharebest\Webtrees\Census\CensusColumnSexF
      * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     *
-     * @return void
      */
     public function testMale(): void
     {
@@ -51,8 +49,6 @@ class CensusColumnSexFTest extends TestCase
     /**
      * @covers \Fisharebest\Webtrees\Census\CensusColumnSexF
      * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     *
-     * @return void
      */
     public function testFeale(): void
     {
@@ -69,8 +65,6 @@ class CensusColumnSexFTest extends TestCase
     /**
      * @covers \Fisharebest\Webtrees\Census\CensusColumnSexF
      * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     *
-     * @return void
      */
     public function testUnknownSex(): void
     {

@@ -22,13 +22,13 @@ namespace Fisharebest\Webtrees\Services;
 use Closure;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\DB;
 use Fisharebest\Webtrees\Http\RequestHandlers\ContactPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\MessagePage;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\User;
 use Fisharebest\Webtrees\Validator;
-use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -413,6 +413,6 @@ class UserService
             ]);
         }
 
-        return '<a href="' . e($url) . '" dir="auto">' . e($contact_user->realName()) . '</a>';
+        return '<a href="' . e($url) . '" dir="auto" rel="nofollow">' . e($contact_user->realName()) . '</a>';
     }
 }

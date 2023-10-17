@@ -27,8 +27,6 @@ use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
 use Psr\Http\Message\ServerRequestInterface;
 
-use function app;
-
 /**
  * Test harness for the class XrefSource
  *
@@ -38,9 +36,8 @@ use function app;
  */
 class XrefSourceTest extends TestCase
 {
-    /**
-     * @return void
-     */
+    protected static bool $uses_database = true;
+
     public function testEdit(): void
     {
         $element = new XrefSource('');
@@ -57,7 +54,7 @@ class XrefSourceTest extends TestCase
 
         $request = self::createRequest();
 
-        app()->instance(ServerRequestInterface::class, $request);
+        Registry::container()->set(ServerRequestInterface::class, $request);
 
         $html = $element->edit('some-id', 'some-name', '@X123@', $tree);
         $dom  = new DOMDocument();
@@ -70,9 +67,6 @@ class XrefSourceTest extends TestCase
         self::assertEquals(1, $option_nodes->count());
     }
 
-    /**
-     * @return void
-     */
     public function testEditInlineSource(): void
     {
         $element = new XrefSource('');
@@ -81,7 +75,7 @@ class XrefSourceTest extends TestCase
 
         $request = self::createRequest();
 
-        app()->instance(ServerRequestInterface::class, $request);
+        Registry::container()->set(ServerRequestInterface::class, $request);
 
         $html = $element->edit('some-id', 'some-name', 'An inline source', $tree);
         $dom  = new DOMDocument();
@@ -91,9 +85,6 @@ class XrefSourceTest extends TestCase
         self::assertEquals(1, $textarea_nodes->count());
     }
 
-    /**
-     * @return void
-     */
     public function testEscape(): void
     {
         $element = new XrefSource('');
@@ -101,9 +92,6 @@ class XrefSourceTest extends TestCase
         self::assertSame('@X123@', $element->escape('@X123@'));
     }
 
-    /**
-     * @return void
-     */
     public function testValueXrefLink(): void
     {
         $element = new XrefSource('');
@@ -132,9 +120,6 @@ class XrefSourceTest extends TestCase
         self::assertSame('<a href="https://url">Full Name</a>', $element->value('@X123@', $tree));
     }
 
-    /**
-     * @return void
-     */
     public function testValueXrefLinkWithInvalidXref(): void
     {
         $element = new XrefSource('');
@@ -144,9 +129,6 @@ class XrefSourceTest extends TestCase
         self::assertSame('<span class="error">@invalid@</span>', $element->value('@invalid@', $tree));
     }
 
-    /**
-     * @return void
-     */
     public function testValueXrefLinkWithInlineData(): void
     {
         $element = new XrefSource('');
@@ -156,9 +138,6 @@ class XrefSourceTest extends TestCase
         self::assertSame('<p>invalid</p>', $element->value('invalid', $tree));
     }
 
-    /**
-     * @return void
-     */
     public function testValueXrefLinkWithMissingRecord(): void
     {
         $element = new XrefSource('');

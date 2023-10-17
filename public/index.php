@@ -1,3 +1,5 @@
+<?php
+
 /**
  * webtrees: online genealogy
  * Copyright (C) 2023 webtrees development team
@@ -10,23 +12,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Place list/hierarchy
- *
- * wt-route-place-list
- */
- .wt-place-hierarchy-wrapper {
-    height: 70vh;
-}
+declare(strict_types=1);
 
-.wt-place-hierarchy-map {
-    height: 100%;
-}
+namespace Fisharebest\Webtrees;
 
-.wt-place-hierarchy-sidebar {
-    height: 100%;
-    overflow-y: auto;
-}
+require __DIR__ . '/../index.php';

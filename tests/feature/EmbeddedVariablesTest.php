@@ -73,9 +73,6 @@ class EmbeddedVariablesTest extends TestCase
 {
     protected static bool $uses_database = true;
 
-    /**
-     * @return void
-     */
     public function testAllEmbeddedVariables(): void
     {
         $user_service = new UserService();
@@ -86,7 +83,7 @@ class EmbeddedVariablesTest extends TestCase
 
         $tree       = $this->importTree('demo.ged');
         $request    = self::createRequest()->withAttribute('tree', $tree);
-        Webtrees::set(ServerRequestInterface::class, $request);
+        Registry::container()->set(ServerRequestInterface::class, $request);
 
         $statistics = new Statistics(
             new CenturyService(),
@@ -106,9 +103,6 @@ class EmbeddedVariablesTest extends TestCase
         self::assertNotEquals('#getAllTagsTable#', $text);
     }
 
-    /**
-     * @return void
-     */
     public function testAllEmbeddedVariablesWithEmptyTree(): void
     {
         $gedcom_import_service = new GedcomImportService();

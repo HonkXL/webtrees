@@ -27,8 +27,6 @@ use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
 use Psr\Http\Message\ServerRequestInterface;
 
-use function app;
-
 /**
  * Test harness for the class XrefIndividual
  *
@@ -38,9 +36,6 @@ use function app;
  */
 class XrefIndividualTest extends TestCase
 {
-    /**
-     * @return void
-     */
     public function testEdit(): void
     {
         $element = new XrefIndividual('');
@@ -57,7 +52,7 @@ class XrefIndividualTest extends TestCase
 
         $request = self::createRequest();
 
-        app()->instance(ServerRequestInterface::class, $request);
+        Registry::container()->set(ServerRequestInterface::class, $request);
 
         $html = $element->edit('some-id', 'some-name', '@X123@', $tree);
         $dom  = new DOMDocument();
@@ -70,9 +65,6 @@ class XrefIndividualTest extends TestCase
         self::assertEquals(1, $option_nodes->count());
     }
 
-    /**
-     * @return void
-     */
     public function testEscape(): void
     {
         $element = new XrefIndividual('');
@@ -80,9 +72,6 @@ class XrefIndividualTest extends TestCase
         self::assertSame('@X123@', $element->escape('@X123@'));
     }
 
-    /**
-     * @return void
-     */
     public function testValueXrefLink(): void
     {
         $element = new XrefIndividual('');
@@ -111,9 +100,6 @@ class XrefIndividualTest extends TestCase
         self::assertSame('<a href="https://url">Full Name</a>', $element->value('@X123@', $tree));
     }
 
-    /**
-     * @return void
-     */
     public function testValueXrefLinkWithInvalidXref(): void
     {
         $element = new XrefIndividual('');
@@ -123,9 +109,6 @@ class XrefIndividualTest extends TestCase
         self::assertSame('<span class="error">invalid</span>', $element->value('invalid', $tree));
     }
 
-    /**
-     * @return void
-     */
     public function testValueXrefLinkWithMissingRecord(): void
     {
         $element = new XrefIndividual('');

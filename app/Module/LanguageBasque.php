@@ -17,23 +17,33 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Elements;
+namespace Fisharebest\Webtrees\Module;
+
+use Fisharebest\Localization\Locale\LocaleEu;
+use Fisharebest\Localization\Locale\LocaleInterface;
 
 /**
- * Test harness for the class AbstractXrefElement
- *
- * @covers \Fisharebest\Webtrees\Elements\AbstractElement
- * @covers \Fisharebest\Webtrees\Elements\AbstractXrefElement
+ * Class LanguageBasque.
  */
-class AbstractXrefElementTest extends AbstractElementTestCase
+class LanguageBasque extends AbstractModule implements ModuleLanguageInterface
 {
-    /**
-     * Standard tests for all elements.
-     */
-    public static function setupBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
+    use ModuleLanguageTrait;
 
-        self::$element = new AbstractXrefElement('label');
+    /**
+     * Should this module be enabled when it is first installed?
+     *
+     * @return bool
+     */
+    public function isEnabledByDefault(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @return LocaleInterface
+     */
+    public function locale(): LocaleInterface
+    {
+        return new LocaleEu();
     }
 }
