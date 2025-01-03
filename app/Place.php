@@ -138,7 +138,7 @@ class Place
                     'p_dm_soundex'  => Soundex::daitchMokotoff($place),
                 ]);
 
-                $place_id = (int) DB::connection()->getPdo()->lastInsertId();
+                $place_id = DB::lastInsertId();
             }
 
             return $place_id;
@@ -195,9 +195,7 @@ class Place
             ->where('p_parent_id', '=', $this->id())
             ->pluck('p_place')
             ->sort(I18N::comparator())
-            ->map(function (string $place) use ($parent_text): Place {
-                return new self($place . $parent_text, $this->tree);
-            })
+            ->map(fn (string $place): Place => new self($place . $parent_text, $this->tree))
             ->all();
     }
 
@@ -211,9 +209,7 @@ class Place
         //find a module providing the place hierarchy
         $module = Registry::container()->get(ModuleService::class)
             ->findByComponent(ModuleListInterface::class, $this->tree, Auth::user())
-            ->first(static function (ModuleInterface $module): bool {
-                return $module instanceof PlaceHierarchyListModule;
-            });
+            ->first(static fn (ModuleInterface $module): bool => $module instanceof PlaceHierarchyListModule);
 
         if ($module instanceof PlaceHierarchyListModule) {
             return $module->listUrl($this->tree, [
@@ -238,8 +234,6 @@ class Place
 
     /**
      * Format this place for display on screen.
-     *
-     * @return string
      */
     public function placeName(): string
     {
@@ -250,10 +244,6 @@ class Place
 
     /**
      * Generate the place name for display, including the full hierarchy.
-     *
-     * @param bool $link
-     *
-     * @return string
      */
     public function fullName(bool $link = false): string
     {
@@ -264,7 +254,11 @@ class Place
         $full_name = $this->parts->implode(I18N::$list_separator);
 
         if ($link) {
-            return '<a dir="auto" href="' . e($this->url()) . '">' . e($full_name) . '</a>';
+            $url = $this->url();
+
+            if ($url !== '#') {
+                return '<a class="ut" href="' . e($url) . '">' . e($full_name) . '</a>';
+            }
         }
 
         return '<bdi>' . e($full_name) . '</bdi>';
@@ -272,17 +266,13 @@ class Place
 
     /**
      * For lists and charts, where the full name won’t fit.
-     *
-     * @param bool $link
-     *
-     * @return string
      */
     public function shortName(bool $link = false): string
     {
         $SHOW_PEDIGREE_PLACES = (int) $this->tree->getPreference('SHOW_PEDIGREE_PLACES');
 
         // Abbreviate the place name, for lists
-        if ($this->tree->getPreference('SHOW_PEDIGREE_PLACES_SUFFIX')) {
+        if ($this->tree->getPreference('SHOW_PEDIGREE_PLACES_SUFFIX') === '1') {
             $parts = $this->lastParts($SHOW_PEDIGREE_PLACES);
         } else {
             $parts = $this->firstParts($SHOW_PEDIGREE_PLACES);
@@ -290,13 +280,16 @@ class Place
 
         $short_name = $parts->implode(I18N::$list_separator);
 
-        // Add a tool-tip showing the full name
-        $title = strip_tags($this->fullName());
-
         if ($link) {
-            return '<a dir="auto" href="' . e($this->url()) . '" title="' . $title . '">' . e($short_name) . '</a>';
+            $url = $this->url();
+
+            if ($url !== '#') {
+                $title = strip_tags($this->fullName());
+
+                return '<a class="ut" href="' . e($url) . '" title="' . e($title) . '">' . e($short_name) . '</a>';
+            }
         }
 
-        return '<bdi>' . e($short_name) . '</bdi>';
+        return '<span class="ut">' . e($short_name) . '</span>';
     }
 }

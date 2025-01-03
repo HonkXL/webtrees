@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\GedcomFilters;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class GedcomEncodingFilter
- *
- * @covers Fisharebest\Webtrees\GedcomFilters\GedcomEncodingFilter
- */
+#[CoversClass(GedcomEncodingFilter::class)]
 class GedcomEncodingFilterTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\GedcomFilters\GedcomEncodingFilter::class));
+        self::assertTrue(class_exists(GedcomEncodingFilter::class));
     }
 }

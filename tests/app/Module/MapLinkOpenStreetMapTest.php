@@ -23,11 +23,11 @@ use DOMDocument;
 use Fisharebest\Webtrees\Fact;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 
-/**
- * @covers \Fisharebest\Webtrees\Module\MapLinkOpenStreetMap
- * @covers \Fisharebest\Webtrees\Module\ModuleMapLinkTrait
- */
+#[CoversClass(MapLinkOpenStreetMap::class)]
+#[CoversTrait(ModuleMapLinkTrait::class)]
 class MapLinkOpenStreetMapTest extends TestCase
 {
     public function testNoCoordinates(): void

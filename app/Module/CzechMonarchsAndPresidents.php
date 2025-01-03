@@ -50,13 +50,11 @@ class CzechMonarchsAndPresidents extends AbstractModule implements ModuleHistori
     }
 
     /**
-     * All events provided by this module.
-     *
      * @return Collection<int,string>
      */
-    public function historicEventsAll(): Collection
+    public function historicEventsAll(string $language_tag): Collection
     {
-        switch (I18N::languageTag()) {
+        switch ($language_tag) {
             case 'cs':
                 return new Collection([
                     /** @link https://cs.wikipedia.org/wiki/Seznam_představitelů_českého_státu */

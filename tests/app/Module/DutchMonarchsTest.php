@@ -19,17 +19,23 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
+use Fisharebest\Webtrees\Fact;
+use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class DutchMonarchs
- *
- * @covers Fisharebest\Webtrees\Module\DutchMonarchs
- */
+#[CoversClass(DutchMonarchs::class)]
 class DutchMonarchsTest extends TestCase
 {
-    public function testClass(): void
+    public function testEventsHaveValidDate(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Module\DutchMonarchs::class));
+        $module = new DutchMonarchs();
+
+        $individual = $this->createMock(Individual::class);
+
+        foreach ($module->historicEventsAll(language_tag: 'nl') as $gedcom) {
+            $fact = new Fact(gedcom: $gedcom, parent: $individual, id: 'test');
+            self::assertTrue($fact->date()->isOK(), 'No date found in: ' . $gedcom);
+        }
     }
 }

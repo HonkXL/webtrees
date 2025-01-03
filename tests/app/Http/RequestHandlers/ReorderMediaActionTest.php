@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class ReorderMediaAction
- *
- * @covers Fisharebest\Webtrees\Http\RequestHandlers\ReorderMediaAction
- */
+#[CoversClass(ReorderMediaAction::class)]
 class ReorderMediaActionTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\ReorderMediaAction::class));
+        self::assertTrue(class_exists(ReorderMediaAction::class));
     }
 }

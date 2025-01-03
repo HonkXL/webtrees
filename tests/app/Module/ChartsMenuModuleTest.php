@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class ChartsMenuModule
- *
- * @covers Fisharebest\Webtrees\Module\ChartsMenuModule
- */
+#[CoversClass(ChartsMenuModule::class)]
 class ChartsMenuModuleTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Module\ChartsMenuModule::class));
+        self::assertTrue(class_exists(ChartsMenuModule::class));
     }
 }

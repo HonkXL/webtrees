@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Services;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class HousekeepingService
- *
- * @covers Fisharebest\Webtrees\Services\HousekeepingService
- */
+#[CoversClass(HousekeepingService::class)]
 class HousekeepingServiceTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Services\HousekeepingService::class));
+        self::assertTrue(class_exists(HousekeepingService::class));
     }
 }

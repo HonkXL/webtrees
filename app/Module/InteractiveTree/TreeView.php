@@ -93,9 +93,7 @@ class TreeView
             switch ($firstLetter) {
                 case 'c':
                     $families = Collection::make(explode(',', $json_request))
-                        ->map(static function (string $xref) use ($tree): ?Family {
-                            return Registry::familyFactory()->make($xref, $tree);
-                        })
+                        ->map(static fn (string $xref): Family|null => Registry::familyFactory()->make($xref, $tree))
                         ->filter();
 
                     $r[] = $this->drawChildren($families, 1, true);
@@ -149,7 +147,7 @@ class TreeView
      *
      * @return string
      */
-    private function getPersonDetails(Individual $individual, Family $family = null): string
+    private function getPersonDetails(Individual $individual, Family|null $family = null): string
     {
         $chart_url = route('module', [
             'module' => 'tree',
@@ -163,7 +161,7 @@ class TreeView
         foreach ($individual->facts(Gedcom::BIRTH_EVENTS, true) as $fact) {
             $hmtl .= $fact->summary();
         }
-        if ($family) {
+        if ($family instanceof Family) {
             foreach ($family->facts(Gedcom::MARRIAGE_EVENTS, true) as $fact) {
                 $hmtl .= $fact->summary();
             }
@@ -237,7 +235,7 @@ class TreeView
      *
      * @return string
      */
-    private function drawPerson(Individual $person, int $gen, int $state, ?Family $pfamily, string $line, bool $isRoot): string
+    private function drawPerson(Individual $person, int $gen, int $state, Family|null $pfamily, string $line, bool $isRoot): string
     {
         if ($gen < 0) {
             return '';
@@ -300,13 +298,13 @@ class TreeView
             $parent = null;
         }
 
-        if ($parent instanceof Individual || !empty($fop) || $state < 0) {
+        if ($parent instanceof Individual || $fop !== [] || $state < 0) {
             $html .= $this->drawHorizontalLine();
         }
 
         /* draw the parents */
-        if ($state >= 0 && ($parent instanceof Individual || !empty($fop))) {
-            $unique = $parent === null || empty($fop);
+        if ($state >= 0 && ($parent instanceof Individual || $fop !== [])) {
+            $unique = $parent === null || $fop === [];
             $html .= '<td align="left"><table class="tv_tree"><tbody>';
 
             if ($parent instanceof Individual) {
@@ -316,7 +314,7 @@ class TreeView
                 $html .= '</td></tr>';
             }
 
-            if (count($fop)) {
+            if ($fop !== []) {
                 $n  = 0;
                 $nb = count($fop);
                 foreach ($fop as $p) {
@@ -385,7 +383,7 @@ class TreeView
      */
     private function getThumbnail(Individual $individual): string
     {
-        if ($individual->tree()->getPreference('SHOW_HIGHLIGHT_IMAGES')) {
+        if ($individual->tree()->getPreference('SHOW_HIGHLIGHT_IMAGES') !== '' && $individual->tree()->getPreference('SHOW_HIGHLIGHT_IMAGES') !== '0') {
             return $individual->displayImage(40, 50, 'crop', []);
         }
 

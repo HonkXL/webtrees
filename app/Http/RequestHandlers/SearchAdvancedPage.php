@@ -47,7 +47,7 @@ class SearchAdvancedPage implements RequestHandlerInterface
 {
     use ViewResponseTrait;
 
-    private const DEFAULT_ADVANCED_FIELDS = [
+    private const array DEFAULT_ADVANCED_FIELDS = [
         'INDI:NAME:GIVN',
         'INDI:NAME:SURN',
         'INDI:BIRT:DATE',
@@ -62,7 +62,7 @@ class SearchAdvancedPage implements RequestHandlerInterface
         'MOTHER:NAME:SURN',
     ];
 
-    private const OTHER_ADVANCED_FIELDS = [
+    private const array OTHER_ADVANCED_FIELDS = [
         'INDI:ADOP:DATE',
         'INDI:ADOP:PLAC',
         'INDI:AFN',
@@ -150,6 +150,8 @@ class SearchAdvancedPage implements RequestHandlerInterface
         $date_options   = $this->dateOptions();
         $name_options   = $this->nameOptions();
 
+        $fields = array_map(static fn (string $x): string => preg_replace('/^\s+|\s+$/uD', '', $x), $fields);
+
         $search_fields = array_filter($fields, static fn (string $x): bool => $x !== '');
 
         if ($search_fields !== []) {
@@ -159,7 +161,8 @@ class SearchAdvancedPage implements RequestHandlerInterface
                 $message = 'Advanced: ' . implode(', ', array_map($fn, array_keys($search_fields), $search_fields));
                 Log::addSearchLog($message, [$tree]);
             }
-            $individuals = $this->search_service->searchIndividualsAdvanced([$tree], $search_fields, $modifiers);
+
+            $individuals = $this->search_service->searchIndividualsAdvanced($tree, $search_fields, $modifiers);
         } else {
             $individuals = new Collection();
         }
@@ -206,7 +209,6 @@ class SearchAdvancedPage implements RequestHandlerInterface
             ->all();
     }
 
-
     /**
      * We use some pseudo-GEDCOM tags for some of our fields.
      *
@@ -220,7 +222,6 @@ class SearchAdvancedPage implements RequestHandlerInterface
             $tmp = strtr($field, ['MOTHER:' => 'INDI:', 'FATHER:' => 'INDI:']);
             $return[$field] = Registry::elementFactory()->make($tmp)->label();
         }
-
 
         return $return;
     }

@@ -35,7 +35,7 @@ class IndividualMetadataModule extends AbstractModule implements ModuleSidebarIn
     use ModuleSidebarTrait;
 
     // A list of facts that are handled by this module.
-    protected const HANDLED_FACTS = [
+    protected const array HANDLED_FACTS = [
         'AFN',
         'CHAN',
         'IDNO',
@@ -60,11 +60,6 @@ class IndividualMetadataModule extends AbstractModule implements ModuleSidebarIn
         return I18N::translate('Extra information');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Extra information” module */
@@ -101,7 +96,7 @@ class IndividualMetadataModule extends AbstractModule implements ModuleSidebarIn
     public function getSidebarContent(Individual $individual): string
     {
         $html = $individual->facts(static::HANDLED_FACTS)
-            ->map(static fn (Fact $fact): string =>view('fact', ['fact' => $fact, 'record' => $individual]))
+            ->map(static fn (Fact $fact): string => view('fact', ['fact' => $fact, 'record' => $individual]))
             ->implode('<hr>');
 
         return strip_tags($html, ['a', 'div', 'span', 'i', 'hr', 'br']);

@@ -48,11 +48,6 @@ class SearchMenuModule extends AbstractModule implements ModuleMenuInterface
         return I18N::translate('Search');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Search” module */
@@ -76,7 +71,7 @@ class SearchMenuModule extends AbstractModule implements ModuleMenuInterface
      *
      * @return Menu|null
      */
-    public function getMenu(Tree $tree): ?Menu
+    public function getMenu(Tree $tree): Menu|null
     {
         $submenu = [
             $this->menuSearchGeneral($tree),
@@ -130,7 +125,7 @@ class SearchMenuModule extends AbstractModule implements ModuleMenuInterface
      *
      * @return Menu|null
      */
-    protected function menuSearchAndReplace(Tree $tree): ?Menu
+    protected function menuSearchAndReplace(Tree $tree): Menu|null
     {
         if (Auth::isEditor($tree)) {
             $url = route(SearchReplacePage::class, ['tree' => $tree->name()]);

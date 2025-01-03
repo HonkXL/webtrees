@@ -71,7 +71,7 @@ class PlaceLocation
      *
      * @return int|null
      */
-    public function id(): ?int
+    public function id(): int|null
     {
         // The "top-level" location won't exist in the database.
         if ($this->parts->isEmpty()) {
@@ -169,20 +169,16 @@ class PlaceLocation
 
     /**
      * Latitude of the location.
-     *
-     * @return float|null
      */
-    public function latitude(): ?float
+    public function latitude(): float|null
     {
         return $this->details()->latitude;
     }
 
     /**
      * Longitude of the location.
-     *
-     * @return float|null
      */
-    public function longitude(): ?float
+    public function longitude(): float|null
     {
         return $this->details()->longitude;
     }
@@ -216,9 +212,7 @@ class PlaceLocation
             })
             ->groupBy(['latitude'])
             ->pluck('latitude')
-            ->map(static function (string $x): float {
-                return (float) $x;
-            });
+            ->map(static fn (string $x): float => (float) $x);
 
         $longitudes = DB::table('place_location')
             ->whereNotNull('longitude')
@@ -229,9 +223,7 @@ class PlaceLocation
             })
             ->groupBy(['longitude'])
             ->pluck('longitude')
-            ->map(static function (string $x): float {
-                return (float) $x;
-            });
+            ->map(static fn (string $x): float => (float) $x);
 
         // No co-ordinates?  Use the parent place instead.
         if ($latitudes->isEmpty() || $longitudes->isEmpty()) {

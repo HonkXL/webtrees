@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\Middleware;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class UseSession
- *
- * @covers Fisharebest\Webtrees\Http\Middleware\UseSession
- */
+#[CoversClass(UseSession::class)]
 class UseSessionTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\Middleware\UseSession::class));
+        self::assertTrue(class_exists(UseSession::class));
     }
 }

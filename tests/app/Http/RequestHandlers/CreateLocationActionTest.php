@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class CreateLocationAction
- *
- * @covers Fisharebest\Webtrees\Http\RequestHandlers\CreateLocationAction
- */
+#[CoversClass(CreateLocationAction::class)]
 class CreateLocationActionTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\CreateLocationAction::class));
+        self::assertTrue(class_exists(CreateLocationAction::class));
     }
 }

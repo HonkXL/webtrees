@@ -19,41 +19,36 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\Middleware;
 
-use Fig\Http\Message\RequestMethodInterface;
-use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
-use Fisharebest\Webtrees\Http\RequestHandlers\HomePage;
-use Fisharebest\Webtrees\Http\ViewResponseTrait;
-use Fisharebest\Webtrees\Registry;
+use ErrorException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function redirect;
-use function route;
+use function error_reporting;
+use function restore_error_handler;
+use function set_error_handler;
 
-/**
- * Middleware to generate a response when no route was matched.
- */
-class NoRouteFound implements MiddlewareInterface
+class ErrorHandler implements MiddlewareInterface
 {
-    use ViewResponseTrait;
-
-    /**
-     * @param ServerRequestInterface  $request
-     * @param RequestHandlerInterface $handler
-     *
-     * @return ResponseInterface
-     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        // Bind the request into the container.  We'll need it to generate an error page.
-        Registry::container()->set(ServerRequestInterface::class, $request);
+        set_error_handler(callback: $this->errorHandler(...));
 
-        if ($request->getMethod() !== RequestMethodInterface::METHOD_GET) {
-            throw new HttpNotFoundException();
+        $response = $handler->handle($request);
+
+        restore_error_handler();
+
+        return $response;
+    }
+
+    private function errorHandler(int $errno, string $errstr, string $errfile, int $errline): bool
+    {
+        // Ignore errors that are silenced with '@'
+        if ((error_reporting() & $errno) !== 0) {
+            throw new ErrorException(message: $errstr, code: 0, severity: $errno, filename: $errfile, line: $errline);
         }
 
-        return redirect(route(HomePage::class));
+        return true;
     }
 }

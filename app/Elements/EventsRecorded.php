@@ -40,12 +40,12 @@ use function view;
  */
 class EventsRecorded extends AbstractElement
 {
-    protected const SUBTAGS = [
+    protected const array SUBTAGS = [
         'DATE' => '0:1',
         'PLAC' => '0:1',
     ];
 
-    protected const EVENTS_RECORDED = [
+    protected const array EVENTS_RECORDED = [
         'INDI:ADOP',
         'INDI:BAPM',
         'INDI:BARM',
@@ -125,9 +125,7 @@ class EventsRecorded extends AbstractElement
         $factory = Registry::elementFactory();
 
         $options = Collection::make(self::EVENTS_RECORDED)
-            ->mapWithKeys(static function (string $tag) use ($factory): array {
-                return [explode(':', $tag)[1] => $factory->make($tag)->label()];
-            })
+            ->mapWithKeys(static fn (string $tag): array => [explode(':', $tag)[1] => $factory->make($tag)->label()])
             ->sort()
             ->all();
 

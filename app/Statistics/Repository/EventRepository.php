@@ -48,16 +48,16 @@ class EventRepository implements EventRepositoryInterface
     /**
      * Sorting directions.
      */
-    private const SORT_ASC  = 'ASC';
-    private const SORT_DESC = 'DESC';
+    private const string SORT_ASC  = 'ASC';
+    private const string SORT_DESC = 'DESC';
 
     /**
      * Event facts.
      */
-    private const EVENT_BIRTH    = 'BIRT';
-    private const EVENT_DEATH    = 'DEAT';
-    private const EVENT_MARRIAGE = 'MARR';
-    private const EVENT_DIVORCE  = 'DIV';
+    private const string EVENT_BIRTH    = 'BIRT';
+    private const string EVENT_DEATH    = 'DEAT';
+    private const string EVENT_MARRIAGE = 'MARR';
+    private const string EVENT_DIVORCE  = 'DIV';
 
     private Tree $tree;
 
@@ -204,9 +204,7 @@ class EventRepository implements EventRepositoryInterface
     public function totalEventsOther(): string
     {
         $no_facts = array_map(
-            static function (string $fact): string {
-                return '!' . $fact;
-            },
+            static fn (string $fact): string => '!' . $fact,
             $this->getCommonFacts()
         );
 
@@ -220,7 +218,7 @@ class EventRepository implements EventRepositoryInterface
      *
      * @return object{id:string,year:int,fact:string,type:string}|null
      */
-    private function eventQuery(string $direction): ?object
+    private function eventQuery(string $direction): object|null
     {
         return DB::table('dates')
             ->select(['d_gid as id', 'd_year as year', 'd_fact AS fact', 'd_type AS type'])

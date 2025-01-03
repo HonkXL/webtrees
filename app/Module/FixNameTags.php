@@ -41,7 +41,7 @@ class FixNameTags extends AbstractModule implements ModuleDataFixInterface
     use ModuleDataFixTrait;
 
     // https://legacyfamilytree.se/WEB_US/user_defined_gedcom_tags.htm
-    private const CONVERT = [
+    private const array CONVERT = [
         '_ADPN'  => NameType::VALUE_ADOPTED,
         '_AKA'   => NameType::VALUE_AKA,
         '_AKAN'  => NameType::VALUE_AKA,
@@ -82,11 +82,6 @@ class FixNameTags extends AbstractModule implements ModuleDataFixInterface
         return I18N::translate('Convert %s tags to GEDCOM 5.5.1', 'INDI:NAME:_XXX');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of a “Data fix” module */

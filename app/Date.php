@@ -45,7 +45,7 @@ class Date
     public string $qual2 = '';
 
     // Optional second date
-    private ?AbstractCalendarDate $date2 = null;
+    private AbstractCalendarDate|null $date2 = null;
 
     // Optional text, as included with an INTerpreted date
     private string $text = '';
@@ -98,7 +98,7 @@ class Date
      *
      * @return string
      */
-    public function display(Tree $tree = null, string $date_format = null, bool $convert_calendars = false): string
+    public function display(Tree|null $tree = null, string|null $date_format = null, bool $convert_calendars = false): string
     {
         if ($tree instanceof Tree) {
             $CALENDAR_FORMAT = $tree->getPreference('CALENDAR_FORMAT');
@@ -179,6 +179,9 @@ class Date
         switch ($q1 . $q2) {
             case '':
                 $tmp = $d1 . $conv1;
+                if ($this->text !== '') {
+                    $tmp .= '(' . e($this->text) . ')';
+                }
                 break;
             case 'ABT':
                 /* I18N: Gedcom ABT dates */

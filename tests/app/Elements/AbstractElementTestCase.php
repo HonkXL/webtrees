@@ -23,13 +23,10 @@ use Fisharebest\Webtrees\Contracts\ElementInterface;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
 
-/**
- * Common tests for ElementInterface
- */
 abstract class AbstractElementTestCase extends TestCase
 {
-    private const EVIL_VALUE = '<script>evil()</script>';
-    private const TEST_VALUE = '01 JAN 1970';
+    private const string EVIL_VALUE = '<script>evil()</script>';
+    private const string TEST_VALUE = '01 JAN 1970';
 
     protected static ElementInterface $element;
 

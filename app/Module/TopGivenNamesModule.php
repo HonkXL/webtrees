@@ -35,8 +35,8 @@ class TopGivenNamesModule extends AbstractModule implements ModuleBlockInterface
     use ModuleBlockTrait;
 
     // Default values for new blocks.
-    private const DEFAULT_NUMBER = '10';
-    private const DEFAULT_STYLE  = 'table';
+    private const string DEFAULT_NUMBER = '10';
+    private const string DEFAULT_STYLE  = 'table';
 
     /**
      * How should this module be identified in the control panel, etc.?
@@ -49,11 +49,6 @@ class TopGivenNamesModule extends AbstractModule implements ModuleBlockInterface
         return I18N::translate('Top given names');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Top given names” module */

@@ -25,11 +25,10 @@ use Fisharebest\Webtrees\Services\DatatablesService;
 use Fisharebest\Webtrees\Services\SiteLogsService;
 use Fisharebest\Webtrees\TestCase;
 use Illuminate\Database\Query\Builder;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Http\Message\ResponseInterface;
 
-/**
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\SiteLogsData
- */
+#[CoversClass(SiteLogsData::class)]
 class SiteLogsDataTest extends TestCase
 {
     public function testResponse(): void
@@ -39,15 +38,15 @@ class SiteLogsDataTest extends TestCase
             ['tree' => 'a', 'from' => 'b', 'to' => 'c', 'type' => 'd', 'text' => 'e', 'ip' => 'f', 'username' => 'g']
         );
 
-        $query = $this->createStub(Builder::class);
+        $query = $this->createMock(Builder::class);
 
-        $site_logs_service = $this->createStub(SiteLogsService::class);
+        $site_logs_service = $this->createMock(SiteLogsService::class);
         $site_logs_service->method('logsQuery')->willReturn($query);
 
-        $response = $this->createStub(ResponseInterface::class);
+        $response = $this->createMock(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(StatusCodeInterface::STATUS_OK);
 
-        $data_tables_service = $this->createStub(DatatablesService::class);
+        $data_tables_service = $this->createMock(DatatablesService::class);
         $data_tables_service->method('handleQuery')->willReturn($response);
 
         $handler  = new SiteLogsData($data_tables_service, $site_logs_service);

@@ -48,8 +48,8 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
     use ModuleBlockTrait;
 
     // Default values for new blocks.
-    private const DEFAULT_NUMBER = '10';
-    private const DEFAULT_STYLE  = 'table';
+    private const string DEFAULT_NUMBER = '10';
+    private const string DEFAULT_STYLE  = 'table';
 
     private ModuleService $module_service;
 
@@ -72,11 +72,6 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
         return I18N::translate('Top surnames');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Top surnames” module */
@@ -106,13 +101,13 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
             ->where('n_surn', '<>', '')
             ->where('n_surn', '<>', Individual::NOMEN_NESCIO)
             ->select([
-                $this->binaryColumn('n_surn', 'n_surn'),
-                $this->binaryColumn('n_surname', 'n_surname'),
+                DB::binaryColumn('n_surn', 'n_surn'),
+                DB::binaryColumn('n_surname', 'n_surname'),
                 new Expression('COUNT(*) AS total'),
             ])
             ->groupBy([
-                $this->binaryColumn('n_surn'),
-                $this->binaryColumn('n_surname'),
+                DB::binaryColumn('n_surn'),
+                DB::binaryColumn('n_surname'),
             ]);
 
         /** @var array<array<int>> $top_surnames */
@@ -133,12 +128,7 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
         // Find a module providing individual lists.
         $module = $this->module_service
             ->findByComponent(ModuleListInterface::class, $tree, Auth::user())
-            ->first(static function (ModuleInterface $module): bool {
-                // The family list extends the individual list
-                return
-                    $module instanceof IndividualListModule &&
-                    !$module instanceof FamilyListModule;
-            });
+            ->first(static fn (ModuleInterface $module): bool => $module instanceof IndividualListModule);
 
         switch ($info_style) {
             case 'tagcloud':
@@ -286,29 +276,5 @@ class TopSurnamesModule extends AbstractModule implements ModuleBlockInterface
             'info_style'  => $info_style,
             'info_styles' => $info_styles,
         ]);
-    }
-
-    /**
-     * This module assumes the database will use binary collation on the name columns.
-     * Until we convert MySQL databases to use utf8_bin, we need to do this at run-time.
-     *
-     * @param string      $column
-     * @param string|null $alias
-     *
-     * @return Expression
-     */
-    private function binaryColumn(string $column, string $alias = null): Expression
-    {
-        if (DB::connection()->getDriverName() === 'mysql') {
-            $sql = 'CAST(' . $column . ' AS binary)';
-        } else {
-            $sql = $column;
-        }
-
-        if ($alias !== null) {
-            $sql .= ' AS ' . $alias;
-        }
-
-        return new Expression($sql);
     }
 }

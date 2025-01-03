@@ -73,34 +73,34 @@ class FanChartModule extends AbstractModule implements ModuleChartInterface, Req
 {
     use ModuleChartTrait;
 
-    protected const ROUTE_URL = '/tree/{tree}/fan-chart-{style}-{generations}-{width}/{xref}';
+    protected const string ROUTE_URL = '/tree/{tree}/fan-chart-{style}-{generations}-{width}/{xref}';
 
     // Chart styles
-    private const STYLE_HALF_CIRCLE          = 2;
-    private const STYLE_THREE_QUARTER_CIRCLE = 3;
-    private const STYLE_FULL_CIRCLE          = 4;
+    private const int STYLE_HALF_CIRCLE          = 2;
+    private const int STYLE_THREE_QUARTER_CIRCLE = 3;
+    private const int STYLE_FULL_CIRCLE          = 4;
 
     // Defaults
-    public const    DEFAULT_STYLE       = self::STYLE_THREE_QUARTER_CIRCLE;
-    public const    DEFAULT_GENERATIONS = 4;
-    public const    DEFAULT_WIDTH       = 100;
-    protected const DEFAULT_PARAMETERS  = [
+    public const    int DEFAULT_STYLE       = self::STYLE_THREE_QUARTER_CIRCLE;
+    public const    int DEFAULT_GENERATIONS = 4;
+    public const    int DEFAULT_WIDTH       = 100;
+    protected const array DEFAULT_PARAMETERS      = [
         'style'       => self::DEFAULT_STYLE,
         'generations' => self::DEFAULT_GENERATIONS,
         'width'       => self::DEFAULT_WIDTH,
     ];
 
     // Limits
-    private const MINIMUM_GENERATIONS = 2;
-    private const MAXIMUM_GENERATIONS = 9;
-    private const MINIMUM_WIDTH       = 50;
-    private const MAXIMUM_WIDTH       = 500;
+    private const int MINIMUM_GENERATIONS = 2;
+    private const int MAXIMUM_GENERATIONS = 9;
+    private const int MINIMUM_WIDTH       = 50;
+    private const int MAXIMUM_WIDTH       = 500;
 
     // Chart layout parameters
-    private const FONT               = Webtrees::ROOT_DIR . 'resources/fonts/DejaVuSans.ttf';
-    private const CHART_WIDTH_PIXELS = 800;
-    private const TEXT_SIZE_POINTS   = self::CHART_WIDTH_PIXELS / 120.0;
-    private const GAP_BETWEEN_RINGS  = 2;
+    private const string FONT               = Webtrees::ROOT_DIR . 'resources/fonts/DejaVuSans.ttf';
+    private const int    CHART_WIDTH_PIXELS = 800;
+    private const float  TEXT_SIZE_POINTS   = self::CHART_WIDTH_PIXELS / 120.0;
+    private const int    GAP_BETWEEN_RINGS  = 2;
 
     private ChartService $chart_service;
 
@@ -135,11 +135,6 @@ class FanChartModule extends AbstractModule implements ModuleChartInterface, Req
         return I18N::translate('Fan chart');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Fan Chart” module */
@@ -158,12 +153,8 @@ class FanChartModule extends AbstractModule implements ModuleChartInterface, Req
 
     /**
      * Return a menu item for this chart - for use in individual boxes.
-     *
-     * @param Individual $individual
-     *
-     * @return Menu|null
      */
-    public function chartBoxMenu(Individual $individual): ?Menu
+    public function chartBoxMenu(Individual $individual): Menu|null
     {
         return $this->chartMenu($individual);
     }
@@ -424,7 +415,7 @@ class FanChartModule extends AbstractModule implements ModuleChartInterface, Req
                         (int) $tx_start,
                         (int) $ty_start,
                         $text_color,
-                        static::FONT,
+                        self::FONT,
                         $text
                     );
                     // Debug text positions by underlining first line of text
@@ -433,8 +424,8 @@ class FanChartModule extends AbstractModule implements ModuleChartInterface, Req
                     $areas .= '<area shape="poly" coords="';
                     for ($deg = $start_angle; $deg <= $end_angle; $deg++) {
                         $rad = deg2rad($deg);
-                        $areas .= round($center_x + $arc_radius * cos(deg2rad($rad)), 1) . ',';
-                        $areas .= round($center_y + $arc_radius * sin(deg2rad($rad)), 1) . ',';
+                        $areas .= round($center_x + $arc_radius * cos($rad), 1) . ',';
+                        $areas .= round($center_y + $arc_radius * sin($rad), 1) . ',';
                     }
                     for ($deg = $end_angle; $deg >= $start_angle; $deg--) {
                         $rad = deg2rad($deg);

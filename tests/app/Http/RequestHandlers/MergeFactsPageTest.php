@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class MergeFactsPage
- *
- * @covers Fisharebest\Webtrees\Http\RequestHandlers\MergeFactsPage
- */
+#[CoversClass(MergeFactsPage::class)]
 class MergeFactsPageTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\MergeFactsPage::class));
+        self::assertTrue(class_exists(MergeFactsPage::class));
     }
 }

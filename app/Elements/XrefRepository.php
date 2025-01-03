@@ -35,7 +35,7 @@ use function view;
  */
 class XrefRepository extends AbstractXrefElement
 {
-    protected const SUBTAGS = [
+    protected const array SUBTAGS = [
         'CALN' => '0:1',
         'NOTE' => '0:M',
     ];
@@ -62,7 +62,7 @@ class XrefRepository extends AbstractXrefElement
 
         return
             '<div class="input-group">' .
-            '<button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-backdrop="static" data-bs-target="#wt-ajax-modal" data-wt-href="' . e(route(CreateRepositoryModal::class, ['tree' => $tree->name()])) . '" data-wt-select-id="' . $id . '" title="' . I18N::translate('Create a repository') . '">' .
+            '<button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#wt-ajax-modal" data-wt-href="' . e(route(CreateRepositoryModal::class, ['tree' => $tree->name()])) . '" data-wt-select-id="' . $id . '" title="' . I18N::translate('Create a repository') . '">' .
             view('icons/add') .
             '</button>' .
             $select .

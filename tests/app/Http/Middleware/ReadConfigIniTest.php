@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\Middleware;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class ReadConfigIni
- *
- * @covers Fisharebest\Webtrees\Http\Middleware\ReadConfigIni
- */
+#[CoversClass(ReadConfigIni::class)]
 class ReadConfigIniTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\Middleware\ReadConfigIni::class));
+        self::assertTrue(class_exists(ReadConfigIni::class));
     }
 }

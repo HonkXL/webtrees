@@ -41,28 +41,28 @@ class PedigreeChartModule extends AbstractModule implements ModuleChartInterface
 {
     use ModuleChartTrait;
 
-    protected const ROUTE_URL = '/tree/{tree}/pedigree-{style}-{generations}/{xref}';
+    protected const string ROUTE_URL = '/tree/{tree}/pedigree-{style}-{generations}/{xref}';
 
     // Chart styles
-    public const STYLE_LEFT  = 'left';
-    public const STYLE_RIGHT = 'right';
-    public const STYLE_UP    = 'up';
-    public const STYLE_DOWN  = 'down';
+    public const string STYLE_LEFT  = 'left';
+    public const string STYLE_RIGHT = 'right';
+    public const string STYLE_UP   = 'up';
+    public const string STYLE_DOWN = 'down';
 
     // Defaults
-    public const    DEFAULT_GENERATIONS = '4';
-    public const    DEFAULT_STYLE       = self::STYLE_RIGHT;
-    protected const DEFAULT_PARAMETERS  = [
+    public const    string DEFAULT_GENERATIONS = '4';
+    public const    string DEFAULT_STYLE      = self::STYLE_RIGHT;
+    protected const array  DEFAULT_PARAMETERS = [
         'generations' => self::DEFAULT_GENERATIONS,
         'style'       => self::DEFAULT_STYLE,
     ];
 
     // Limits
-    protected const MINIMUM_GENERATIONS = 2;
-    protected const MAXIMUM_GENERATIONS = 12;
+    protected const int MINIMUM_GENERATIONS = 2;
+    protected const int MAXIMUM_GENERATIONS = 12;
 
     // For RTL languages
-    protected const MIRROR_STYLE = [
+    protected const array MIRROR_STYLE = [
         self::STYLE_UP    => self::STYLE_DOWN,
         self::STYLE_DOWN  => self::STYLE_UP,
         self::STYLE_LEFT  => self::STYLE_RIGHT,
@@ -102,11 +102,6 @@ class PedigreeChartModule extends AbstractModule implements ModuleChartInterface
         return I18N::translate('Pedigree');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “PedigreeChart” module */
@@ -130,7 +125,7 @@ class PedigreeChartModule extends AbstractModule implements ModuleChartInterface
      *
      * @return Menu|null
      */
-    public function chartBoxMenu(Individual $individual): ?Menu
+    public function chartBoxMenu(Individual $individual): Menu|null
     {
         return $this->chartMenu($individual);
     }
@@ -200,7 +195,7 @@ class PedigreeChartModule extends AbstractModule implements ModuleChartInterface
 
             // Father’s ancestors link to the father’s pedigree
             // Mother’s ancestors link to the mother’s pedigree..
-            $links = $ancestors->map(function (?Individual $individual, $sosa) use ($ancestors, $style, $generations): string {
+            $links = $ancestors->map(function (Individual|null $individual, $sosa) use ($ancestors, $style, $generations): string {
                 if ($individual instanceof Individual && $sosa >= 2 ** $generations / 2 && $individual->childFamilies()->isNotEmpty()) {
                     // The last row/column, and there are more generations.
                     if ($sosa >= 2 ** $generations * 3 / 4) {

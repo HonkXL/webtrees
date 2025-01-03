@@ -21,29 +21,28 @@ namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fig\Http\Message\RequestMethodInterface;
 use Fig\Http\Message\StatusCodeInterface;
-use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpGoneException;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\RedirectReportEnginePhp
- */
+#[CoversClass(RedirectReportEnginePhp::class)]
 class RedirectReportEnginePhpTest extends TestCase
 {
     protected static bool $uses_database = true;
 
     public function testRedirect(): void
     {
-        $tree = $this->createStub(Tree::class);
+        $tree = $this->createMock(Tree::class);
         $tree
             ->method('name')
             ->willReturn('tree1');
 
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
             ->willReturn(new Collection(['tree1' => $tree]));
 
@@ -68,9 +67,9 @@ class RedirectReportEnginePhpTest extends TestCase
 
     public function testNoSuchTree(): void
     {
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
             ->willReturn(new Collection([]));
 
@@ -81,7 +80,7 @@ class RedirectReportEnginePhpTest extends TestCase
             ['ged'    => 'tree1', 'action' => 'run', 'report' => 'foo/report.xml']
         );
 
-        $this->expectException(HttpNotFoundException::class);
+        $this->expectException(HttpGoneException::class);
 
         $handler->handle($request);
     }

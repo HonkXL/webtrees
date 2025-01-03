@@ -17,19 +17,31 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Console;
+namespace Fisharebest\Webtrees\Elements;
 
-use Fisharebest\Webtrees\TestCase;
+use Fisharebest\Webtrees\I18N;
 
 /**
- * Test harness for the class ComposerScripts
- *
- * @covers Fisharebest\Webtrees\Console\ComposerScripts
+ * _ACT tags from Geneatique
  */
-class ComposerScriptsTest extends TestCase
+class GeneatiqueAct extends AbstractElement
 {
-    public function testClass(): void
+    /**
+     * A list of controlled values for this element
+     *
+     * @return array<int|string,string>
+     */
+    public function values(): array
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Console\ComposerScripts::class));
+        return [
+            ''   => '',
+            'al' => I18N::translate('online'),
+            'ca' => I18N::translate('local'),
+            'c'  => I18N::translateContext('NOUN', 'copy'),
+            'p'  => I18N::translate('photocopy'),
+            'e'  => I18N::translateContext('NOUN', 'extract'),
+            '<'  => I18N::translate('before'),
+            '>'  => I18N::translate('after'),
+        ];
     }
 }

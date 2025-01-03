@@ -25,15 +25,12 @@ use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Http\Message\ServerRequestInterface;
 
-/**
- * Test harness for the class XrefIndividual
- *
- * @covers \Fisharebest\Webtrees\Elements\AbstractElement
- * @covers \Fisharebest\Webtrees\Elements\AbstractXrefElement
- * @covers \Fisharebest\Webtrees\Elements\XrefIndividual
- */
+#[CoversClass(AbstractElement::class)]
+#[CoversClass(AbstractXrefElement::class)]
+#[CoversClass(XrefIndividual::class)]
 class XrefIndividualTest extends TestCase
 {
     public function testEdit(): void
@@ -44,7 +41,7 @@ class XrefIndividualTest extends TestCase
 
         $factory = $this->createMock(IndividualFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn(null);
 
@@ -78,11 +75,11 @@ class XrefIndividualTest extends TestCase
 
         $record = $this->createMock(Individual::class);
 
-        $record->expects(self::once())
+        $record->expects($this->once())
             ->method('fullName')
             ->willReturn('Full Name');
 
-        $record->expects(self::once())
+        $record->expects($this->once())
             ->method('url')
             ->willReturn('https://url');
 
@@ -90,10 +87,9 @@ class XrefIndividualTest extends TestCase
 
         $factory = $this->createMock(IndividualFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn($record);
-
 
         Registry::individualFactory($factory);
 
@@ -117,7 +113,7 @@ class XrefIndividualTest extends TestCase
 
         $factory = $this->createMock(IndividualFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn(null);
 

@@ -23,42 +23,41 @@ use Fig\Http\Message\RequestMethodInterface;
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Factories\SourceFactory;
 use Fisharebest\Webtrees\Http\Exceptions\HttpBadRequestException;
-use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpGoneException;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\Source;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\RedirectSourcePhp
- */
+#[CoversClass(RedirectSourcePhp::class)]
 class RedirectSourcePhpTest extends TestCase
 {
     protected static bool $uses_database = true;
 
     public function testRedirect(): void
     {
-        $tree = $this->createStub(Tree::class);
+        $tree = $this->createMock(Tree::class);
         $tree
             ->method('name')
             ->willReturn('tree1');
 
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
             ->willReturn(new Collection(['tree1' => $tree]));
 
-        $source = $this->createStub(Source::class);
+        $source = $this->createMock(Source::class);
         $source
             ->method('url')
             ->willReturn('https://www.example.com');
 
-        $source_factory = $this->createStub(SourceFactory::class);
+        $source_factory = $this->createMock(SourceFactory::class);
         $source_factory
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('make')
             ->with('X123', $tree)
             ->willReturn($source);
@@ -67,10 +66,7 @@ class RedirectSourcePhpTest extends TestCase
 
         $handler = new RedirectSourcePhp($tree_service);
 
-        $request = self::createRequest(
-            RequestMethodInterface::METHOD_GET,
-            ['ged' => 'tree1', 'sid' => 'X123']
-        );
+        $request = self::createRequest(RequestMethodInterface::METHOD_GET, ['ged' => 'tree1', 'sid' => 'X123']);
 
         $response = $handler->handle($request);
 
@@ -80,29 +76,26 @@ class RedirectSourcePhpTest extends TestCase
 
     public function testNoSuchRecord(): void
     {
-        $tree = $this->createStub(Tree::class);
+        $tree = $this->createMock(Tree::class);
 
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
-            ->willReturn(new Collection([$tree]));
+            ->willReturn(new Collection(['tree1' => $tree]));
 
         $handler = new RedirectSourcePhp($tree_service);
 
-        $request = self::createRequest(
-            RequestMethodInterface::METHOD_GET,
-            ['ged' => 'tree1', 'sid' => 'X123']
-        );
+        $request = self::createRequest(RequestMethodInterface::METHOD_GET, ['ged' => 'tree1', 'sid' => 'X123']);
 
-        $this->expectException(HttpNotFoundException::class);
+        $this->expectException(HttpGoneException::class);
 
         $handler->handle($request);
     }
 
     public function testMissingXrefParameter(): void
     {
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
 
         $handler = new RedirectSourcePhp($tree_service);
 

@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Report;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class HtmlRenderer
- *
- * @covers Fisharebest\Webtrees\Report\HtmlRenderer
- */
+#[CoversClass(HtmlRenderer::class)]
 class HtmlRendererTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Report\HtmlRenderer::class));
+        self::assertTrue(class_exists(HtmlRenderer::class));
     }
 }

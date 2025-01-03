@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Report;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class TcpdfWrapper
- *
- * @covers Fisharebest\Webtrees\Report\TcpdfWrapper
- */
+#[CoversClass(TcpdfWrapper::class)]
 class TcpdfWrapperTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Report\TcpdfWrapper::class));
+        self::assertTrue(class_exists(TcpdfWrapper::class));
     }
 }

@@ -763,7 +763,7 @@
       return element.tomselect;
     }
 
-    if (element.dataset.url) {
+    if (element.dataset.wtUrl) {
       let options = {
         plugins: ['dropdown_input', 'virtual_scroll'],
         maxOptions: false,
@@ -771,8 +771,9 @@
         render: {
           item: (data, escape) => '<div>' + data.text + '</div>',
           option: (data, escape) => '<div>' + data.text + '</div>',
+          no_results: (data, escape) => '<div class="no-results">' + element.dataset.wtI18nNoResults + '</div>',
         },
-        firstUrl: query => element.dataset.url + '&query=' + encodeURIComponent(query),
+        firstUrl: query => element.dataset.wtUrl + '&query=' + encodeURIComponent(query),
         load: function (query, callback) {
           webtrees.httpGet(this.getUrl(query))
             .then(response => response.json())
@@ -862,13 +863,13 @@
     webtrees.httpPost(form.action, new FormData(form))
       .then(response => response.json())
       .then(json => {
-        if (select) {
+        if (select && json.value !== '') {
           // This modal was activated by the "create new" button in a select edit control.
           webtrees.resetTomSelect(select.tomselect, json.value, json.text);
 
           bootstrap.Modal.getInstance(modal).hide();
         } else {
-          // Show the success message in the existing modal.
+          // Show the success/fail message in the existing modal.
           modal_content.innerHTML = json.html;
         }
       })
@@ -940,9 +941,9 @@ $(function () {
   };
 
   // DataTables - start hidden to prevent FOUC.
-  $('table.datatables').each(function () {
-    $(this).DataTable();
-    $(this).removeClass('d-none');
+  document.querySelectorAll('table.datatables').forEach(function (element) {
+    new DataTable(element);
+    element.classList.remove('d-none');
   });
 
   // Save button/checkbox state between pages

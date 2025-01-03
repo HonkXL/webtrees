@@ -48,7 +48,7 @@ trait ModuleChartTrait
      *
      * @return Menu|null
      */
-    public function chartBoxMenu(Individual $individual): ?Menu
+    public function chartBoxMenu(Individual $individual): Menu|null
     {
         return null;
     }
@@ -103,10 +103,10 @@ trait ModuleChartTrait
     public function chartUrl(Individual $individual, array $parameters = []): string
     {
         return route('module', [
-                'module' => $this->name(),
-                'action' => 'Chart',
-                'xref'   => $individual->xref(),
-                'tree'    => $individual->tree()->name(),
+            'module' => $this->name(),
+            'action' => 'Chart',
+            'xref'   => $individual->xref(),
+            'tree'   => $individual->tree()->name(),
         ] + $parameters);
     }
 

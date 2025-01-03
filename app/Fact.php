@@ -43,7 +43,7 @@ use function usort;
  */
 class Fact
 {
-    private const FACT_ORDER = [
+    private const array FACT_ORDER = [
         'BIRT',
         '_HNM',
         'ALIA',
@@ -202,7 +202,9 @@ class Fact
     public function value(): string
     {
         if (preg_match('/^1 ' . $this->tag . ' ?(.*(?:\n2 CONT ?.*)*)/', $this->gedcom, $match)) {
-            return preg_replace("/\n2 CONT ?/", "\n", $match[1]);
+            $value = preg_replace("/\n2 CONT ?/", "\n", $match[1]);
+
+            return Registry::elementFactory()->make($this->tag())->canonical($value);
         }
 
         return '';
@@ -276,10 +278,8 @@ class Fact
 
     /**
      * Get the PLAC:MAP:LATI for the fact.
-     *
-     * @return float|null
      */
-    public function latitude(): ?float
+    public function latitude(): float|null
     {
         if (preg_match('/\n4 LATI (.+)/', $this->gedcom, $match)) {
             $gedcom_service = new GedcomService();
@@ -292,10 +292,8 @@ class Fact
 
     /**
      * Get the PLAC:MAP:LONG for the fact.
-     *
-     * @return float|null
      */
-    public function longitude(): ?float
+    public function longitude(): float|null
     {
         if (preg_match('/\n4 LONG (.+)/', $this->gedcom, $match)) {
             $gedcom_service = new GedcomService();
@@ -313,7 +311,7 @@ class Fact
      *
      * @return bool
      */
-    public function canShow(int $access_level = null): bool
+    public function canShow(int|null $access_level = null): bool
     {
         $access_level ??= Auth::accessLevel($this->record->tree());
 

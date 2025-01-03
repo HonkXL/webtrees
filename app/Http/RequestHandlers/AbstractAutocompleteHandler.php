@@ -33,10 +33,10 @@ use function response;
 abstract class AbstractAutocompleteHandler implements RequestHandlerInterface
 {
     // The client software only shows the first few results
-    protected const LIMIT = 10;
+    protected const int LIMIT = 10;
 
     // Tell the browser to cache the results
-    protected const CACHE_LIFE = 1200;
+    protected const int CACHE_LIFE = 1200;
 
     protected SearchService $search_service;
 
@@ -56,9 +56,7 @@ abstract class AbstractAutocompleteHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $data = $this->search($request)
-            ->map(static function (string $datum): array {
-                return ['value' => $datum];
-            });
+            ->map(static fn (string $datum): array => ['value' => $datum]);
 
         return response($data)
             ->withHeader('cache-control', 'public,max-age=' . static::CACHE_LIFE);

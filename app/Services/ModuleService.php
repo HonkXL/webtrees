@@ -206,6 +206,7 @@ use Fisharebest\Webtrees\Module\ModuleShareInterface;
 use Fisharebest\Webtrees\Module\ModuleSidebarInterface;
 use Fisharebest\Webtrees\Module\ModuleTabInterface;
 use Fisharebest\Webtrees\Module\ModuleThemeInterface;
+use Fisharebest\Webtrees\Module\NewZealandPrimeMinisters;
 use Fisharebest\Webtrees\Module\NoteListModule;
 use Fisharebest\Webtrees\Module\NotesTabModule;
 use Fisharebest\Webtrees\Module\OccupationReportModule;
@@ -277,7 +278,7 @@ use const GLOB_NOSORT;
 class ModuleService
 {
     // Components are pieces of user-facing functionality, are managed together in the control panel.
-    private const COMPONENTS = [
+    private const array COMPONENTS = [
         ModuleAnalyticsInterface::class,
         ModuleBlockInterface::class,
         ModuleChartInterface::class,
@@ -299,7 +300,7 @@ class ModuleService
     ];
 
     // Components that have access levels.
-    private const COMPONENTS_WITH_ACCESS = [
+    private const array COMPONENTS_WITH_ACCESS = [
         ModuleBlockInterface::class,
         ModuleChartInterface::class,
         ModuleListInterface::class,
@@ -310,7 +311,7 @@ class ModuleService
     ];
 
     // Components that are displayed in a particular order
-    private const COMPONENTS_WITH_SORT = [
+    private const array COMPONENTS_WITH_SORT = [
         ModuleFooterInterface::class,
         ModuleMenuInterface::class,
         ModuleSidebarInterface::class,
@@ -318,7 +319,7 @@ class ModuleService
     ];
 
     // Array keys are module names, and should match module names from earlier versions of webtrees.
-    private const CORE_MODULES = [
+    private const array CORE_MODULES = [
         'GEDFact_assistant'       => CensusAssistantModule::class,
         'ahnentafel_report'       => AhnentafelReportModule::class,
         'ancestors_chart'         => AncestorsChartModule::class,
@@ -482,6 +483,7 @@ class ModuleService
         'missing_facts_report'    => MissingFactsReportModule::class,
         'notes'                   => NotesTabModule::class,
         'note_list'               => NoteListModule::class,
+        'nz-leaders'              => NewZealandPrimeMinisters::class,
         'occupation_report'       => OccupationReportModule::class,
         'openrouteservice'        => OpenRouteServiceAutocomplete::class,
         'openstreetmap'           => OpenStreetMap::class,
@@ -538,9 +540,7 @@ class ModuleService
      */
     public function titleMapper(): Closure
     {
-        return static function (ModuleInterface $module): string {
-            return $module->title();
-        };
+        return static fn (ModuleInterface $module): string => $module->title();
     }
 
     /**
@@ -557,9 +557,7 @@ class ModuleService
     public function findByComponent(string $interface, Tree $tree, UserInterface $user): Collection
     {
         return $this->findByInterface($interface, false, true)
-            ->filter(static function (ModuleInterface $module) use ($interface, $tree, $user): bool {
-                return $module->accessLevel($tree, $interface) >= Auth::accessLevel($tree, $user);
-            });
+            ->filter(static fn (ModuleInterface $module): bool => $module->accessLevel($tree, $interface) >= Auth::accessLevel($tree, $user));
     }
 
     /**
@@ -620,9 +618,7 @@ class ModuleService
             // We can override these from database settings.
             $module_info = DB::table('module')
                 ->get()
-                ->mapWithKeys(static function (object $row): array {
-                    return [$row->module_name => $row];
-                });
+                ->mapWithKeys(static fn (object $row): array => [$row->module_name => $row]);
 
             return $this->coreModules()
                 ->merge($this->customModules())
@@ -702,7 +698,7 @@ class ModuleService
 
                 return strlen($module_name) <= 30;
             })
-            ->map(static function (string $filename): ?ModuleCustomInterface {
+            ->map(static function (string $filename): ModuleCustomInterface|null {
                 $module = self::load($filename);
 
                 if ($module instanceof ModuleCustomInterface) {
@@ -714,19 +710,13 @@ class ModuleService
                 return null;
             })
             ->filter()
-            ->mapWithKeys(static function (ModuleCustomInterface $module): array {
-                return [$module->name() => $module];
-            });
+            ->mapWithKeys(static fn (ModuleCustomInterface $module): array => [$module->name() => $module]);
     }
 
     /**
      * Load a custom module in a static scope, to prevent it from modifying local or object variables.
-     *
-     * @param string $filename
-     *
-     * @return ModuleInterface|null
      */
-    private static function load(string $filename): ?ModuleInterface
+    private static function load(string $filename): ModuleInterface|null
     {
         try {
             return include $filename;
@@ -748,9 +738,7 @@ class ModuleService
      */
     private function enabledFilter(bool $include_disabled): Closure
     {
-        return static function (ModuleInterface $module) use ($include_disabled): bool {
-            return $include_disabled || $module->isEnabled();
-        };
+        return static fn (ModuleInterface $module): bool => $include_disabled || $module->isEnabled();
     }
 
     /**
@@ -764,9 +752,7 @@ class ModuleService
      */
     private function interfaceFilter(string $interface): Closure
     {
-        return static function (ModuleInterface $module) use ($interface): bool {
-            return $module instanceof $interface;
-        };
+        return static fn (ModuleInterface $module): bool => $module instanceof $interface;
     }
 
     /**
@@ -776,9 +762,7 @@ class ModuleService
      */
     private function footerComparator(): Closure
     {
-        return static function (ModuleFooterInterface $x, ModuleFooterInterface $y): int {
-            return $x->getFooterOrder() <=> $y->getFooterOrder();
-        };
+        return static fn (ModuleFooterInterface $x, ModuleFooterInterface $y): int => $x->getFooterOrder() <=> $y->getFooterOrder();
     }
 
     /**
@@ -788,9 +772,7 @@ class ModuleService
      */
     private function menuComparator(): Closure
     {
-        return static function (ModuleMenuInterface $x, ModuleMenuInterface $y): int {
-            return $x->getMenuOrder() <=> $y->getMenuOrder();
-        };
+        return static fn (ModuleMenuInterface $x, ModuleMenuInterface $y): int => $x->getMenuOrder() <=> $y->getMenuOrder();
     }
 
     /**
@@ -800,9 +782,7 @@ class ModuleService
      */
     private function sidebarComparator(): Closure
     {
-        return static function (ModuleSidebarInterface $x, ModuleSidebarInterface $y): int {
-            return $x->getSidebarOrder() <=> $y->getSidebarOrder();
-        };
+        return static fn (ModuleSidebarInterface $x, ModuleSidebarInterface $y): int => $x->getSidebarOrder() <=> $y->getSidebarOrder();
     }
 
     /**
@@ -812,9 +792,7 @@ class ModuleService
      */
     private function tabComparator(): Closure
     {
-        return static function (ModuleTabInterface $x, ModuleTabInterface $y): int {
-            return $x->getTabOrder() <=> $y->getTabOrder();
-        };
+        return static fn (ModuleTabInterface $x, ModuleTabInterface $y): int => $x->getTabOrder() <=> $y->getTabOrder();
     }
 
     /**
@@ -843,28 +821,17 @@ class ModuleService
     public function setupLanguages(): Collection
     {
         return $this->coreModules()
-            ->filter(static function (ModuleInterface $module): bool {
-                return $module instanceof ModuleLanguageInterface && $module->isEnabledByDefault();
-            })
-            ->sort(static function (ModuleLanguageInterface $x, ModuleLanguageInterface $y): int {
-                return $x->locale()->endonymSortable() <=> $y->locale()->endonymSortable();
-            });
+            ->filter(static fn (ModuleInterface $module): bool => $module instanceof ModuleLanguageInterface && $module->isEnabledByDefault())
+            ->sort(static fn (ModuleLanguageInterface $x, ModuleLanguageInterface $y): int => $x->locale()->endonymSortable() <=> $y->locale()->endonymSortable());
     }
 
     /**
      * Find a specified module, if it is currently active.
-     *
-     * @param string $module_name
-     * @param bool   $include_disabled
-     *
-     * @return ModuleInterface|null
      */
-    public function findByName(string $module_name, bool $include_disabled = false): ?ModuleInterface
+    public function findByName(string $module_name, bool $include_disabled = false): ModuleInterface|null
     {
         return $this->all($include_disabled)
-            ->first(static function (ModuleInterface $module) use ($module_name): bool {
-                return $module->name() === $module_name;
-            });
+            ->first(static fn (ModuleInterface $module): bool => $module->name() === $module_name);
     }
 
     /**
@@ -899,9 +866,7 @@ class ModuleService
         $database_modules = DB::table('module')->pluck('module_name');
 
         $disk_modules = $this->all(true)
-            ->map(static function (ModuleInterface $module): string {
-                return $module->name();
-            });
+            ->map(static fn (ModuleInterface $module): string => $module->name());
 
         return $database_modules->diff($disk_modules);
     }

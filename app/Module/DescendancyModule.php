@@ -59,11 +59,6 @@ class DescendancyModule extends AbstractModule implements ModuleSidebarInterface
         return I18N::translate('Descendants');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Descendants” module */
@@ -95,9 +90,7 @@ class DescendancyModule extends AbstractModule implements ModuleSidebarInterface
         if (strlen($search) >= 2) {
             $html = $this->search_service
                 ->searchIndividualNames([$tree], [$search])
-                ->map(function (Individual $individual): string {
-                    return $this->getPersonLi($individual);
-                })
+                ->map(fn (Individual $individual): string => $this->getPersonLi($individual))
                 ->implode('');
         }
 
@@ -237,7 +230,7 @@ class DescendancyModule extends AbstractModule implements ModuleSidebarInterface
                 $out .= $this->getFamilyLi($family, $individual, $generations - 1);
             }
         }
-        if ($out) {
+        if ($out !== '') {
             return '<ul>' . $out . '</ul>';
         }
 
@@ -266,7 +259,7 @@ class DescendancyModule extends AbstractModule implements ModuleSidebarInterface
                 $out .= '<li class="sb_desc_none">' . I18N::translate('No children') . '</li>';
             }
         }
-        if ($out) {
+        if ($out !== '') {
             return '<ul>' . $out . '</ul>';
         }
 

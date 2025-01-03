@@ -19,17 +19,23 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
+use Fisharebest\Webtrees\Fact;
+use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class BritishPrimeMinisters
- *
- * @covers Fisharebest\Webtrees\Module\BritishPrimeMinisters
- */
+#[CoversClass(BritishPrimeMinisters::class)]
 class BritishPrimeMinistersTest extends TestCase
 {
-    public function testClass(): void
+    public function testEventsHaveValidDate(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Module\BritishPrimeMinisters::class));
+        $module = new BritishPrimeMinisters();
+
+        $individual = $this->createMock(Individual::class);
+
+        foreach ($module->historicEventsAll(language_tag: 'en-GB') as $gedcom) {
+            $fact = new Fact(gedcom: $gedcom, parent: $individual, id: 'test');
+            self::assertTrue($fact->date()->isOK(), 'No date found in: ' . $gedcom);
+        }
     }
 }

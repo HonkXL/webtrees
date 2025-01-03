@@ -22,17 +22,14 @@ namespace Fisharebest\Webtrees\Http\RequestHandlers;
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Services\UserService;
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test the AccountDelete request handler.
- *
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\AccountDelete
- */
+#[CoversClass(AccountDelete::class)]
 class AccountDeleteTest extends TestCase
 {
     public function testHandler(): void
     {
-        $user_service = $this->createStub(UserService::class);
+        $user_service = $this->createMock(UserService::class);
 
         $request = self::createRequest();
 

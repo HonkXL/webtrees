@@ -47,7 +47,7 @@ class HitCountFooterModule extends AbstractModule implements ModuleFooterInterfa
 
     // Which routes do we count?
     // For historical reasons, we record the names of the original webtrees script and parameter.
-    protected const PAGE_NAMES = [
+    protected const array PAGE_NAMES = [
         FamilyPage::class     => 'family.php',
         IndividualPage::class => 'individual.php',
         MediaPage::class      => 'mediaviewer.php',
@@ -73,11 +73,6 @@ class HitCountFooterModule extends AbstractModule implements ModuleFooterInterfa
         return I18N::translate('Hit counters');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Hit counters” module */

@@ -21,45 +21,47 @@ namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fig\Http\Message\RequestMethodInterface;
 use Fig\Http\Message\StatusCodeInterface;
-use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
+use Fisharebest\Webtrees\GuestUser;
+use Fisharebest\Webtrees\Http\Exceptions\HttpGoneException;
+use Fisharebest\Webtrees\Module\ModuleChartInterface;
+use Fisharebest\Webtrees\Module\ModuleListInterface;
 use Fisharebest\Webtrees\Module\StatisticsChartModule;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\RedirectStatisticsPhp
- */
+#[CoversClass(RedirectStatisticsPhp::class)]
 class RedirectStatisticsPhpTest extends TestCase
 {
     protected static bool $uses_database = true;
 
     public function testRedirect(): void
     {
-        $tree = $this->createStub(Tree::class);
+        $tree = $this->createMock(Tree::class);
         $tree
             ->method('name')
             ->willReturn('tree1');
 
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
             ->willReturn(new Collection(['tree1' => $tree]));
 
-        $module = $this->createStub(StatisticsChartModule::class);
+        $module = $this->createMock(StatisticsChartModule::class);
         $module
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('chartUrl')
             ->willReturn('https://www.example.com');
 
-        $module_service = $this->createStub(ModuleService::class);
+        $module_service = $this->createMock(ModuleService::class);
         $module_service
-            ->expects(self::once())
-            ->method('findByInterface')
-            ->with(StatisticsChartModule::class)
+            ->expects($this->once())
+            ->method('findByComponent')
+            ->with(ModuleChartInterface::class)
             ->willReturn(new Collection([$module]));
 
         $handler = new RedirectStatisticsPhp($module_service, $tree_service);
@@ -74,43 +76,39 @@ class RedirectStatisticsPhpTest extends TestCase
 
     public function testModuleDisabled(): void
     {
-        $module_service = $this->createStub(ModuleService::class);
-        $module_service
-            ->expects(self::once())->method('findByInterface')
-            ->with(StatisticsChartModule::class)
-            ->willReturn(new Collection());
+        $tree = $this->createMock(Tree::class);
+        $tree
+            ->method('name')
+            ->willReturn('tree1');
 
-        $tree = $this->createStub(Tree::class);
-
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
-            ->willReturn(new Collection([$tree]));
+            ->willReturn(new Collection(['tree1' => $tree]));
+
+        $module_service = $this->createMock(ModuleService::class);
+        $module_service
+            ->method('findByComponent')
+            ->with(ModuleChartInterface::class, $tree, new GuestUser())
+            ->willReturn(new Collection());
 
         $handler = new RedirectStatisticsPhp($module_service, $tree_service);
 
         $request = self::createRequest(RequestMethodInterface::METHOD_GET, ['ged' => 'tree1']);
 
-        $this->expectException(HttpNotFoundException::class);
+        $this->expectException(HttpGoneException::class);
 
         $handler->handle($request);
     }
 
     public function testNoSuchTree(): void
     {
-        $module = $this->createStub(StatisticsChartModule::class);
+        $module_service  = $this->createMock(ModuleService::class);
 
-        $module_service  = $this->createStub(ModuleService::class);
-        $module_service
-            ->expects(self::once())
-            ->method('findByInterface')
-            ->with(StatisticsChartModule::class)
-            ->willReturn(new Collection([$module]));
-
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
             ->willReturn(new Collection([]));
 
@@ -118,7 +116,7 @@ class RedirectStatisticsPhpTest extends TestCase
 
         $request = self::createRequest(RequestMethodInterface::METHOD_GET, ['ged' => 'tree1']);
 
-        $this->expectException(HttpNotFoundException::class);
+        $this->expectException(HttpGoneException::class);
 
         $handler->handle($request);
     }

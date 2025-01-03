@@ -21,17 +21,14 @@ namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\Services\CalendarService;
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class UpcomingAnniversariesModule
- *
- * @covers \Fisharebest\Webtrees\Module\UpcomingAnniversariesModule
- */
+#[CoversClass(UpcomingAnniversariesModule::class)]
 class UpcomingAnniversariesModuleTest extends TestCase
 {
     public function testModuleProperties(): void
     {
-        $calendar_service = $this->createStub(CalendarService::class);
+        $calendar_service = $this->createMock(CalendarService::class);
 
         $module = new UpcomingAnniversariesModule($calendar_service);
 

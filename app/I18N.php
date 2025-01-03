@@ -54,30 +54,30 @@ use function var_export;
 class I18N
 {
     // MO files use special characters for plurals and context.
-    public const PLURAL  = "\x00";
-    public const CONTEXT = "\x04";
+    public const string PLURAL  = "\x00";
+    public const string CONTEXT = "\x04";
 
     // Digits are always rendered LTR, even in RTL text.
-    private const DIGITS = '0123456789٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹';
+    private const string DIGITS = '0123456789٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹';
 
     // These locales need special handling for the dotless letter I.
-    private const DOTLESS_I_LOCALES = [
+    private const array DOTLESS_I_LOCALES = [
         'az',
         'tr',
     ];
 
-    private const DOTLESS_I_TOLOWER = [
+    private const array DOTLESS_I_TOLOWER = [
         'I' => 'ı',
         'İ' => 'i',
     ];
 
-    private const DOTLESS_I_TOUPPER = [
+    private const array DOTLESS_I_TOUPPER = [
         'ı' => 'I',
         'i' => 'İ',
     ];
 
     // The ranges of characters used by each script.
-    private const SCRIPT_CHARACTER_RANGES = [
+    private const array SCRIPT_CHARACTER_RANGES = [
         [
             'Latn',
             0x0041,
@@ -179,7 +179,7 @@ class I18N
     ];
 
     // Characters that are displayed in mirror form in RTL text.
-    private const MIRROR_CHARACTERS = [
+    private const array MIRROR_CHARACTERS = [
         '('  => ')',
         ')'  => '(',
         '['  => ']',
@@ -209,7 +209,7 @@ class I18N
 
     private static Translator $translator;
 
-    private static ?Collator $collator = null;
+    private static Collator|null $collator = null;
 
     /**
      * The preferred locales for this site, or a default list if no preference.
@@ -220,9 +220,7 @@ class I18N
     {
         $locales = Registry::container()->get(ModuleService::class)
             ->findByInterface(ModuleLanguageInterface::class, false, true)
-            ->map(static function (ModuleLanguageInterface $module): LocaleInterface {
-                return $module->locale();
-            });
+            ->map(static fn (ModuleLanguageInterface $module): LocaleInterface => $module->locale());
 
         if ($locales->isEmpty()) {
             return [new LocaleEnUs()];
@@ -299,9 +297,7 @@ class I18N
 
             $translations = $module_service
                 ->findByInterface(ModuleCustomInterface::class)
-                ->reduce(static function (array $carry, ModuleCustomInterface $item): array {
-                    return array_merge($carry, $item->customTranslations(self::$locale->languageTag()));
-                }, $translations);
+                ->reduce(static fn (array $carry, ModuleCustomInterface $item): array => array_merge($carry, $item->customTranslations(self::$locale->languageTag())), $translations);
 
             self::$language = $module_service
                 ->findByInterface(ModuleLanguageInterface::class, true)
@@ -558,8 +554,6 @@ class I18N
 
         return static fn (string $x, string $y): int => strcmp(self::strtolower($x), self::strtolower($y));
     }
-
-
 
     /**
      * Convert a string to lower case.

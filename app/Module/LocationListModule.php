@@ -38,7 +38,7 @@ class LocationListModule extends AbstractModule implements ModuleListInterface, 
 {
     use ModuleListTrait;
 
-    protected const ROUTE_URL = '/tree/{tree}/location-list';
+    protected const string ROUTE_URL = '/tree/{tree}/location-list';
 
     /** @var int The default access level for this module.  It can be changed in the control panel. */
     protected int $access_level = Auth::PRIV_USER;
@@ -65,11 +65,6 @@ class LocationListModule extends AbstractModule implements ModuleListInterface, 
         return I18N::translate('Locations');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Locations” module */

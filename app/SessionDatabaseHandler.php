@@ -32,66 +32,41 @@ class SessionDatabaseHandler implements SessionHandlerInterface
 {
     private ServerRequestInterface $request;
 
-    private ?object $row;
+    private ?object $row = null;
 
-    /**
-     * @param ServerRequestInterface $request
-     */
     public function __construct(ServerRequestInterface $request)
     {
         $this->request = $request;
     }
 
-    /**
-     * @param string $path
-     * @param string $name
-     *
-     * @return bool
-     */
     public function open(string $path, string $name): bool
     {
         return true;
     }
 
-    /**
-     * @return bool
-     */
     public function close(): bool
     {
         return true;
     }
 
-    /**
-     * @param string $id
-     *
-     * @return string
-     */
     public function read(string $id): string
     {
         $this->row = DB::table('session')
             ->where('session_id', '=', $id)
             ->first();
 
-
         return $this->row->session_data ?? '';
     }
 
-    /**
-     * @param string $id
-     * @param string $data
-     *
-     * @return bool
-     */
     public function write(string $id, string $data): bool
     {
-        $ip_address   = Validator::attributes($this->request)->string('client-ip');
-        $session_time = time();
-        $user_id      = (int) Auth::id();
+        $ip_address = Validator::attributes($this->request)->string('client-ip');
+        $user_id    = (int) Auth::id();
 
         if ($this->row === null) {
             DB::table('session')->insert([
                 'session_id'   => $id,
-                'session_time' => date('Y-m-d H:i:s', $session_time),
+                'session_time' => date('Y-m-d H:i:s'),
                 'user_id'      => $user_id,
                 'ip_address'   => $ip_address,
                 'session_data' => $data,
@@ -112,8 +87,9 @@ class SessionDatabaseHandler implements SessionHandlerInterface
                 $updates['session_data'] = $data;
             }
 
-            if ($session_time - 60 > $this->row->session_time) {
-                $updates['session_time'] = date('Y-m-d H:i:s', $session_time);
+            // Only update session once a minute to reduce contention on the session table.
+            if (date('Y-m-d H:i:s', time() - 60) > $this->row->session_time) {
+                $updates['session_time'] =  date('Y-m-d H:i:s');
             }
 
             if ($updates !== []) {
@@ -126,11 +102,6 @@ class SessionDatabaseHandler implements SessionHandlerInterface
         return true;
     }
 
-    /**
-     * @param string $id
-     *
-     * @return bool
-     */
     public function destroy(string $id): bool
     {
         DB::table('session')
@@ -140,11 +111,6 @@ class SessionDatabaseHandler implements SessionHandlerInterface
         return true;
     }
 
-    /**
-     * @param int $max_lifetime
-     *
-     * @return int
-     */
     public function gc(int $max_lifetime): int
     {
         return DB::table('session')

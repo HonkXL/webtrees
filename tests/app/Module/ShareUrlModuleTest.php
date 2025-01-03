@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class ShareUrlModule
- *
- * @covers Fisharebest\Webtrees\Module\ShareUrlModule
- */
+#[CoversClass(ShareUrlModule::class)]
 class ShareUrlModuleTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Module\ShareUrlModule::class));
+        self::assertTrue(class_exists(ShareUrlModule::class));
     }
 }

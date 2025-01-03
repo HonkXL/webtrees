@@ -66,11 +66,6 @@ class CheckForNewVersion extends AbstractModule implements MiddlewareInterface
         return I18N::translate('Check for new version');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         return I18N::translate('Send an email to all administrators when an upgrade is available.');
@@ -95,7 +90,7 @@ class CheckForNewVersion extends AbstractModule implements MiddlewareInterface
                 $old_language = I18N::languageTag();
 
                 foreach ($this->user_service->administrators() as $administrator) {
-                    I18N::init($administrator->getPreference(UserInterface::PREF_LANGUAGE));
+                    I18N::init($administrator->getPreference(UserInterface::PREF_LANGUAGE, 'en-US'));
 
                     $this->email_service->send(
                         new SiteUser(),

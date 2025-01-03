@@ -50,13 +50,11 @@ class BritishSocialHistory extends AbstractModule implements ModuleHistoricEvent
     }
 
     /**
-     * All events provided by this module.
-     *
      * @return Collection<int,string>
      */
-    public function historicEventsAll(): Collection
+    public function historicEventsAll(string $language_tag): Collection
     {
-        switch (I18N::languageTag()) {
+        switch ($language_tag) {
             case 'en-AU':
             case 'en-GB':
             case 'en-US':

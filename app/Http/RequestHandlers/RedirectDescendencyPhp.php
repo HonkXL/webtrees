@@ -21,8 +21,9 @@ namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Auth;
-use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpGoneException;
 use Fisharebest\Webtrees\Module\DescendancyChartModule;
+use Fisharebest\Webtrees\Module\ModuleChartInterface;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
@@ -38,52 +39,46 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class RedirectDescendencyPhp implements RequestHandlerInterface
 {
-    private const CHART_STYLES = [
+    private const array CHART_STYLES = [
         0 => 'tree',
         1 => 'tree',
         2 => 'individuals',
         3 => 'families',
     ];
 
-    private ModuleService $module_service;
-
-    private TreeService $tree_service;
-
-    /**
-     * @param ModuleService $module_service
-     * @param TreeService   $tree_service
-     */
-    public function __construct(ModuleService $module_service, TreeService $tree_service)
-    {
-        $this->tree_service   = $tree_service;
-        $this->module_service = $module_service;
+    public function __construct(
+        private readonly ModuleService $module_service,
+        private readonly TreeService $tree_service,
+    ) {
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $ged         = Validator::queryParams($request)->string('ged', Site::getPreference('DEFAULT_GEDCOM'));
-        $root_id     = Validator::queryParams($request)->string('rootid', '');
-        $generations = Validator::queryParams($request)->string('generations', DescendancyChartModule::DEFAULT_GENERATIONS);
-        $chart_style = Validator::queryParams($request)->string('chart_style', '');
-        $tree        = $this->tree_service->all()->get($ged);
-        $module      = $this->module_service->findByInterface(DescendancyChartModule::class)->first();
+        $ged  = Validator::queryParams($request)->string('ged', Site::getPreference('DEFAULT_GEDCOM'));
+        $tree = $this->tree_service->all()->get($ged);
 
-        if ($tree instanceof Tree && $module instanceof DescendancyChartModule) {
-            $individual = Registry::individualFactory()->make($root_id, $tree) ?? $tree->significantIndividual(Auth::user());
+        if ($tree instanceof Tree) {
+            $module = $this->module_service
+                ->findByComponent(ModuleChartInterface::class, $tree, Auth::user())
+                ->first(static fn (ModuleChartInterface $module): bool => $module instanceof DescendancyChartModule);
 
-            $url = $module->chartUrl($individual, [
-                'generations' => $generations,
-                'style'       => self::CHART_STYLES[$chart_style] ?? DescendancyChartModule::CHART_STYLE_TREE,
-            ]);
+            if ($module instanceof DescendancyChartModule) {
+                $root_id     = Validator::queryParams($request)->string('rootid', '');
+                $generations = Validator::queryParams($request)->string('generations', DescendancyChartModule::DEFAULT_GENERATIONS);
+                $chart_style = Validator::queryParams($request)->string('chart_style', '');
+                $individual  = Registry::individualFactory()->make($root_id, $tree) ?? $tree->significantIndividual(Auth::user());
 
-            return Registry::responseFactory()->redirectUrl($url, StatusCodeInterface::STATUS_MOVED_PERMANENTLY);
+                $url = $module->chartUrl($individual, [
+                    'generations' => $generations,
+                    'style'       => self::CHART_STYLES[$chart_style] ?? DescendancyChartModule::CHART_STYLE_TREE,
+                ]);
+
+                return Registry::responseFactory()
+                    ->redirectUrl($url, StatusCodeInterface::STATUS_MOVED_PERMANENTLY)
+                    ->withHeader('Link', '<' . $url . '>; rel="canonical"');
+            }
         }
 
-        throw new HttpNotFoundException();
+        throw new HttpGoneException();
     }
 }

@@ -25,14 +25,11 @@ use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\SharedNote;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class XrefSharedNote
- *
- * @covers \Fisharebest\Webtrees\Elements\AbstractElement
- * @covers \Fisharebest\Webtrees\Elements\AbstractXrefElement
- * @covers \Fisharebest\Webtrees\Elements\XrefSharedNote
- */
+#[CoversClass(AbstractElement::class)]
+#[CoversClass(AbstractXrefElement::class)]
+#[CoversClass(XrefSharedNote::class)]
 class XrefSharedNoteTest extends TestCase
 {
     public function testEdit(): void
@@ -43,7 +40,7 @@ class XrefSharedNoteTest extends TestCase
 
         $factory = $this->createMock(SharedNoteFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn(null);
 
@@ -72,11 +69,11 @@ class XrefSharedNoteTest extends TestCase
 
         $record = $this->createMock(SharedNote::class);
 
-        $record->expects(self::once())
+        $record->expects($this->once())
             ->method('fullName')
             ->willReturn('Full Name');
 
-        $record->expects(self::once())
+        $record->expects($this->once())
             ->method('url')
             ->willReturn('https://url');
 
@@ -84,10 +81,9 @@ class XrefSharedNoteTest extends TestCase
 
         $factory = $this->createMock(SharedNoteFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn($record);
-
 
         Registry::sharedNoteFactory($factory);
 
@@ -111,7 +107,7 @@ class XrefSharedNoteTest extends TestCase
 
         $factory = $this->createMock(SharedNoteFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn(null);
 

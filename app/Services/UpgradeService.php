@@ -62,24 +62,24 @@ use const PHP_VERSION;
 class UpgradeService
 {
     // Options for fetching files using GuzzleHTTP
-    private const GUZZLE_OPTIONS = [
+    private const array GUZZLE_OPTIONS = [
         'connect_timeout' => 25,
         'read_timeout'    => 25,
         'timeout'         => 55,
     ];
 
     // Transfer stream data in blocks of this number of bytes.
-    private const READ_BLOCK_SIZE = 65535;
+    private const int READ_BLOCK_SIZE = 65535;
 
     // Only check the webtrees server once per day.
-    private const CHECK_FOR_UPDATE_INTERVAL = 24 * 60 * 60;
+    private const int CHECK_FOR_UPDATE_INTERVAL = 24 * 60 * 60;
 
     // Fetch information about upgrades from here.
     // Note: earlier versions of webtrees used svn.webtrees.net, so we must maintain both URLs.
-    private const UPDATE_URL = 'https://dev.webtrees.net/build/latest-version.txt';
+    private const string UPDATE_URL = 'https://dev.webtrees.net/build/latest-version.txt';
 
     // If the update server doesn't respond after this time, give up.
-    private const HTTP_TIMEOUT = 3.0;
+    private const float HTTP_TIMEOUT = 3.0;
 
     private TimeoutService $timeout_service;
 
@@ -127,12 +127,8 @@ class UpgradeService
         $zip_filesystem = new Filesystem($zip_adapter);
 
         $files = $zip_filesystem->listContents('', FilesystemReader::LIST_DEEP)
-            ->filter(static function (StorageAttributes $attributes): bool {
-                return $attributes->isFile();
-            })
-            ->map(static function (StorageAttributes $attributes): string {
-                return $attributes->path();
-            });
+            ->filter(static fn (StorageAttributes $attributes): bool => $attributes->isFile())
+            ->map(static fn (StorageAttributes $attributes): string => $attributes->path());
 
         return new Collection($files);
     }
@@ -342,6 +338,8 @@ class UpgradeService
         $current_timestamp = time();
 
         if ($force || $last_update_timestamp < $current_timestamp - self::CHECK_FOR_UPDATE_INTERVAL) {
+            Site::setPreference('LATEST_WT_VERSION_TIMESTAMP', (string) $current_timestamp);
+
             try {
                 $client = new Client([
                     'timeout' => self::HTTP_TIMEOUT,
@@ -353,7 +351,6 @@ class UpgradeService
 
                 if ($response->getStatusCode() === StatusCodeInterface::STATUS_OK) {
                     Site::setPreference('LATEST_WT_VERSION', $response->getBody()->getContents());
-                    Site::setPreference('LATEST_WT_VERSION_TIMESTAMP', (string) $current_timestamp);
                     Site::setPreference('LATEST_WT_VERSION_ERROR', '');
                 } else {
                     Site::setPreference('LATEST_WT_VERSION_ERROR', 'HTTP' . $response->getStatusCode());
@@ -382,13 +379,11 @@ class UpgradeService
             Site::setPreference('SITE_UUID', $site_uuid);
         }
 
-        $database_type = DB::connection()->getDriverName();
-
         return [
             'w' => Webtrees::VERSION,
             'p' => PHP_VERSION,
             's' => $site_uuid,
-            'd' => $database_type,
+            'd' => DB::driverName(),
         ];
     }
 }

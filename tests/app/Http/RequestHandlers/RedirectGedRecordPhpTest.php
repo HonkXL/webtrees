@@ -24,41 +24,40 @@ use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Factories\GedcomRecordFactory;
 use Fisharebest\Webtrees\GedcomRecord;
 use Fisharebest\Webtrees\Http\Exceptions\HttpBadRequestException;
-use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpGoneException;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\RedirectGedRecordPhp
- */
+#[CoversClass(RedirectGedRecordPhp::class)]
 class RedirectGedRecordPhpTest extends TestCase
 {
     protected static bool $uses_database = true;
 
     public function testRedirect(): void
     {
-        $tree = $this->createStub(Tree::class);
+        $tree = $this->createMock(Tree::class);
         $tree
             ->method('name')
             ->willReturn('tree1');
 
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
             ->willReturn(new Collection(['tree1' => $tree]));
 
-        $gedcom_record = $this->createStub(GedcomRecord::class);
+        $gedcom_record = $this->createMock(GedcomRecord::class);
         $gedcom_record
             ->method('url')
             ->willReturn('https://www.example.com');
 
-        $gedcom_record_factory = $this->createStub(GedcomRecordFactory::class);
+        $gedcom_record_factory = $this->createMock(GedcomRecordFactory::class);
         $gedcom_record_factory
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('make')
             ->with('X123', $tree)
             ->willReturn($gedcom_record);
@@ -80,13 +79,13 @@ class RedirectGedRecordPhpTest extends TestCase
 
     public function testNoSuchRecord(): void
     {
-        $tree = $this->createStub(Tree::class);
+        $tree = $this->createMock(Tree::class);
 
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
-            ->willReturn(new Collection([$tree]));
+            ->willReturn(new Collection(['tree1' => $tree]));
 
         $handler = new RedirectGedRecordPhp($tree_service);
 
@@ -95,14 +94,14 @@ class RedirectGedRecordPhpTest extends TestCase
             ['ged' => 'tree1', 'pid' => 'X123']
         );
 
-        $this->expectException(HttpNotFoundException::class);
+        $this->expectException(HttpGoneException::class);
 
         $handler->handle($request);
     }
 
     public function testMissingXrefParameter(): void
     {
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
 
         $handler = new RedirectGedRecordPhp($tree_service);
 

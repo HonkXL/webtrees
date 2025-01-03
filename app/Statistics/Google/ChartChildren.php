@@ -25,7 +25,6 @@ use Fisharebest\Webtrees\Statistics\Service\CenturyService;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
-use stdClass;
 
 /**
  * A chart showing the average number of children by century.
@@ -49,7 +48,7 @@ class ChartChildren
     /**
      * Returns the related database records.
      *
-     * @return Collection<array-key,stdClass>
+     * @return Collection<array-key,object>
      */
     private function queryRecords(): Collection
     {
@@ -67,12 +66,10 @@ class ChartChildren
             ->groupBy(['century'])
             ->orderBy('century')
             ->get()
-            ->map(static function (object $row): object {
-                return (object) [
-                    'century' => (int) $row->century,
-                    'total'   => (float) $row->total,
-                ];
-            });
+            ->map(static fn (object $row): object => (object) [
+                'century' => (int) $row->century,
+                'total'   => (float) $row->total,
+            ]);
     }
 
     /**

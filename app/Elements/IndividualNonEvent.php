@@ -29,12 +29,11 @@ use function strtoupper;
  */
 class IndividualNonEvent extends AbstractElement
 {
-    protected const SUBTAGS = [
+    protected const array SUBTAGS = [
         'DATE' => '0:1',
         'NOTE' => '0:1',
         'SOUR' => '0:1',
     ];
-
 
     /**
      * Convert a value to a canonical form.

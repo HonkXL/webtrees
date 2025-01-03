@@ -19,9 +19,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees;
 
-use Closure;
-use ErrorException;
-use Fisharebest\Webtrees\Contracts\ContainerInterface;
+use Fisharebest\Webtrees\Cli\Console;
 use Fisharebest\Webtrees\Factories\CacheFactory;
 use Fisharebest\Webtrees\Factories\CalendarDateFactory;
 use Fisharebest\Webtrees\Factories\ElementFactory;
@@ -50,6 +48,7 @@ use Fisharebest\Webtrees\Factories\TimeFactory;
 use Fisharebest\Webtrees\Factories\TimestampFactory;
 use Fisharebest\Webtrees\Factories\XrefFactory;
 use Fisharebest\Webtrees\GedcomFilters\GedcomEncodingFilter;
+use Fisharebest\Webtrees\Http\Dispatcher;
 use Fisharebest\Webtrees\Http\Middleware\BadBotBlocker;
 use Fisharebest\Webtrees\Http\Middleware\BaseUrl;
 use Fisharebest\Webtrees\Http\Middleware\BootModules;
@@ -60,9 +59,9 @@ use Fisharebest\Webtrees\Http\Middleware\CompressResponse;
 use Fisharebest\Webtrees\Http\Middleware\ContentLength;
 use Fisharebest\Webtrees\Http\Middleware\DoHousekeeping;
 use Fisharebest\Webtrees\Http\Middleware\EmitResponse;
+use Fisharebest\Webtrees\Http\Middleware\ErrorHandler;
 use Fisharebest\Webtrees\Http\Middleware\HandleExceptions;
 use Fisharebest\Webtrees\Http\Middleware\LoadRoutes;
-use Fisharebest\Webtrees\Http\Middleware\NoRouteFound;
 use Fisharebest\Webtrees\Http\Middleware\PublicFiles;
 use Fisharebest\Webtrees\Http\Middleware\ReadConfigIni;
 use Fisharebest\Webtrees\Http\Middleware\RegisterGedcomTags;
@@ -74,7 +73,6 @@ use Fisharebest\Webtrees\Http\Middleware\UseLanguage;
 use Fisharebest\Webtrees\Http\Middleware\UseSession;
 use Fisharebest\Webtrees\Http\Middleware\UseTheme;
 use Fisharebest\Webtrees\Http\Middleware\UseTransaction;
-use Middleland\Dispatcher;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -87,13 +85,11 @@ use Psr\Http\Message\UriFactoryInterface;
 use function date_default_timezone_set;
 use function error_reporting;
 use function mb_internal_encoding;
-use function set_error_handler;
 use function stream_filter_register;
 
 use const E_ALL;
 use const E_DEPRECATED;
 use const E_USER_DEPRECATED;
-use const PHP_SAPI;
 
 /**
  * Definitions for the webtrees application.
@@ -101,62 +97,63 @@ use const PHP_SAPI;
 class Webtrees
 {
     // The root folder of this installation
-    public const ROOT_DIR = __DIR__ . '/../';
+    public const string ROOT_DIR = __DIR__ . '/../';
 
     // This is the location of system data, such as temporary and cache files.
     // The system files are always in this location.
     // It is also the default location of user data, such as media and GEDCOM files.
     // The user files could be anywhere supported by Flysystem.
-    public const DATA_DIR = self::ROOT_DIR . 'data/';
+    public const string DATA_DIR = self::ROOT_DIR . 'data/';
 
     // Location of the file containing the database connection details.
-    public const CONFIG_FILE = self::DATA_DIR . 'config.ini.php';
+    public const string CONFIG_FILE = self::DATA_DIR . 'config.ini.php';
 
     // Location of the file that triggers maintenance mode.
-    public const OFFLINE_FILE = self::DATA_DIR . 'offline.txt';
+    public const string OFFLINE_FILE = self::DATA_DIR . 'offline.txt';
 
     // Location of our modules.
-    public const MODULES_PATH = 'modules_v4/';
-    public const MODULES_DIR  = self::ROOT_DIR . self::MODULES_PATH;
+    public const string MODULES_PATH = 'modules_v4/';
+    public const string MODULES_DIR  = self::ROOT_DIR . self::MODULES_PATH;
 
     // Enable debugging on development builds.
-    public const DEBUG = self::STABILITY !== '';
+    public const bool DEBUG = self::STABILITY !== '';
 
     // We want to know about all PHP errors during development, and fewer in production.
-    public const ERROR_REPORTING = self::DEBUG ? E_ALL : E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED;
+    public const int ERROR_REPORTING = self::DEBUG ? E_ALL : E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED;
 
     // Page layouts for various page types.
-    public const LAYOUT_ADMINISTRATION = 'layouts/administration';
-    public const LAYOUT_AJAX           = 'layouts/ajax';
-    public const LAYOUT_DEFAULT        = 'layouts/default';
-    public const LAYOUT_ERROR          = 'layouts/error';
+    public const string LAYOUT_ADMINISTRATION = 'layouts/administration';
+    public const string LAYOUT_AJAX    = 'layouts/ajax';
+    public const string LAYOUT_DEFAULT = 'layouts/default';
+    public const string LAYOUT_ERROR   = 'layouts/error';
 
     // The name of the application.
-    public const NAME = 'webtrees';
+    public const string NAME = 'webtrees';
 
     // Required version of database tables/columns/indexes/etc.
-    public const SCHEMA_VERSION = 45;
+    public const int SCHEMA_VERSION = 45;
 
     // e.g. "-dev", "-alpha", "-beta", etc.
-    public const STABILITY = '-dev';
+    public const string STABILITY = '-dev';
 
     // Version number.
-    public const VERSION = '2.2.0' . self::STABILITY;
+    public const string VERSION = '2.2.2' . self::STABILITY;
 
     // Project website.
-    public const URL = 'https://webtrees.net/';
+    public const string URL = 'https://webtrees.net/';
 
     // FAQ links.
-    public const URL_FAQ_EMAIL = 'https://webtrees.net/faq/email';
+    public const string URL_FAQ_EMAIL = 'https://webtrees.net/faq/email';
 
     // GEDCOM specification.
-    public const GEDCOM_PDF = 'https://webtrees.net/downloads/gedcom-5-5-1.pdf';
+    public const string GEDCOM_PDF = 'https://webtrees.net/downloads/gedcom-5-5-1.pdf';
 
-    private const MIDDLEWARE = [
+    private const array MIDDLEWARE = [
+        ErrorHandler::class,
         EmitResponse::class,
-        SecurityHeaders::class,
         ReadConfigIni::class,
         BaseUrl::class,
+        SecurityHeaders::class,
         HandleExceptions::class,
         PublicFiles::class,
         ClientIp::class,
@@ -176,19 +173,20 @@ class Webtrees
         RegisterGedcomTags::class,
         BootModules::class,
         Router::class,
-        NoRouteFound::class,
     ];
+
+    public static function new(): self
+    {
+        return new self();
+    }
 
     /**
      * Initialise the application.
-     *
-     * @return static
      */
-    public function bootstrap(): static
+    public function bootstrap(): self
     {
         // Show all errors and warnings in development, fewer in production.
         error_reporting(self::ERROR_REPORTING);
-        set_error_handler($this->phpErrorHandler());
 
         // All modern software uses UTF-8 encoding.
         mb_internal_encoding('UTF-8');
@@ -241,32 +239,28 @@ class Webtrees
 
     /**
      * Run the application.
-     *
-     * @return void
      */
-    public function run(): void
+    public function run(string $php_sapi): int|ResponseInterface
     {
-        if (PHP_SAPI === 'cli') {
-            $this->cliRequest();
-        } else {
-            $this->httpRequest();
-        };
+        if ($php_sapi === 'cli') {
+            return $this->bootstrap()->cliRequest();
+        }
+
+        return $this->bootstrap()->httpRequest();
     }
 
     /**
      * Respond to a CLI request.
-     *
-     * @return void
      */
-    public function cliRequest(): void
+    public function cliRequest(): int
     {
-        // CLI handler will go here.
+        $console = new Console();
+
+        return $console->loadCommands()->bootstrap()->run();
     }
 
     /**
      * Respond to an HTTP request.
-     *
-     * @return ResponseInterface
      */
     public function httpRequest(): ResponseInterface
     {
@@ -279,25 +273,6 @@ class Webtrees
 
         $request = $server_request_creator->fromGlobals();
 
-        $dispatcher = new Dispatcher(self::MIDDLEWARE, Registry::container());
-
-        return $dispatcher->dispatch($request);
-    }
-
-    /**
-     * An error handler that can be passed to set_error_handler().
-     *
-     * @return Closure(int,string,string,int):bool
-     */
-    private function phpErrorHandler(): Closure
-    {
-        return static function (int $errno, string $errstr, string $errfile, int $errline): bool {
-            // Ignore errors that are silenced with '@'
-            if (error_reporting() & $errno) {
-                throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-            }
-
-            return true;
-        };
+        return Dispatcher::dispatch(middleware: self::MIDDLEWARE, request: $request);
     }
 }

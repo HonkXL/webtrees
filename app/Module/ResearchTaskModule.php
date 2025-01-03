@@ -44,16 +44,16 @@ class ResearchTaskModule extends AbstractModule implements ModuleBlockInterface
 {
     use ModuleBlockTrait;
 
-    private const DEFAULT_SHOW_OTHER      = '1';
-    private const DEFAULT_SHOW_UNASSIGNED = '1';
-    private const DEFAULT_SHOW_FUTURE     = '1';
+    private const string DEFAULT_SHOW_OTHER      = '1';
+    private const string DEFAULT_SHOW_UNASSIGNED = '1';
+    private const string DEFAULT_SHOW_FUTURE     = '1';
 
     // 31 DEC 9999
-    private const MAXIMUM_JULIAN_DAY = 5373484;
+    private const int MAXIMUM_JULIAN_DAY = 5373484;
 
     // Pagination
-    private const LIMIT_LOW  = 10;
-    private const LIMIT_HIGH = 20;
+    private const int LIMIT_LOW  = 10;
+    private const int LIMIT_HIGH = 20;
 
     /**
      * Early initialisation.  Called before most of the middleware.
@@ -75,11 +75,6 @@ class ResearchTaskModule extends AbstractModule implements ModuleBlockInterface
         Registry::elementFactory()->make('INDI')->subtag('_TODO', '0:M');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of “Research tasks” module */

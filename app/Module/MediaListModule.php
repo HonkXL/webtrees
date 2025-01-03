@@ -52,7 +52,7 @@ class MediaListModule extends AbstractModule implements ModuleListInterface, Req
 {
     use ModuleListTrait;
 
-    protected const ROUTE_URL = '/tree/{tree}/media-list';
+    protected const string ROUTE_URL = '/tree/{tree}/media-list';
 
     private LinkedRecordService $linked_record_service;
 
@@ -87,11 +87,6 @@ class MediaListModule extends AbstractModule implements ModuleListInterface, Req
         return I18N::translate('Media objects');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Media objects” module */
@@ -226,9 +221,7 @@ class MediaListModule extends AbstractModule implements ModuleListInterface, Req
             ->where('multimedia_file_refn', 'NOT LIKE', 'https:%')
             ->where('multimedia_file_refn', 'LIKE', '%/%')
             ->pluck('multimedia_file_refn', 'multimedia_file_refn')
-            ->map(static function (string $path): string {
-                return dirname($path);
-            })
+            ->map(static fn (string $path): string => dirname($path))
             ->uniqueStrict()
             ->sort()
             ->all();
@@ -293,7 +286,7 @@ class MediaListModule extends AbstractModule implements ModuleListInterface, Req
             });
         }
 
-        if ($format) {
+        if ($format !== '') {
             $query->where('source_media_type', '=', $format);
         }
 

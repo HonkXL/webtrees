@@ -19,11 +19,9 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees;
 
-/**
- * Test harness for the class Repository
- *
- * @covers \Fisharebest\Webtrees\Repository
- */
+use PHPUnit\Framework\Attributes\CoversClass;
+
+#[CoversClass(Repository::class)]
 class RepositoryTest extends TestCase
 {
     /**

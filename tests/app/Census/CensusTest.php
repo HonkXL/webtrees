@@ -20,15 +20,11 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Census;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class Census
- */
+#[CoversClass(Census::class)]
 class CensusTest extends TestCase
 {
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesCzech(): void
     {
         $censuses = Census::censusPlaces('cs');
@@ -47,9 +43,6 @@ class CensusTest extends TestCase
         self::assertInstanceOf(CensusOfCanada::class, $censuses[10]);
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesDanish(): void
     {
         $censuses = Census::censusPlaces('da');
@@ -68,9 +61,6 @@ class CensusTest extends TestCase
         self::assertInstanceOf(CensusOfCanada::class, $censuses[10]);
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesGerman(): void
     {
         $censuses = Census::censusPlaces('de');
@@ -89,9 +79,6 @@ class CensusTest extends TestCase
         self::assertInstanceOf(CensusOfCanada::class, $censuses[10]);
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesAustralianEnglish(): void
     {
         $censuses = Census::censusPlaces('en-AU');
@@ -110,9 +97,6 @@ class CensusTest extends TestCase
         self::assertInstanceOf(CensusOfSlovakia::class, $censuses[10]);
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesBritishEnglish(): void
     {
         $censuses = Census::censusPlaces('en-GB');
@@ -131,9 +115,6 @@ class CensusTest extends TestCase
         self::assertInstanceOf(CensusOfSlovakia::class, $censuses[10]);
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesUSEnglish(): void
     {
         $censuses = Census::censusPlaces('en-US');
@@ -152,9 +133,6 @@ class CensusTest extends TestCase
         self::assertInstanceOf(CensusOfWales::class, $censuses[10]);
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesFrench(): void
     {
         $censuses = Census::censusPlaces('fr');
@@ -173,9 +151,6 @@ class CensusTest extends TestCase
         self::assertInstanceOf(CensusOfWales::class, $censuses[10]);
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesCanadianFrench(): void
     {
         $censuses = Census::censusPlaces('fr-CA');
@@ -194,9 +169,6 @@ class CensusTest extends TestCase
         self::assertInstanceOf(CensusOfWales::class, $censuses[10]);
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesSlovak(): void
     {
         $censuses = Census::censusPlaces('sk');
@@ -215,9 +187,6 @@ class CensusTest extends TestCase
         self::assertInstanceOf(CensusOfCanada::class, $censuses[10]);
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\Census
-     */
     public function testCensusPlacesDefault(): void
     {
         $censuses = Census::censusPlaces('XX');

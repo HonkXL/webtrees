@@ -29,7 +29,7 @@ use Fisharebest\Webtrees\Individual;
 class LithuanianSurnameTradition extends PaternalSurnameTradition
 {
     // Inflect a surname for wives
-    private const INFLECT_WIFE = [
+    private const array INFLECT_WIFE = [
         'as\b' => 'ienė',
         'is\b' => 'ienė',
         'ys\b' => 'ienė',
@@ -37,7 +37,7 @@ class LithuanianSurnameTradition extends PaternalSurnameTradition
     ];
 
     // Inflect a surname for daughters
-    private const INFLECT_DAUGHTER = [
+    private const array INFLECT_DAUGHTER = [
         'a\b'   => 'aitė',
         'as\b'  => 'aitė',
         'is\b'  => 'ytė',
@@ -47,7 +47,7 @@ class LithuanianSurnameTradition extends PaternalSurnameTradition
     ];
 
     // Inflect a surname for males
-    private const INFLECT_MALE = [
+    private const array INFLECT_MALE = [
         'aitė\b' => 'as',
         'ytė\b'  => 'is',
         'iūtė\b' => 'ius',
@@ -75,7 +75,7 @@ class LithuanianSurnameTradition extends PaternalSurnameTradition
         return
             I18N::translate('Children take their father’s surname.') . ' ' .
             I18N::translate('Wives take their husband’s surname.') . ' ' .
-            I18N::translate('Surnames are inflected to indicate an individual’s gender and marital status.');
+            I18N::translate('Surnames are inflected to indicate an individual’s sex and marital status.');
     }
 
     /**
@@ -87,7 +87,7 @@ class LithuanianSurnameTradition extends PaternalSurnameTradition
      *
      * @return array<int,string>
      */
-    public function newChildNames(?Individual $father, ?Individual $mother, string $sex): array
+    public function newChildNames(Individual|null $father, Individual|null $mother, string $sex): array
     {
         if (preg_match(self::REGEX_SURN, $this->extractName($father), $match) === 1) {
             if ($sex === 'F') {

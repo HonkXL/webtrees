@@ -21,8 +21,9 @@ namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Auth;
-use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpGoneException;
 use Fisharebest\Webtrees\Module\FamilyBookChartModule;
+use Fisharebest\Webtrees\Module\ModuleChartInterface;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
@@ -38,45 +39,39 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class RedirectFamilyBookPhp implements RequestHandlerInterface
 {
-    private ModuleService $module_service;
-
-    private TreeService $tree_service;
-
-    /**
-     * @param ModuleService $module_service
-     * @param TreeService   $tree_service
-     */
-    public function __construct(ModuleService $module_service, TreeService $tree_service)
-    {
-        $this->tree_service   = $tree_service;
-        $this->module_service = $module_service;
+    public function __construct(
+        private readonly ModuleService $module_service,
+        private readonly TreeService $tree_service,
+    ) {
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $ged         = Validator::queryParams($request)->string('ged', Site::getPreference('DEFAULT_GEDCOM'));
-        $root_id     = Validator::queryParams($request)->string('rootid', '');
-        $generations = Validator::queryParams($request)->string('generations', FamilyBookChartModule::DEFAULT_GENERATIONS);
-        $descent     = Validator::queryParams($request)->string('descent', FamilyBookChartModule::DEFAULT_DESCENDANT_GENERATIONS);
-        $tree        = $this->tree_service->all()->get($ged);
-        $module      = $this->module_service->findByInterface(FamilyBookChartModule::class)->first();
+        $ged  = Validator::queryParams($request)->string('ged', Site::getPreference('DEFAULT_GEDCOM'));
+        $tree = $this->tree_service->all()->get($ged);
 
-        if ($tree instanceof Tree && $module instanceof FamilyBookChartModule) {
-            $individual = Registry::individualFactory()->make($root_id, $tree) ?? $tree->significantIndividual(Auth::user());
+        if ($tree instanceof Tree) {
+            $module = $this->module_service
+                ->findByComponent(ModuleChartInterface::class, $tree, Auth::user())
+                ->first(static fn (ModuleChartInterface $module): bool => $module instanceof FamilyBookChartModule);
 
-            $url = $module->chartUrl($individual, [
-                'book_size'   => $generations,
-                'generations' => $descent,
-            ]);
+            if ($module instanceof FamilyBookChartModule) {
+                $root_id     = Validator::queryParams($request)->string('rootid', '');
+                $generations = Validator::queryParams($request)->string('generations', FamilyBookChartModule::DEFAULT_GENERATIONS);
+                $descent     = Validator::queryParams($request)->string('descent', FamilyBookChartModule::DEFAULT_DESCENDANT_GENERATIONS);
+                $individual  = Registry::individualFactory()->make($root_id, $tree) ?? $tree->significantIndividual(Auth::user());
 
-            return Registry::responseFactory()->redirectUrl($url, StatusCodeInterface::STATUS_MOVED_PERMANENTLY);
+                $url = $module->chartUrl($individual, [
+                    'book_size'   => $generations,
+                    'generations' => $descent,
+                ]);
+
+                return Registry::responseFactory()
+                    ->redirectUrl($url, StatusCodeInterface::STATUS_MOVED_PERMANENTLY)
+                    ->withHeader('Link', '<' . $url . '>; rel="canonical"');
+            }
         }
 
-        throw new HttpNotFoundException();
+        throw new HttpGoneException();
     }
 }

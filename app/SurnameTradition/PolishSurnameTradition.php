@@ -29,7 +29,7 @@ use Fisharebest\Webtrees\Individual;
 class PolishSurnameTradition extends PaternalSurnameTradition
 {
     // Inflect a surname for females
-    private const INFLECT_FEMALE = [
+    private const array INFLECT_FEMALE = [
         'cki\b'  => 'cka',
         'dzki\b' => 'dzka',
         'ski\b'  => 'ska',
@@ -37,7 +37,7 @@ class PolishSurnameTradition extends PaternalSurnameTradition
     ];
 
     // Inflect a surname for males
-    private const INFLECT_MALE = [
+    private const array INFLECT_MALE = [
         'cka\b'  => 'cki',
         'dzka\b' => 'dzki',
         'ska\b'  => 'ski',
@@ -65,7 +65,7 @@ class PolishSurnameTradition extends PaternalSurnameTradition
         return
             I18N::translate('Children take their father’s surname.') . ' ' .
             I18N::translate('Wives take their husband’s surname.') . ' ' .
-            I18N::translate('Surnames are inflected to indicate an individual’s gender.');
+            I18N::translate('Surnames are inflected to indicate an individual’s sex.');
     }
 
     /**
@@ -77,7 +77,7 @@ class PolishSurnameTradition extends PaternalSurnameTradition
      *
      * @return array<int,string>
      */
-    public function newChildNames(?Individual $father, ?Individual $mother, string $sex): array
+    public function newChildNames(Individual|null $father, Individual|null $mother, string $sex): array
     {
         if (preg_match(self::REGEX_SURN, $this->extractName($father), $match) === 1) {
             if ($sex === 'F') {

@@ -19,11 +19,9 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees;
 
-/**
- * Test harness for the class Stats
- *
- * @covers \Fisharebest\Webtrees\Statistics
- */
+use PHPUnit\Framework\Attributes\CoversClass;
+
+#[CoversClass(Statistics::class)]
 class StatsTest extends TestCase
 {
     /**

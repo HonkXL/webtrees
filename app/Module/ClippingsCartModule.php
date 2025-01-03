@@ -83,17 +83,17 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
     use ModuleMenuTrait;
 
     // What to add to the cart?
-    private const ADD_RECORD_ONLY        = 'record';
-    private const ADD_CHILDREN           = 'children';
-    private const ADD_DESCENDANTS        = 'descendants';
-    private const ADD_PARENT_FAMILIES    = 'parents';
-    private const ADD_SPOUSE_FAMILIES    = 'spouses';
-    private const ADD_ANCESTORS          = 'ancestors';
-    private const ADD_ANCESTOR_FAMILIES  = 'families';
-    private const ADD_LINKED_INDIVIDUALS = 'linked';
+    private const string ADD_RECORD_ONLY        = 'record';
+    private const string ADD_CHILDREN           = 'children';
+    private const string ADD_DESCENDANTS        = 'descendants';
+    private const string ADD_PARENT_FAMILIES    = 'parents';
+    private const string ADD_SPOUSE_FAMILIES    = 'spouses';
+    private const string ADD_ANCESTORS          = 'ancestors';
+    private const string ADD_ANCESTOR_FAMILIES  = 'families';
+    private const string ADD_LINKED_INDIVIDUALS = 'linked';
 
     // Routes that have a record which can be added to the clipboard
-    private const ROUTES_WITH_RECORDS = [
+    private const array ROUTES_WITH_RECORDS = [
         'Family'     => FamilyPage::class,
         'Individual' => IndividualPage::class,
         'Media'      => MediaPage::class,
@@ -111,10 +111,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
 
     private LinkedRecordService $linked_record_service;
 
-    /**
-     * @param GedcomExportService $gedcom_export_service
-     * @param LinkedRecordService $linked_record_service
-     */
     public function __construct(
         GedcomExportService $gedcom_export_service,
         LinkedRecordService $linked_record_service
@@ -123,35 +119,18 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         $this->linked_record_service = $linked_record_service;
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Clippings cart” module */
         return I18N::translate('Select records from your family tree and save them as a GEDCOM file.');
     }
 
-    /**
-     * The default position for this menu.  It can be changed in the control panel.
-     *
-     * @return int
-     */
     public function defaultMenuOrder(): int
     {
         return 6;
     }
 
-    /**
-     * A menu, to be added to the main application menu.
-     *
-     * @param Tree $tree
-     *
-     * @return Menu|null
-     */
-    public function getMenu(Tree $tree): ?Menu
+    public function getMenu(Tree $tree): Menu|null
     {
         $request = Registry::container()->get(ServerRequestInterface::class);
         $route   = Validator::attributes($request)->route();
@@ -200,22 +179,12 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return new Menu($this->title(), '#', 'menu-clippings', ['rel' => 'nofollow'], $submenus);
     }
 
-    /**
-     * How should this module be identified in the control panel, etc.?
-     *
-     * @return string
-     */
     public function title(): string
     {
         /* I18N: Name of a module */
         return I18N::translate('Clippings cart');
     }
 
-    /**
-     * @param Tree $tree
-     *
-     * @return bool
-     */
     private function isCartEmpty(Tree $tree): bool
     {
         $cart     = Session::get('cart');
@@ -225,11 +194,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return $contents === [];
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getDownloadFormAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = Validator::attributes($request)->tree();
@@ -250,11 +214,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         ]);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postDownloadAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = Validator::attributes($request)->tree();
@@ -302,29 +261,29 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         foreach ($xrefs as $xref) {
             $object = Registry::gedcomRecordFactory()->make($xref, $tree);
             // The object may have been deleted since we added it to the cart....
-            if ($object instanceof GedcomRecord) {
-                $record = $object->privatizeGedcom($access_level);
+            if ($object instanceof GedcomRecord && $object->canShow($access_level)) {
+                $gedcom = $object->privatizeGedcom($access_level);
+
                 // Remove links to objects that aren't in the cart
-                preg_match_all('/\n1 ' . Gedcom::REGEX_TAG . ' @(' . Gedcom::REGEX_XREF . ')@(\n[2-9].*)*/', $record, $matches, PREG_SET_ORDER);
-                foreach ($matches as $match) {
-                    if (!in_array($match[1], $xrefs, true)) {
-                        $record = str_replace($match[0], '', $record);
-                    }
-                }
-                preg_match_all('/\n2 ' . Gedcom::REGEX_TAG . ' @(' . Gedcom::REGEX_XREF . ')@(\n[3-9].*)*/', $record, $matches, PREG_SET_ORDER);
-                foreach ($matches as $match) {
-                    if (!in_array($match[1], $xrefs, true)) {
-                        $record = str_replace($match[0], '', $record);
-                    }
-                }
-                preg_match_all('/\n3 ' . Gedcom::REGEX_TAG . ' @(' . Gedcom::REGEX_XREF . ')@(\n[4-9].*)*/', $record, $matches, PREG_SET_ORDER);
-                foreach ($matches as $match) {
-                    if (!in_array($match[1], $xrefs, true)) {
-                        $record = str_replace($match[0], '', $record);
+                $patterns = [
+                    '/\n1 ' . Gedcom::REGEX_TAG . ' @(' . Gedcom::REGEX_XREF . ')@(?:\n[2-9].*)*/',
+                    '/\n2 ' . Gedcom::REGEX_TAG . ' @(' . Gedcom::REGEX_XREF . ')@(?:\n[3-9].*)*/',
+                    '/\n3 ' . Gedcom::REGEX_TAG . ' @(' . Gedcom::REGEX_XREF . ')@(?:\n[4-9].*)*/',
+                    '/\n4 ' . Gedcom::REGEX_TAG . ' @(' . Gedcom::REGEX_XREF . ')@(?:\n[5-9].*)*/',
+                ];
+
+                foreach ($patterns as $pattern) {
+                    preg_match_all($pattern, $gedcom, $matches, PREG_SET_ORDER);
+
+                    foreach ($matches as $match) {
+                        if (!in_array($match[1], $xrefs, true)) {
+                            // Remove the reference to any object that isn't in the cart
+                            $gedcom = str_replace($match[0], '', $gedcom);
+                        }
                     }
                 }
 
-                $records->add($record);
+                $records->add($gedcom);
             }
         }
 
@@ -332,11 +291,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return $this->gedcom_export_service->downloadResponse($tree, false, $encoding, 'none', $line_endings, $filename, $format, $records);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getEmptyAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = Validator::attributes($request)->tree();
@@ -356,11 +310,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($url);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postRemoveAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = Validator::attributes($request)->tree();
@@ -380,11 +329,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($url);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getShowAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = Validator::attributes($request)->tree();
@@ -398,10 +342,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
     }
 
     /**
-     * Get all the records in the cart.
-     *
-     * @param Tree $tree
-     *
      * @return array<GedcomRecord>
      */
     private function allRecordsInCart(Tree $tree): array
@@ -413,26 +353,17 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         $xrefs = array_map('strval', $xrefs); // PHP converts numeric keys to integers.
 
         // Fetch all the records in the cart.
-        $records = array_map(static function (string $xref) use ($tree): ?GedcomRecord {
-            return Registry::gedcomRecordFactory()->make($xref, $tree);
-        }, $xrefs);
+        $records = array_map(static fn (string $xref): GedcomRecord|null => Registry::gedcomRecordFactory()->make($xref, $tree), $xrefs);
 
         // Some records may have been deleted after they were added to the cart.
         $records = array_filter($records);
 
         // Group and sort.
-        uasort($records, static function (GedcomRecord $x, GedcomRecord $y): int {
-            return $x->tag() <=> $y->tag() ?: GedcomRecord::nameComparator()($x, $y);
-        });
+        uasort($records, static fn (GedcomRecord $x, GedcomRecord $y): int => $x->tag() <=> $y->tag() ?: GedcomRecord::nameComparator()($x, $y));
 
         return $records;
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getAddFamilyAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree   = Validator::attributes($request)->tree();
@@ -459,11 +390,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         ]);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postAddFamilyAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree   = Validator::attributes($request)->tree();
@@ -490,12 +416,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($family->url());
     }
 
-
-    /**
-     * @param Family $family
-     *
-     * @return void
-     */
     protected function addFamilyAndChildrenToCart(Family $family): void
     {
         $this->addFamilyToCart($family);
@@ -505,11 +425,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param Family $family
-     *
-     * @return void
-     */
     protected function addFamilyAndDescendantsToCart(Family $family): void
     {
         $this->addFamilyAndChildrenToCart($family);
@@ -521,11 +436,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getAddIndividualAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree       = Validator::attributes($request)->tree();
@@ -564,11 +474,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         ]);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postAddIndividualAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree   = Validator::attributes($request)->tree();
@@ -613,11 +518,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($individual->url());
     }
 
-    /**
-     * @param Individual $individual
-     *
-     * @return void
-     */
     protected function addAncestorsToCart(Individual $individual): void
     {
         $this->addIndividualToCart($individual);
@@ -631,11 +531,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param Individual $individual
-     *
-     * @return void
-     */
     protected function addAncestorFamiliesToCart(Individual $individual): void
     {
         foreach ($individual->childFamilies() as $family) {
@@ -647,11 +542,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getAddLocationAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree     = Validator::attributes($request)->tree();
@@ -674,11 +564,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         ]);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postAddLocationAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree     = Validator::attributes($request)->tree();
@@ -691,11 +576,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($location->url());
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getAddMediaAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree  = Validator::attributes($request)->tree();
@@ -718,11 +598,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         ]);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postAddMediaAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree  = Validator::attributes($request)->tree();
@@ -735,11 +610,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($media->url());
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getAddNoteAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = Validator::attributes($request)->tree();
@@ -762,11 +632,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         ]);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postAddNoteAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree = Validator::attributes($request)->tree();
@@ -779,11 +644,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($note->url());
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getAddRepositoryAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree       = Validator::attributes($request)->tree();
@@ -806,11 +666,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         ]);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postAddRepositoryAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree       = Validator::attributes($request)->tree();
@@ -827,11 +682,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($repository->url());
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getAddSourceAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree   = Validator::attributes($request)->tree();
@@ -855,11 +705,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         ]);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postAddSourceAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree   = Validator::attributes($request)->tree();
@@ -883,11 +728,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($source->url());
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function getAddSubmitterAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree      = Validator::attributes($request)->tree();
@@ -910,11 +750,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         ]);
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function postAddSubmitterAction(ServerRequestInterface $request): ResponseInterface
     {
         $tree      = Validator::attributes($request)->tree();
@@ -927,9 +762,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         return redirect($submitter->url());
     }
 
-    /**
-     * @param Family $family
-     */
     protected function addFamilyToCart(Family $family): void
     {
         $cart = Session::get('cart');
@@ -955,9 +787,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param Individual $individual
-     */
     protected function addIndividualToCart(Individual $individual): void
     {
         $cart = Session::get('cart');
@@ -978,9 +807,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param Location $location
-     */
     protected function addLocationToCart(Location $location): void
     {
         $cart = Session::get('cart');
@@ -1001,9 +827,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param GedcomRecord $record
-     */
     protected function addLocationLinksToCart(GedcomRecord $record): void
     {
         preg_match_all('/\n\d _LOC @(' . Gedcom::REGEX_XREF . ')@/', $record->gedcom(), $matches);
@@ -1017,9 +840,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param Media $media
-     */
     protected function addMediaToCart(Media $media): void
     {
         $cart = Session::get('cart');
@@ -1037,9 +857,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param GedcomRecord $record
-     */
     protected function addMediaLinksToCart(GedcomRecord $record): void
     {
         preg_match_all('/\n\d OBJE @(' . Gedcom::REGEX_XREF . ')@/', $record->gedcom(), $matches);
@@ -1053,9 +870,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param Note $note
-     */
     protected function addNoteToCart(Note $note): void
     {
         $cart = Session::get('cart');
@@ -1071,9 +885,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param GedcomRecord $record
-     */
     protected function addNoteLinksToCart(GedcomRecord $record): void
     {
         preg_match_all('/\n\d NOTE @(' . Gedcom::REGEX_XREF . ')@/', $record->gedcom(), $matches);
@@ -1087,9 +898,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param Source $source
-     */
     protected function addSourceToCart(Source $source): void
     {
         $cart = Session::get('cart');
@@ -1108,9 +916,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param GedcomRecord $record
-     */
     protected function addSourceLinksToCart(GedcomRecord $record): void
     {
         preg_match_all('/\n\d SOUR @(' . Gedcom::REGEX_XREF . ')@/', $record->gedcom(), $matches);
@@ -1124,9 +929,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param Repository $repository
-     */
     protected function addRepositoryToCart(Repository $repository): void
     {
         $cart = Session::get('cart');
@@ -1144,12 +946,9 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param GedcomRecord $record
-     */
     protected function addRepositoryLinksToCart(GedcomRecord $record): void
     {
-        preg_match_all('/\n\d REPO @(' . Gedcom::REGEX_XREF . '@)/', $record->gedcom(), $matches);
+        preg_match_all('/\n\d REPO @(' . Gedcom::REGEX_XREF . ')@/', $record->gedcom(), $matches);
 
         foreach ($matches[1] as $xref) {
             $repository = Registry::repositoryFactory()->make($xref, $record->tree());
@@ -1160,9 +959,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param Submitter $submitter
-     */
     protected function addSubmitterToCart(Submitter $submitter): void
     {
         $cart = Session::get('cart');
@@ -1179,9 +975,6 @@ class ClippingsCartModule extends AbstractModule implements ModuleMenuInterface
         }
     }
 
-    /**
-     * @param GedcomRecord $record
-     */
     protected function addSubmitterLinksToCart(GedcomRecord $record): void
     {
         preg_match_all('/\n\d SUBM @(' . Gedcom::REGEX_XREF . ')@/', $record->gedcom(), $matches);

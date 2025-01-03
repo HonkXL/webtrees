@@ -25,15 +25,12 @@ use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Source;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Http\Message\ServerRequestInterface;
 
-/**
- * Test harness for the class XrefSource
- *
- * @covers \Fisharebest\Webtrees\Elements\AbstractElement
- * @covers \Fisharebest\Webtrees\Elements\AbstractXrefElement
- * @covers \Fisharebest\Webtrees\Elements\XrefSource
- */
+#[CoversClass(AbstractElement::class)]
+#[CoversClass(AbstractXrefElement::class)]
+#[CoversClass(XrefSource::class)]
 class XrefSourceTest extends TestCase
 {
     protected static bool $uses_database = true;
@@ -46,7 +43,7 @@ class XrefSourceTest extends TestCase
 
         $factory = $this->createMock(SourceFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn(null);
 
@@ -98,11 +95,11 @@ class XrefSourceTest extends TestCase
 
         $record = $this->createMock(Source::class);
 
-        $record->expects(self::once())
+        $record->expects($this->once())
             ->method('fullName')
             ->willReturn('Full Name');
 
-        $record->expects(self::once())
+        $record->expects($this->once())
             ->method('url')
             ->willReturn('https://url');
 
@@ -110,10 +107,9 @@ class XrefSourceTest extends TestCase
 
         $factory = $this->createMock(SourceFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn($record);
-
 
         Registry::sourceFactory($factory);
 
@@ -146,7 +142,7 @@ class XrefSourceTest extends TestCase
 
         $factory = $this->createMock(SourceFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn(null);
 

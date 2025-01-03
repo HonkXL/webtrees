@@ -19,11 +19,9 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees;
 
-/**
- * Test harness for the class GedcomRecord
- *
- * @covers \Fisharebest\Webtrees\GedcomRecord
- */
+use PHPUnit\Framework\Attributes\CoversClass;
+
+#[CoversClass(GedcomRecord::class)]
 class GedcomRecordTest extends TestCase
 {
     /**

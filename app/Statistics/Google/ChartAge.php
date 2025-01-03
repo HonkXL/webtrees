@@ -26,7 +26,6 @@ use Fisharebest\Webtrees\Tree;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
-use stdClass;
 
 use function round;
 use function view;
@@ -53,16 +52,14 @@ class ChartAge
     /**
      * Returns the related database records.
      *
-     * @return Collection<array-key,stdClass>
+     * @return Collection<array-key,object>
      */
     private function queryRecords(): Collection
     {
-        $prefix = DB::connection()->getTablePrefix();
-
         return DB::table('individuals')
             ->select([
-                new Expression('AVG(' . $prefix . 'death.d_julianday2 - ' . $prefix . 'birth.d_julianday1) / 365.25 AS age'),
-                new Expression('ROUND((' . $prefix . 'death.d_year + 49) / 100, 0) AS century'),
+                new Expression('AVG(' . DB::prefix('death.d_julianday2') . ' - ' . DB::prefix('birth.d_julianday1') . ') / 365.25 AS age'),
+                new Expression('ROUND((' . DB::prefix('death.d_year') . ' + 49) / 100, 0) AS century'),
                 'i_sex AS sex'
             ])
             ->join('dates AS birth', static function (JoinClause $join): void {
@@ -86,13 +83,11 @@ class ChartAge
             ->orderBy('century')
             ->orderBy('sex')
             ->get()
-            ->map(static function (object $row): object {
-                return (object) [
-                    'age'     => (float) $row->age,
-                    'century' => (int) $row->century,
-                    'sex'     => $row->sex,
-                ];
-            });
+            ->map(static fn (object $row): object => (object) [
+                'age'     => (float) $row->age,
+                'century' => (int) $row->century,
+                'sex'     => $row->sex,
+            ]);
     }
 
     /**

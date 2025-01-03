@@ -24,10 +24,10 @@ use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Place;
 use Fisharebest\Webtrees\TestCase;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class CensusColumnFatherForeign
- */
+#[CoversClass(CensusColumnFatherForeign::class)]
+#[CoversClass(AbstractCensusColumn::class)]
 class CensusColumnFatherForeignTest extends TestCase
 {
     private function getPlaceMock(string $place): Place
@@ -38,10 +38,6 @@ class CensusColumnFatherForeignTest extends TestCase
         return $placeMock;
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnFatherForeign
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testSameCountry(): void
     {
         $father = $this->createMock(Individual::class);
@@ -61,10 +57,6 @@ class CensusColumnFatherForeignTest extends TestCase
         self::assertSame('', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnFatherForeign
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testDifferentCountry(): void
     {
         $father = $this->createMock(Individual::class);
@@ -84,10 +76,6 @@ class CensusColumnFatherForeignTest extends TestCase
         self::assertSame('Y', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnFatherForeign
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testPlaceNoParent(): void
     {
         $family = $this->createMock(Family::class);
@@ -104,10 +92,6 @@ class CensusColumnFatherForeignTest extends TestCase
         self::assertSame('', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnFatherForeign
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testPlaceNoParentFamily(): void
     {
         $individual = $this->createMock(Individual::class);

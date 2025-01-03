@@ -25,16 +25,12 @@ use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\TestCase;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class CensusColumnYearsMarried
- */
+#[CoversClass(CensusColumnYearsMarried::class)]
+#[CoversClass(AbstractCensusColumn::class)]
 class CensusColumnYearsMarriedTest extends TestCase
 {
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnYearsMarried
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testNoSpouseFamily(): void
     {
         $individual = $this->createMock(Individual::class);
@@ -48,10 +44,6 @@ class CensusColumnYearsMarriedTest extends TestCase
         self::assertSame('', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnYearsMarried
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testNoMarriage(): void
     {
         $family = $this->createMock(Family::class);
@@ -68,10 +60,6 @@ class CensusColumnYearsMarriedTest extends TestCase
         self::assertSame('', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnYearsMarried
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testUndatedMarriage(): void
     {
         $fact = $this->createMock(Fact::class);
@@ -91,10 +79,6 @@ class CensusColumnYearsMarriedTest extends TestCase
         self::assertSame('', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnYearsMarried
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testMarriageAfterCensus(): void
     {
         $fact = $this->createMock(Fact::class);
@@ -114,10 +98,6 @@ class CensusColumnYearsMarriedTest extends TestCase
         self::assertSame('', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnYearsMarried
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testMarriageBeforeCensus(): void
     {
         $fact = $this->createMock(Fact::class);

@@ -50,20 +50,20 @@ class PedigreeMapModule extends AbstractModule implements ModuleChartInterface, 
 {
     use ModuleChartTrait;
 
-    protected const ROUTE_URL = '/tree/{tree}/pedigree-map-{generations}/{xref}';
+    protected const string ROUTE_URL = '/tree/{tree}/pedigree-map-{generations}/{xref}';
 
     // Defaults
-    public const DEFAULT_GENERATIONS = '4';
-    public const DEFAULT_PARAMETERS  = [
+    public const string DEFAULT_GENERATIONS = '4';
+    public const array  DEFAULT_PARAMETERS  = [
         'generations' => self::DEFAULT_GENERATIONS,
     ];
 
     // Limits
-    public const MINIMUM_GENERATIONS = 1;
-    public const MAXIMUM_GENERATIONS = 10;
+    public const int MINIMUM_GENERATIONS = 1;
+    public const int MAXIMUM_GENERATIONS = 10;
 
     // CSS colors for each generation
-    protected const COUNT_CSS_COLORS = 12;
+    protected const int COUNT_CSS_COLORS = 12;
 
     protected ChartService $chart_service;
 
@@ -109,11 +109,6 @@ class PedigreeMapModule extends AbstractModule implements ModuleChartInterface, 
         return I18N::translate('Pedigree map');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Pedigree map” module */
@@ -137,7 +132,7 @@ class PedigreeMapModule extends AbstractModule implements ModuleChartInterface, 
      *
      * @return Menu|null
      */
-    public function chartBoxMenu(Individual $individual): ?Menu
+    public function chartBoxMenu(Individual $individual): Menu|null
     {
         return $this->chartMenu($individual);
     }
@@ -309,9 +304,7 @@ class PedigreeMapModule extends AbstractModule implements ModuleChartInterface, 
         foreach ($ancestors as $sosa => $person) {
             if ($person->canShow()) {
                 $birth = $person->facts(Gedcom::BIRTH_EVENTS, true)
-                    ->first(static function (Fact $fact): bool {
-                        return $fact->place()->gedcomName() !== '';
-                    });
+                    ->first(static fn (Fact $fact): bool => $fact->place()->gedcomName() !== '');
 
                 if ($birth instanceof Fact) {
                     $facts[$sosa] = $birth;

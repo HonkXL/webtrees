@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Timestamp;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Support\Collection;
 
 /**
- * @var Collection<int,object> $articles
- * @var int                    $block_id
- * @var int                    $limit
- * @var Tree                   $tree
+ * @var Collection<int,object{subject:string,body:string,updated:Timestamp,news_id:string}> $articles
+ * @var int                                                                                 $block_id
+ * @var int                                                                                 $limit
+ * @var Tree                                                                                $tree
  */
 
 ?>
@@ -43,7 +44,7 @@ use Illuminate\Support\Collection;
                     <?= I18N::translate('Edit') ?>
                 </a>
                 |
-                <button class="btn btn-link" type="submit" data-wt-confirm="<?= I18N::translate('Are you sure you want to delete “%s”?', e($article->subject)) ?>" onclick="return confirm(this.dataset.confirm);">
+                <button class="btn btn-link" type="submit" data-wt-confirm="<?= I18N::translate('Are you sure you want to delete “%s”?', e($article->subject)) ?>">
                     <?= I18N::translate('Delete') ?>
                 </button>
 

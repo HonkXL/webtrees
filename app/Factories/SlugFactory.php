@@ -34,14 +34,14 @@ use function trim;
  */
 class SlugFactory implements SlugFactoryInterface
 {
-    private ?Transliterator $transliterator = null;
+    private Transliterator|null $transliterator = null;
 
     public function __construct()
     {
         if (extension_loaded('intl')) {
             $ids = Transliterator::listIDs();
 
-            if (in_array('Any-Latin', $ids, true) && in_array('Latin-ASCII', $ids, true)) {
+            if ($ids !== false && in_array('Any-Latin', $ids, true) && in_array('Latin-ASCII', $ids, true)) {
                 $this->transliterator = Transliterator::create('Any-Latin;Latin-ASCII');
             }
         }

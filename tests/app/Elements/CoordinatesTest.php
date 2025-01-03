@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Elements;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class Coordinates
- *
- * @covers Fisharebest\Webtrees\Elements\Coordinates
- */
+#[CoversClass(Coordinates::class)]
 class CoordinatesTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Elements\Coordinates::class));
+        self::assertTrue(class_exists(Coordinates::class));
     }
 }

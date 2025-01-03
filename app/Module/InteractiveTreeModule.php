@@ -49,11 +49,6 @@ class InteractiveTreeModule extends AbstractModule implements ModuleChartInterfa
         return I18N::translate('Interactive tree');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Interactive tree” module */
@@ -141,7 +136,7 @@ class InteractiveTreeModule extends AbstractModule implements ModuleChartInterfa
      *
      * @return Menu|null
      */
-    public function chartBoxMenu(Individual $individual): ?Menu
+    public function chartBoxMenu(Individual $individual): Menu|null
     {
         return $this->chartMenu($individual);
     }
@@ -206,7 +201,6 @@ class InteractiveTreeModule extends AbstractModule implements ModuleChartInterfa
             'tree'       => $tree,
         ]);
     }
-
 
     /**
      * @param ServerRequestInterface $request

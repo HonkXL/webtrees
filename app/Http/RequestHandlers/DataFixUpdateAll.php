@@ -43,7 +43,7 @@ use const JSON_THROW_ON_ERROR;
 class DataFixUpdateAll implements RequestHandlerInterface
 {
     // Process this number of records in each HTTP request
-    private const CHUNK_SIZE = 250;
+    private const int CHUNK_SIZE = 250;
 
     private DataFixService $data_fix_service;
 
@@ -88,11 +88,9 @@ class DataFixUpdateAll implements RequestHandlerInterface
         }
 
         /** @var Collection<int,GedcomRecord> $records */
-        $records = $rows->map(function (object $row) use ($tree): ?GedcomRecord {
-            return $this->data_fix_service->getRecordByType($row->xref, $tree, $row->type);
-        })->filter(static function (?GedcomRecord $record) use ($module, $params): bool {
-            return $record instanceof GedcomRecord && !$record->isPendingDeletion() && $module->doesRecordNeedUpdate($record, $params);
-        });
+        $records = $rows
+            ->map(fn (object $row): GedcomRecord|null => $this->data_fix_service->getRecordByType($row->xref, $tree, $row->type))
+            ->filter(static fn (GedcomRecord|null $record): bool => $record instanceof GedcomRecord && !$record->isPendingDeletion() && $module->doesRecordNeedUpdate($record, $params));
 
         foreach ($records as $record) {
             $module->updateRecord($record, $params);

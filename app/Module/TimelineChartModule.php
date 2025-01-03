@@ -45,20 +45,20 @@ class TimelineChartModule extends AbstractModule implements ModuleChartInterface
 {
     use ModuleChartTrait;
 
-    protected const ROUTE_URL = '/tree/{tree}/timeline-{scale}';
+    protected const string ROUTE_URL = '/tree/{tree}/timeline-{scale}';
 
     // Defaults
-    protected const DEFAULT_SCALE      = 10;
-    protected const DEFAULT_PARAMETERS = [
+    protected const int DEFAULT_SCALE        = 10;
+    protected const array DEFAULT_PARAMETERS = [
         'scale' => self::DEFAULT_SCALE,
     ];
 
     // Limits
-    protected const MINIMUM_SCALE = 1;
-    protected const MAXIMUM_SCALE = 200;
+    protected const int MINIMUM_SCALE = 1;
+    protected const int MAXIMUM_SCALE = 200;
 
     // GEDCOM events that may have DATE data, but should not be displayed
-    protected const NON_FACTS = [
+    protected const array NON_FACTS = [
         'FAM:CHAN',
         'INDI:BAPL',
         'INDI:CHAN',
@@ -68,7 +68,7 @@ class TimelineChartModule extends AbstractModule implements ModuleChartInterface
         'INDI:_TODO',
     ];
 
-    protected const BOX_HEIGHT = 30;
+    protected const int BOX_HEIGHT = 30;
 
     /**
      * Initialization.
@@ -93,11 +93,6 @@ class TimelineChartModule extends AbstractModule implements ModuleChartInterface
         return I18N::translate('Timeline');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “TimelineChart” module */
@@ -160,9 +155,7 @@ class TimelineChartModule extends AbstractModule implements ModuleChartInterface
         // Find the requested individuals.
         $individuals = (new Collection($xrefs))
             ->uniqueStrict()
-            ->map(static function (string $xref) use ($tree): ?Individual {
-                return Registry::individualFactory()->make($xref, $tree);
-            })
+            ->map(static fn (string $xref): Individual|null => Registry::individualFactory()->make($xref, $tree))
             ->filter()
             ->filter(GedcomRecord::accessFilter());
 
@@ -171,12 +164,8 @@ class TimelineChartModule extends AbstractModule implements ModuleChartInterface
 
         foreach ($individuals as $exclude) {
             $xrefs_1 = $individuals
-                ->filter(static function (Individual $individual) use ($exclude): bool {
-                    return $individual->xref() !== $exclude->xref();
-                })
-                ->map(static function (Individual $individual): string {
-                    return $individual->xref();
-                });
+                ->filter(static fn (Individual $individual): bool => $individual->xref() !== $exclude->xref())
+                ->map(static fn (Individual $individual): string => $individual->xref());
 
             $remove_urls[$exclude->xref()] = route(static::class, [
                 'tree'  => $tree->name(),
@@ -185,13 +174,9 @@ class TimelineChartModule extends AbstractModule implements ModuleChartInterface
             ]);
         }
 
-        $individuals = array_map(static function (string $xref) use ($tree): ?Individual {
-            return Registry::individualFactory()->make($xref, $tree);
-        }, $xrefs);
+        $individuals = array_map(static fn (string $xref): Individual|null => Registry::individualFactory()->make($xref, $tree), $xrefs);
 
-        $individuals = array_filter($individuals, static function (?Individual $individual): bool {
-            return $individual instanceof Individual && $individual->canShow();
-        });
+        $individuals = array_filter($individuals, static fn (Individual|null $individual): bool => $individual instanceof Individual && $individual->canShow());
 
         if ($ajax) {
             $this->layout = 'layouts/ajax';
@@ -247,13 +232,9 @@ class TimelineChartModule extends AbstractModule implements ModuleChartInterface
     protected function chart(Tree $tree, array $xrefs, int $scale): ResponseInterface
     {
         /** @var Individual[] $individuals */
-        $individuals = array_map(static function (string $xref) use ($tree): ?Individual {
-            return Registry::individualFactory()->make($xref, $tree);
-        }, $xrefs);
+        $individuals = array_map(static fn (string $xref): Individual|null => Registry::individualFactory()->make($xref, $tree), $xrefs);
 
-        $individuals = array_filter($individuals, static function (?Individual $individual): bool {
-            return $individual instanceof Individual && $individual->canShow();
-        });
+        $individuals = array_filter($individuals, static fn (Individual|null $individual): bool => $individual instanceof Individual && $individual->canShow());
 
         $baseyear    = (int) date('Y');
         $topyear     = 0;
@@ -299,9 +280,7 @@ class TimelineChartModule extends AbstractModule implements ModuleChartInterface
         }
 
         // do not add the same fact twice (prevents marriages from being added multiple times)
-        $indifacts = $indifacts->uniqueStrict(static function (Fact $fact): string {
-            return $fact->id();
-        });
+        $indifacts = $indifacts->uniqueStrict(static fn (Fact $fact): string => $fact->id());
 
         if ($scale === 0) {
             $scale = (int) (($topyear - $baseyear) / 20 * $indifacts->count() / 4);

@@ -25,23 +25,19 @@ use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\TestCase;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class CensusColumnFullName
- */
+#[CoversClass(CensusColumnFullName::class)]
+#[CoversClass(AbstractCensusColumn::class)]
 class CensusColumnFullNameTest extends TestCase
 {
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnFullName
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function xxxtestFullName(): void
     {
-        $individual = $this->createStub(Individual::class);
+        $individual = $this->createMock(Individual::class);
         $individual->method('getAllNames')->willReturn([['full' => 'Joe Bloggs']]);
         $individual->method('spouseFamilies')->willReturn(new Collection());
 
-        $census = $this->createStub(CensusInterface::class);
+        $census = $this->createMock(CensusInterface::class);
         $census->method('censusDate')->willReturn('');
 
         $column = new CensusColumnFullName($census, '', '');
@@ -49,10 +45,6 @@ class CensusColumnFullNameTest extends TestCase
         self::assertSame('Joe Bloggs', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnFullName
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testMarriedName(): void
     {
         $wife_names = [
@@ -66,22 +58,22 @@ class CensusColumnFullNameTest extends TestCase
 
         $marriage_date = new Date('02 DATE 2019');
 
-        $marriage = $this->createStub(Fact::class);
+        $marriage = $this->createMock(Fact::class);
         $marriage->method('date')->willReturn($marriage_date);
 
-        $spouse = $this->createStub(Individual::class);
+        $spouse = $this->createMock(Individual::class);
         $spouse->method('getAllNames')->willReturn($husband_names);
 
-        $family = $this->createStub(Family::class);
+        $family = $this->createMock(Family::class);
         $family->method('facts')->willReturn(new Collection([$marriage]));
         $family->method('getMarriageDate')->willReturn($marriage_date);
         $family->method('spouse')->willReturn($spouse);
 
-        $individual = $this->createStub(Individual::class);
+        $individual = $this->createMock(Individual::class);
         $individual->method('getAllNames')->willReturn($wife_names);
         $individual->method('spouseFamilies')->willReturn(new Collection([$family]));
 
-        $census = $this->createStub(CensusInterface::class);
+        $census = $this->createMock(CensusInterface::class);
         $census->method('censusDate')->willReturn('01 JAN 2020');
 
         $column = new CensusColumnFullName($census, '', '');

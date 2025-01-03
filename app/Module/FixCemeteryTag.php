@@ -58,11 +58,6 @@ class FixCemeteryTag extends AbstractModule implements ModuleDataFixInterface
         return I18N::translate('Convert %s tags to GEDCOM 5.5.1', 'INDI:BURI:CEME');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of a “Data fix” module */
@@ -100,7 +95,7 @@ class FixCemeteryTag extends AbstractModule implements ModuleDataFixInterface
      *
      * @return Collection<int,string>|null
      */
-    protected function individualsToFix(Tree $tree, array $params): ?Collection
+    protected function individualsToFix(Tree $tree, array $params): Collection|null
     {
         return $this->individualsToFixQuery($tree, $params)
             ->where(static function (Builder $query): void {
@@ -122,9 +117,7 @@ class FixCemeteryTag extends AbstractModule implements ModuleDataFixInterface
     public function doesRecordNeedUpdate(GedcomRecord $record, array $params): bool
     {
         return $record->facts(['BURI'], false, null, true)
-            ->filter(static function (Fact $fact): bool {
-                return preg_match('/\n[23] CEME/', $fact->gedcom()) === 1;
-            })
+            ->filter(static fn (Fact $fact): bool => preg_match('/\n[23] CEME/', $fact->gedcom()) === 1)
             ->isNotEmpty();
     }
 

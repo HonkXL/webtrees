@@ -22,16 +22,12 @@ namespace Fisharebest\Webtrees\Census;
 use Fisharebest\Webtrees\Date;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class CensusColumnMonthIfBornWithinYear
- */
+#[CoversClass(CensusColumnMonthIfBornWithinYear::class)]
+#[CoversClass(AbstractCensusColumn::class)]
 class CensusColumnMonthIfBornWithinYearTest extends TestCase
 {
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnMonthIfBornWithinYear
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testBornWithinYear(): void
     {
         $individual = $this->createMock(Individual::class);
@@ -45,10 +41,6 @@ class CensusColumnMonthIfBornWithinYearTest extends TestCase
         self::assertSame('Jan', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnMonthIfBornWithinYear
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testBornOverYearBeforeTheCensus(): void
     {
         $individual = $this->createMock(Individual::class);
@@ -62,10 +54,6 @@ class CensusColumnMonthIfBornWithinYearTest extends TestCase
         self::assertSame('', $column->generate($individual, $individual));
     }
 
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnMonthIfBornWithinYear
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testBornAfterTheCensus(): void
     {
         $individual = $this->createMock(Individual::class);
@@ -74,17 +62,11 @@ class CensusColumnMonthIfBornWithinYearTest extends TestCase
         $census = $this->createMock(CensusInterface::class);
         $census->method('censusDate')->willReturn('01 JUN 1860');
 
-
         $column = new CensusColumnMonthIfBornWithinYear($census, '', '');
 
         self::assertSame('', $column->generate($individual, $individual));
     }
 
-
-    /**
-     * @covers \Fisharebest\Webtrees\Census\CensusColumnMonthIfBornWithinYear
-     * @covers \Fisharebest\Webtrees\Census\AbstractCensusColumn
-     */
     public function testNoBirth(): void
     {
         $individual = $this->createMock(Individual::class);

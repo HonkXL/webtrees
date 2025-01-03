@@ -25,21 +25,18 @@ use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\User;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test the AccountEdit request handler.
- *
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\AccountEdit
- */
+#[CoversClass(AccountEdit::class)]
 class AccountEditTest extends TestCase
 {
     protected static bool $uses_database = true;
 
     public function testHandler(): void
     {
-        $user            = $this->createStub(User::class);
-        $message_service = $this->createStub(MessageService::class);
-        $module_service  = $this->createStub(ModuleService::class);
+        $user            = $this->createMock(User::class);
+        $message_service = $this->createMock(MessageService::class);
+        $module_service  = $this->createMock(ModuleService::class);
 
         $module_service->method('findByInterface')->willReturn(new Collection([]));
 

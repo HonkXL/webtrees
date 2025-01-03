@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\CustomTags;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class PersonalAncestralFile
- *
- * @covers Fisharebest\Webtrees\CustomTags\PersonalAncestralFile
- */
+#[CoversClass(PersonalAncestralFile::class)]
 class PersonalAncestralFileTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\CustomTags\PersonalAncestralFile::class));
+        self::assertTrue(class_exists(PersonalAncestralFile::class));
     }
 }

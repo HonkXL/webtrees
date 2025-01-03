@@ -56,11 +56,6 @@ class ChartsMenuModule extends AbstractModule implements ModuleMenuInterface
         return I18N::translate('Charts');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Charts” module */
@@ -79,23 +74,15 @@ class ChartsMenuModule extends AbstractModule implements ModuleMenuInterface
 
     /**
      * A menu, to be added to the main application menu.
-     *
-     * @param Tree $tree
-     *
-     * @return Menu|null
      */
-    public function getMenu(Tree $tree): ?Menu
+    public function getMenu(Tree $tree): Menu|null
     {
         $request    = Registry::container()->get(ServerRequestInterface::class);
         $xref       = Validator::attributes($request)->isXref()->string('xref', '');
         $individual = $tree->significantIndividual(Auth::user(), $xref);
         $submenus   = $this->module_service->findByComponent(ModuleChartInterface::class, $tree, Auth::user())
-            ->map(static function (ModuleChartInterface $module) use ($individual): Menu {
-                return $module->chartMenu($individual);
-            })
-            ->sort(static function (Menu $x, Menu $y): int {
-                return I18N::comparator()($x->getLabel(), $y->getLabel());
-            });
+            ->map(static fn (ModuleChartInterface $module): Menu => $module->chartMenu($individual))
+            ->sort(static fn (Menu $x, Menu $y): int => I18N::comparator()($x->getLabel(), $y->getLabel()));
 
         if ($submenus->isEmpty()) {
             return null;

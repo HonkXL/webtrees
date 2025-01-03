@@ -50,13 +50,11 @@ class DutchPrimeMinisters extends AbstractModule implements ModuleHistoricEvents
     }
 
     /**
-     * All events provided by this module.
-     *
      * @return Collection<int,string>
      */
-    public function historicEventsAll(): Collection
+    public function historicEventsAll(string $language_tag): Collection
     {
-        switch (I18N::languageTag()) {
+        switch ($language_tag) {
             case 'nl':
                 return new Collection([
                     "1 EVEN Gerrit graaf Schimmelpenninck\n2 TYPE Voorzitter van de ministerraad\n2 DATE FROM 25 MAR 1848 TO 21 NOV 1848\n2 NOTE kabinet-Schimmelpenninck",
@@ -115,7 +113,7 @@ class DutchPrimeMinisters extends AbstractModule implements ModuleHistoricEvents
                     "1 EVEN Johannes Marten (Joop) den Uijl n2 TYPE Minister-President\n2 DATE FROM 11 MAY 1973 TO 19 DEC 1977\n2 kabinet-Den Uyl",
                     "1 EVEN Andreas Antonius Maria (Dries) van Agt\n2 TYPE Minister-President\n2 DATE FROM 19 DEC 1977 TO 11 SEP 1981\n2 kabinet-Van Agt I",
                     "1 EVEN Andreas Antonius Maria (Dries) van Agt\n2 TYPE Minister-President\n2 DATE FROM 11 SEP 1981 TO 29 MAY 1982\n2 kabinet-Van Agt II",
-                    "1 EVEN Andreas Antonius Maria (Dries) van Agt\n2 TYPE Minister-President\n2 DATE FROM 29 MAY 1982 TO 04 NÒV 1982\n2 kabinet-Van Agt III",
+                    "1 EVEN Andreas Antonius Maria (Dries) van Agt\n2 TYPE Minister-President\n2 DATE FROM 29 MAY 1982 TO 04 NOV 1982\n2 kabinet-Van Agt III",
                     "1 EVEN Rudolphus Franciscus Marie (Ruud) Lubbers\n2 TYPE Minister-President\n2 DATE FROM 04 NÒV 1982 TO 14 JUL 1986\n2 kabinet-Lubbers I",
                     "1 EVEN Rudolphus Franciscus Marie (Ruud) Lubbers\n2 TYPE Minister-President\n2 DATE FROM 14 JUL 1986 TO 07 NOV 1989\n2 kabinet-Lubbers II",
                     "1 EVEN Rudolphus Franciscus Marie (Ruud) Lubbers\n2 TYPE Minister-President\n2 DATE FROM 07 NOV 1989 TO 22 AUG 1994\n2 kabinet-Lubbers III",
@@ -128,7 +126,8 @@ class DutchPrimeMinisters extends AbstractModule implements ModuleHistoricEvents
                     "1 EVEN Mark Rutte\n2 TYPE Minister-President\n2 DATE FROM 26 OCT 2010 TO 05 NOV 2012\n2 kabinet-Rutte I",
                     "1 EVEN Mark Rutte\n2 TYPE Minister-President\n2 DATE FROM 05 NOV 2012 TO 26 OCT 2017\n2 kabinet-Rutte II",
                     "1 EVEN Mark Rutte\n2 TYPE Minister-President\n2 DATE FROM 26 OCT 2017 TO 10 JAN 2022\n2 kabinet-Rutte III",
-                    "1 EVEN Mark Rutte\n2 TYPE Minister-President\n2 DATE FROM 10 JAN 2022\n2 kabinet-Rutte IV",
+                    "1 EVEN Mark Rutte\n2 TYPE Minister-President\n2 DATE FROM 10 JAN 2022 TO 02 JUL 2024\n2 kabinet-Rutte IV",
+                    "1 EVEN Dick Schoof\n2 TYPE Minister-President\n2 DATE FROM 02 JUL 2024\n2 kabinet-Schoof",
                 ]);
 
             default:

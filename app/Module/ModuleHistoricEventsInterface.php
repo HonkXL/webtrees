@@ -29,17 +29,11 @@ use Illuminate\Support\Collection;
 interface ModuleHistoricEventsInterface extends ModuleInterface
 {
     /**
-     * All events provided by this module.
-     *
      * @return Collection<int,string>
      */
-    public function historicEventsAll(): Collection;
+    public function historicEventsAll(string $language_tag): Collection;
 
     /**
-     * Which events should we show for an individual?
-     *
-     * @param Individual $individual
-     *
      * @return Collection<int,Fact>
      */
     public function historicEventsForIndividual(Individual $individual): Collection;

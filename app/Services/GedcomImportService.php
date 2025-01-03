@@ -193,13 +193,13 @@ class GedcomImportService
                     while (str_contains($data, '  ')) {
                         $data = strtr($data, ['  ' => ' ']);
                     }
-                    $newrec .= ($newrec ? "\n" : '') . $level . ' ' . ($level === '0' && $xref ? $xref . ' ' : '') . $tag . ($data === '' && $tag !== 'NOTE' ? '' : ' ' . $data);
+                    $newrec .= ($newrec !== '' ? "\n" : '') . $level . ' ' . ($level === '0' && $xref !== '' ? $xref . ' ' : '') . $tag . ($data === '' ? '' : ' ' . $data);
                     break;
                 case 'NOTE':
                 case 'TEXT':
                 case 'DATA':
                 case 'CONT':
-                    $newrec .= ($newrec ? "\n" : '') . $level . ' ' . ($level === '0' && $xref ? $xref . ' ' : '') . $tag . ($data === '' && $tag !== 'NOTE' ? '' : ' ' . $data);
+                    $newrec .= ($newrec !== '' ? "\n" : '') . $level . ' ' . ($level === '0' && $xref !== '' ? $xref . ' ' : '') . $tag . ($data === '' ? '' : ' ' . $data);
                     break;
                 case 'FILE':
                     // Strip off the user-defined path prefix
@@ -210,7 +210,7 @@ class GedcomImportService
                     // convert backslashes in filenames to forward slashes
                     $data = preg_replace("/\\\\/", '/', $data);
 
-                    $newrec .= ($newrec ? "\n" : '') . $level . ' ' . ($level === '0' && $xref ? $xref . ' ' : '') . $tag . ($data === '' && $tag !== 'NOTE' ? '' : ' ' . $data);
+                    $newrec .= ($newrec !== '' ? "\n" : '') . $level . ' ' . ($level === '0' && $xref !== '' ? $xref . ' ' : '') . $tag . ($data === '' ? '' : ' ' . $data);
                     break;
                 case 'CONC':
                     // Merge CONC lines, to simplify access later on.
@@ -284,7 +284,7 @@ class GedcomImportService
         // If the user has downloaded their GEDCOM data (containing media objects) and edited it
         // using an application which does not support (and deletes) media objects, then add them
         // back in.
-        if ($tree->getPreference('keep_media')) {
+        if ($tree->getPreference('keep_media') === '1') {
             $old_linked_media = DB::table('link')
                 ->where('l_from', '=', $xref)
                 ->where('l_file', '=', $tree_id)
@@ -408,7 +408,6 @@ class GedcomImportService
                     'o_gedcom' => $gedrec,
                 ]);
                 break;
-
 
             case Media::RECORD_TYPE:
                 $record = Registry::mediaFactory()->new($xref, $gedrec, null, $tree);
@@ -769,7 +768,7 @@ class GedcomImportService
         }
 
         preg_match_all('/\n\d NOTE (.+(?:\n\d CONT.*)*)/', $gedcom, $matches);
-        $notes = $matches[1] ?? [];
+        $notes = $matches[1];
 
         // Have we already created a media object with the same title/filename?
         $xref = DB::table('media_file')

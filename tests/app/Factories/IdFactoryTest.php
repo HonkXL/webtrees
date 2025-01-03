@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Factories;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class IdFactory
- *
- * @covers Fisharebest\Webtrees\Factories\IdFactory
- */
+#[CoversClass(IdFactory::class)]
 class IdFactoryTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Factories\IdFactory::class));
+        self::assertTrue(class_exists(IdFactory::class));
     }
 }

@@ -91,7 +91,7 @@ class MapDataExportCSV implements RequestHandlerInterface
         while ($queue !== []) {
             [$id, $hierarchy, $latitude, $longitude] = array_shift($queue);
 
-            if ($latitude !== null && !$longitude !== null) {
+            if ($latitude !== null && $longitude !== null) {
                 $places[] = (object) [
                     'hierarchy' => $hierarchy,
                     'latitude'  => $latitude,
@@ -127,20 +127,18 @@ class MapDataExportCSV implements RequestHandlerInterface
             $max_level = max($max_level, count($place->hierarchy));
         }
 
-        $places = array_map(function (object $place) use ($max_level): array {
-            return array_merge(
-                [
-                    count($place->hierarchy) - 1,
-                ],
-                array_pad($place->hierarchy, $max_level, ''),
-                [
-                    $this->map_data_service->writeLongitude((float) $place->longitude),
-                    $this->map_data_service->writeLatitude((float) $place->latitude),
-                    '',
-                    '',
-                ]
-            );
-        }, $places);
+        $places = array_map(fn (object $place): array => array_merge(
+            [
+                count($place->hierarchy) - 1,
+            ],
+            array_pad($place->hierarchy, $max_level, ''),
+            [
+                $this->map_data_service->writeLongitude((float) $place->longitude),
+                $this->map_data_service->writeLatitude((float) $place->latitude),
+                '',
+                '',
+            ]
+        ), $places);
 
         // Create the header line for the output file (always English)
         $header = [
@@ -162,10 +160,10 @@ class MapDataExportCSV implements RequestHandlerInterface
             throw new RuntimeException('Failed to create temporary stream');
         }
 
-        fputcsv($resource, $header, MapDataService::CSV_SEPARATOR);
+        fputcsv(stream: $resource, fields: $header, separator: MapDataService::CSV_SEPARATOR, escape: '\\');
 
         foreach ($places as $place) {
-            fputcsv($resource, $place, MapDataService::CSV_SEPARATOR);
+            fputcsv(stream: $resource, fields: $place, separator: MapDataService::CSV_SEPARATOR, escape: '\\');
         }
 
         rewind($resource);

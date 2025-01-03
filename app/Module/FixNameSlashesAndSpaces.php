@@ -56,11 +56,6 @@ class FixNameSlashesAndSpaces extends AbstractModule implements ModuleDataFixInt
         return I18N::translate('Fix name slashes and spaces');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of a “Data fix” module */
@@ -76,7 +71,7 @@ class FixNameSlashesAndSpaces extends AbstractModule implements ModuleDataFixInt
      *
      * @return Collection<int,string>|null
      */
-    protected function individualsToFix(Tree $tree, array $params): ?Collection
+    protected function individualsToFix(Tree $tree, array $params): Collection|null
     {
         // No DB querying possible?  Select all.
         return $this->individualsToFixQuery($tree, $params)

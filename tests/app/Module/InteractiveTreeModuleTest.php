@@ -20,12 +20,9 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class InteractiveTreeModule
- *
- * @covers \Fisharebest\Webtrees\Module\InteractiveTreeModule
- */
+#[CoversClass(InteractiveTreeModule::class)]
 class InteractiveTreeModuleTest extends TestCase
 {
     /**

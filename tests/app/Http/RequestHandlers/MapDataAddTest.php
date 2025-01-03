@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class MapDataAdd
- *
- * @covers Fisharebest\Webtrees\Http\RequestHandlers\MapDataAdd
- */
+#[CoversClass(MapDataAdd::class)]
 class MapDataAddTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\MapDataAdd::class));
+        self::assertTrue(class_exists(MapDataAdd::class));
     }
 }

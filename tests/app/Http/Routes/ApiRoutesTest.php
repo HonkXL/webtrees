@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\Routes;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class ApiRoutes
- *
- * @covers Fisharebest\Webtrees\Http\Routes\ApiRoutes
- */
+#[CoversClass(ApiRoutes::class)]
 class ApiRoutesTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\Routes\ApiRoutes::class));
+        self::assertTrue(class_exists(ApiRoutes::class));
     }
 }

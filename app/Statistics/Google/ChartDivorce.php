@@ -25,7 +25,6 @@ use Fisharebest\Webtrees\Statistics\Service\CenturyService;
 use Fisharebest\Webtrees\Statistics\Service\ColorService;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Support\Collection;
-use stdClass;
 
 use function count;
 use function view;
@@ -56,7 +55,7 @@ class ChartDivorce
     /**
      * Returns the related database records.
      *
-     * @return Collection<array-key,stdClass>
+     * @return Collection<array-key,object>
      */
     private function queryRecords(): Collection
     {
@@ -70,12 +69,10 @@ class ChartDivorce
             ->groupBy(['century'])
             ->orderBy('century')
             ->get()
-            ->map(static function (object $row): object {
-                return (object) [
-                    'century' => (int) $row->century,
-                    'total'   => (float) $row->total,
-                ];
-            });
+            ->map(static fn (object $row): object => (object) [
+                'century' => (int) $row->century,
+                'total'   => (float) $row->total,
+            ]);
     }
 
     /**
@@ -86,7 +83,7 @@ class ChartDivorce
      *
      * @return string
      */
-    public function chartDivorce(string $color_from = null, string $color_to = null): string
+    public function chartDivorce(string|null $color_from = null, string|null $color_to = null): string
     {
         $color_from ??= 'ffffff';
         $color_to ??= '84beff';

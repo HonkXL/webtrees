@@ -20,12 +20,9 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class ChartsBlockModule
- *
- * @covers \Fisharebest\Webtrees\Module\ChartsBlockModule
- */
+#[CoversClass(ChartsBlockModule::class)]
 class ChartsBlockModuleTest extends TestCase
 {
     /**

@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class PhpInformation
- *
- * @covers Fisharebest\Webtrees\Http\RequestHandlers\PhpInformation
- */
+#[CoversClass(PhpInformation::class)]
 class PhpInformationTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\PhpInformation::class));
+        self::assertTrue(class_exists(PhpInformation::class));
     }
 }

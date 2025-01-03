@@ -49,11 +49,6 @@ class FamilyTreeFavoritesModule extends AbstractModule implements ModuleBlockInt
         return I18N::translate('Favorites');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Favorites” module */
@@ -248,14 +243,7 @@ class FamilyTreeFavoritesModule extends AbstractModule implements ModuleBlockInt
         ]);
     }
 
-    /**
-     * @param string $type
-     * @param string $xref
-     * @param Tree   $tree
-     *
-     * @return GedcomRecord|null
-     */
-    private function getRecordForType(string $type, string $xref, Tree $tree): ?GedcomRecord
+    private function getRecordForType(string $type, string $xref, Tree $tree): GedcomRecord|null
     {
         switch ($type) {
             case 'indi':

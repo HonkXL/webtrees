@@ -23,10 +23,9 @@ use Fisharebest\Webtrees\Fact;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\TestCase;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class PatrilinenalSurnameTradition
- */
+#[CoversClass(PatrilinealSurnameTradition::class)]
 class PatrilinealSurnameTraditionTest extends TestCase
 {
     private SurnameTraditionInterface $surname_tradition;
@@ -43,8 +42,6 @@ class PatrilinealSurnameTraditionTest extends TestCase
 
     /**
      * Test whether surnames are used
-     *
-     * @covers \Fisharebest\Webtrees\SurnameTradition\PatrilinealSurnameTradition
      */
     public function testSurnames(): void
     {
@@ -53,21 +50,19 @@ class PatrilinealSurnameTraditionTest extends TestCase
 
     /**
      * Test new child names
-     *
-     * @covers \Fisharebest\Webtrees\SurnameTradition\PatrilinealSurnameTradition
      */
     public function testNewChildNames(): void
     {
-        $father_fact = $this->createStub(Fact::class);
+        $father_fact = $this->createMock(Fact::class);
         $father_fact->method('value')->willReturn('John /White/');
 
-        $father = $this->createStub(Individual::class);
+        $father = $this->createMock(Individual::class);
         $father->method('facts')->willReturn(new Collection([$father_fact]));
 
-        $mother_fact = $this->createStub(Fact::class);
+        $mother_fact = $this->createMock(Fact::class);
         $mother_fact->method('value')->willReturn('Mary /Black/');
 
-        $mother = $this->createStub(Individual::class);
+        $mother = $this->createMock(Individual::class);
         $mother->method('facts')->willReturn(new Collection([$mother_fact]));
 
         self::assertSame(
@@ -88,21 +83,19 @@ class PatrilinealSurnameTraditionTest extends TestCase
 
     /**
      * Test new child names
-     *
-     * @covers \Fisharebest\Webtrees\SurnameTradition\PatrilinealSurnameTradition
      */
     public function testNewChildNamesWithSpfx(): void
     {
-        $father_fact = $this->createStub(Fact::class);
+        $father_fact = $this->createMock(Fact::class);
         $father_fact->method('value')->willReturn('John /de White/');
 
-        $father = $this->createStub(Individual::class);
+        $father = $this->createMock(Individual::class);
         $father->method('facts')->willReturn(new Collection([$father_fact]));
 
-        $mother_fact = $this->createStub(Fact::class);
+        $mother_fact = $this->createMock(Fact::class);
         $mother_fact->method('value')->willReturn('Mary /van Black/');
 
-        $mother = $this->createStub(Individual::class);
+        $mother = $this->createMock(Individual::class);
         $mother->method('facts')->willReturn(new Collection([$mother_fact]));
 
         self::assertSame(
@@ -113,8 +106,6 @@ class PatrilinealSurnameTraditionTest extends TestCase
 
     /**
      * Test new child names
-     *
-     * @covers \Fisharebest\Webtrees\SurnameTradition\PatrilinealSurnameTradition
      */
     public function testNewChildNamesWithNoParentsNames(): void
     {
@@ -126,15 +117,13 @@ class PatrilinealSurnameTraditionTest extends TestCase
 
     /**
      * Test new parent names
-     *
-     * @covers \Fisharebest\Webtrees\SurnameTradition\PatrilinealSurnameTradition
      */
     public function testNewParentNames(): void
     {
-        $fact = $this->createStub(Fact::class);
+        $fact = $this->createMock(Fact::class);
         $fact->method('value')->willReturn('Chris /White/');
 
-        $individual = $this->createStub(Individual::class);
+        $individual = $this->createMock(Individual::class);
         $individual->method('facts')->willReturn(new Collection([$fact]));
 
         self::assertSame(
@@ -155,15 +144,13 @@ class PatrilinealSurnameTraditionTest extends TestCase
 
     /**
      * Test new spouse names
-     *
-     * @covers \Fisharebest\Webtrees\SurnameTradition\PatrilinealSurnameTradition
      */
     public function testNewSpouseNames(): void
     {
-        $fact = $this->createStub(Fact::class);
+        $fact = $this->createMock(Fact::class);
         $fact->method('value')->willReturn('Chris /White/');
 
-        $individual = $this->createStub(Individual::class);
+        $individual = $this->createMock(Individual::class);
         $individual->method('facts')->willReturn(new Collection([$fact]));
 
         self::assertSame(

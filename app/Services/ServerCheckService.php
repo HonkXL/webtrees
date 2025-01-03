@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Services;
 
+use Fisharebest\Webtrees\DB;
 use Fisharebest\Webtrees\I18N;
 use Illuminate\Support\Collection;
 use SQLite3;
@@ -48,15 +49,17 @@ use const PHP_VERSION;
  */
 class ServerCheckService
 {
-    private const PHP_SUPPORT_URL   = 'https://www.php.net/supported-versions.php';
-    private const PHP_MINOR_VERSION = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
-    private const PHP_SUPPORT_DATES = [
-        '8.1' => '2024-11-25',
-        '8.2' => '2025-12-08',
+    private const string PHP_SUPPORT_URL   = 'https://www.php.net/supported-versions.php';
+    private const string PHP_MINOR_VERSION = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
+    private const array PHP_SUPPORT_DATES = [
+        '8.1' => '2025-12-31',
+        '8.2' => '2026-12-31',
+        '8.3' => '2027-12-31',
+        '8.4' => '2028-12-31',
     ];
 
     // As required by illuminate/database 8.x
-    private const MINIMUM_SQLITE_VERSION = '3.8.8';
+    private const string MINIMUM_SQLITE_VERSION = '3.8.8';
 
     /**
      * Things that may cause webtrees to break.
@@ -276,13 +279,13 @@ class ServerCheckService
     private function databaseDriverErrors(string $driver): Collection
     {
         switch ($driver) {
-            case 'mysql':
+            case DB::MYSQL:
                 return Collection::make([
                     $this->checkPhpExtension('pdo'),
                     $this->checkPhpExtension('pdo_mysql'),
                 ]);
 
-            case 'sqlite':
+            case DB::SQLITE:
                 return Collection::make([
                     $this->checkPhpExtension('pdo'),
                     $this->checkPhpExtension('sqlite3'),
@@ -290,13 +293,13 @@ class ServerCheckService
                     $this->checkSqliteVersion(),
                 ]);
 
-            case 'pgsql':
+            case DB::POSTGRES:
                 return Collection::make([
                     $this->checkPhpExtension('pdo'),
                     $this->checkPhpExtension('pdo_pgsql'),
                 ]);
 
-            case 'sqlsrv':
+            case DB::SQL_SERVER:
                 return Collection::make([
                     $this->checkPhpExtension('pdo'),
                     $this->checkPhpExtension('pdo_odbc'),
@@ -315,17 +318,17 @@ class ServerCheckService
     private function databaseDriverWarnings(string $driver): Collection
     {
         switch ($driver) {
-            case 'sqlite':
+            case DB::SQLITE:
                 return new Collection([
                     I18N::translate('SQLite is only suitable for small sites, testing and evaluation.'),
                 ]);
 
-            case 'pgsql':
+            case DB::POSTGRES:
                 return new Collection([
                     I18N::translate('Support for PostgreSQL is experimental.'),
                 ]);
 
-            case 'sqlsrv':
+            case DB::SQL_SERVER:
                 return new Collection([
                     I18N::translate('Support for SQL Server is experimental.'),
                 ]);

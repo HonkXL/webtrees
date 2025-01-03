@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Statistics\Repository;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class EventRepository
- *
- * @covers Fisharebest\Webtrees\Statistics\Repository\EventRepository
- */
+#[CoversClass(EventRepository::class)]
 class EventRepositoryTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Statistics\Repository\EventRepository::class));
+        self::assertTrue(class_exists(EventRepository::class));
     }
 }

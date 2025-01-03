@@ -25,17 +25,13 @@ use function str_starts_with;
 
 use const LIBXML_PEDANTIC;
 
-/**
- * Common functions for testing views
- */
 abstract class AbstractViewTest extends TestCase
 {
-    protected const EVIL_VALUE = '<script>evil()</script>';
+    protected const string EVIL_VALUE = '<script>evil()</script>';
 
     /**
      * Check the view runs without error and generates valid HTML
      *
-     * @param string $view
      * @param array<string,array<int,mixed>>  $data
      */
     protected function doTestView(string $view, array $data): void
@@ -72,7 +68,7 @@ abstract class AbstractViewTest extends TestCase
         return $result;
     }
 
-    protected function validateHTML(string $html): void
+    protected function validateHtml(string $html): void
     {
         if (str_starts_with($html, '<!DOCTYPE html>')) {
             $xml = $html;

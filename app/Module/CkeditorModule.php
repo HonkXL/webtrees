@@ -30,7 +30,7 @@ class CkeditorModule extends AbstractModule implements ModuleExternalUrlInterfac
     use ModuleGlobalTrait;
 
     // Location of our installation of CK editor.
-    public const CKEDITOR_PATH = 'ckeditor-4.15.1-custom/';
+    public const string CKEDITOR_PATH = 'ckeditor-4.15.1-custom/';
 
     /**
      * How should this module be identified in the control panel, etc.?
@@ -43,11 +43,6 @@ class CkeditorModule extends AbstractModule implements ModuleExternalUrlInterfac
         return I18N::translate('CKEditor™');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “CKEditor” module. WYSIWYG = “what you see is what you get” */

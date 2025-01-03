@@ -19,6 +19,8 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Module;
 
+use Fisharebest\Webtrees\Contracts\TimestampInterface;
+use Fisharebest\Webtrees\Contracts\UserInterface;
 use Fisharebest\Webtrees\DB;
 use Fisharebest\Webtrees\Family;
 use Fisharebest\Webtrees\GedcomRecord;
@@ -34,7 +36,6 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Psr\Http\Message\ServerRequestInterface;
-use stdClass;
 
 use function extract;
 use function view;
@@ -49,20 +50,20 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
     use ModuleBlockTrait;
 
     // Where do we look for change information
-    private const SOURCE_DATABASE = 'database';
-    private const SOURCE_GEDCOM   = 'gedcom';
+    private const string SOURCE_DATABASE = 'database';
+    private const string SOURCE_GEDCOM   = 'gedcom';
 
-    private const DEFAULT_DAYS       = '7';
-    private const DEFAULT_SHOW_USER  = '1';
-    private const DEFAULT_SHOW_DATE  = '1';
-    private const DEFAULT_SORT_STYLE = 'date_desc';
-    private const DEFAULT_INFO_STYLE = 'table';
-    private const DEFAULT_SOURCE     = self::SOURCE_DATABASE;
-    private const MAX_DAYS           = 90;
+    private const string DEFAULT_DAYS      = '7';
+    private const string DEFAULT_SHOW_USER = '1';
+    private const string DEFAULT_SHOW_DATE  = '1';
+    private const string DEFAULT_SORT_STYLE = 'date_desc';
+    private const string DEFAULT_INFO_STYLE = 'table';
+    private const string DEFAULT_SOURCE = self::SOURCE_DATABASE;
+    private const int    MAX_DAYS       = 90;
 
     // Pagination
-    private const LIMIT_LOW  = 10;
-    private const LIMIT_HIGH = 20;
+    private const int LIMIT_LOW  = 10;
+    private const int LIMIT_HIGH = 20;
 
     private UserService $user_service;
 
@@ -85,11 +86,6 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
         return I18N::translate('Recent changes');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Recent changes” module */
@@ -123,24 +119,18 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
 
         switch ($sortStyle) {
             case 'name':
-                $rows  = $rows->sort(static function (stdClass $x, stdClass $y): int {
-                    return GedcomRecord::nameComparator()($x->record, $y->record);
-                });
+                $rows  = $rows->sort(static fn (object $x, object $y): int => GedcomRecord::nameComparator()($x->record, $y->record));
                 $order = [[1, 'asc']];
                 break;
 
             case 'date_asc':
-                $rows  = $rows->sort(static function (stdClass $x, stdClass $y): int {
-                    return $x->time <=> $y->time;
-                });
+                $rows  = $rows->sort(static fn (object $x, object $y): int => $x->time <=> $y->time);
                 $order = [[2, 'asc']];
                 break;
 
             default:
             case 'date_desc':
-                $rows  = $rows->sort(static function (stdClass $x, stdClass $y): int {
-                    return $y->time <=> $x->time;
-                });
+                $rows  = $rows->sort(static fn (object $x, object $y): int => $y->time <=> $x->time);
                 $order = [[2, 'desc']];
                 break;
         }
@@ -297,7 +287,7 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
      * @param Tree $tree Changes for which tree
      * @param int  $days Number of days
      *
-     * @return Collection<array-key,stdClass> List of records with changes
+     * @return Collection<array-key,object{record:GedcomRecord,time:TimestampInterface,user:UserInterface}> List of records with changes
      */
     private function getRecentChangesFromDatabase(Tree $tree, int $days): Collection
     {
@@ -315,16 +305,12 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
 
         return $query
             ->get()
-            ->map(function (object $row) use ($tree): object {
-                return (object) [
-                    'record' => Registry::gedcomRecordFactory()->make($row->xref, $tree, $row->new_gedcom),
-                    'time'   => Registry::timestampFactory()->fromString($row->change_time),
-                    'user'   => $this->user_service->find((int) $row->user_id),
-                ];
-            })
-            ->filter(static function (object $row): bool {
-                return $row->record instanceof GedcomRecord && $row->record->canShow();
-            });
+            ->map(fn (object $row): object => (object) [
+                'record' => Registry::gedcomRecordFactory()->make($row->xref, $tree, $row->new_gedcom),
+                'time'   => Registry::timestampFactory()->fromString($row->change_time),
+                'user'   => $this->user_service->find((int) $row->user_id),
+            ])
+            ->filter(static fn (object $row): bool => $row->record instanceof GedcomRecord && $row->record->canShow());
     }
 
     /**
@@ -333,7 +319,7 @@ class RecentChangesModule extends AbstractModule implements ModuleBlockInterface
      * @param Tree $tree Changes for which tree
      * @param int  $days Number of days
      *
-     * @return Collection<array-key,stdClass> List of records with changes
+     * @return Collection<array-key,object{record:GedcomRecord,time:TimestampInterface,user:UserInterface}> List of records with changes
      */
     private function getRecentChangesFromGenealogy(Tree $tree, int $days): Collection
     {

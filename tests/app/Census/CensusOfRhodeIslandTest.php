@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Census;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class CensusOfRhodeIsland
- */
+#[CoversClass(CensusOfRhodeIsland::class)]
 class CensusOfRhodeIslandTest extends TestCase
 {
     /**
      * Test the census place
-     *
-     * @covers \Fisharebest\Webtrees\Census\CensusOfRhodeIsland
      */
     public function testPlace(): void
     {
@@ -40,8 +37,6 @@ class CensusOfRhodeIslandTest extends TestCase
 
     /**
      * Test the census language
-     *
-     * @covers \Fisharebest\Webtrees\Census\CensusOfRhodeIsland
      */
     public function testLanguage(): void
     {
@@ -52,8 +47,6 @@ class CensusOfRhodeIslandTest extends TestCase
 
     /**
      * Test the census dates
-     *
-     * @covers \Fisharebest\Webtrees\Census\CensusOfRhodeIsland
      */
     public function testAllDates(): void
     {

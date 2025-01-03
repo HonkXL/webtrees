@@ -25,6 +25,7 @@ use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\ColorGenerator;
 use Fisharebest\Webtrees\Date;
 use Fisharebest\Webtrees\DB;
+use Fisharebest\Webtrees\Http\Exceptions\HttpBadRequestException;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Place;
@@ -65,20 +66,20 @@ class LifespansChartModule extends AbstractModule implements ModuleChartInterfac
 {
     use ModuleChartTrait;
 
-    protected const ROUTE_URL = '/tree/{tree}/lifespans';
+    protected const string ROUTE_URL = '/tree/{tree}/lifespans';
 
     // In theory, only "@" is a safe separator, but it gives longer and uglier URLs.
     // Unless some other application generates XREFs with a ".", we are safe.
-    protected const SEPARATOR = '.';
+    protected const string SEPARATOR = '.';
 
     // Defaults
-    protected const DEFAULT_PARAMETERS = [];
+    protected const array DEFAULT_PARAMETERS = [];
 
     // Parameters for generating colors
-    protected const RANGE      = 120; // degrees
-    protected const SATURATION = 100; // percent
-    protected const LIGHTNESS  = 30; // percent
-    protected const ALPHA      = 0.25;
+    protected const int RANGE      = 120; // degrees
+    protected const int SATURATION = 100; // percent
+    protected const int LIGHTNESS  = 30; // percent
+    protected const float ALPHA = 0.25;
 
     /**
      * Initialization.
@@ -103,11 +104,6 @@ class LifespansChartModule extends AbstractModule implements ModuleChartInterfac
         return I18N::translate('Lifespans');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “LifespansChart” module */
@@ -152,9 +148,14 @@ class LifespansChartModule extends AbstractModule implements ModuleChartInterfac
         $xrefs = Validator::queryParams($request)->string('xrefs', '');
         $ajax  = Validator::queryParams($request)->boolean('ajax', false);
 
-        // URLs created by webtrees 2.0 and earlier used an array.
         if ($xrefs === '') {
-            $xrefs = Validator::queryParams($request)->array('xrefs');
+            try {
+                // URLs created by webtrees 2.0 and earlier used an array.
+                $xrefs = Validator::queryParams($request)->array('xrefs');
+            } catch (HttpBadRequestException) {
+                // Not a 2.0 request, just an empty parameter.
+                $xrefs = [];
+            }
         } else {
             $xrefs = explode(self::SEPARATOR, $xrefs);
         }
@@ -242,13 +243,9 @@ class LifespansChartModule extends AbstractModule implements ModuleChartInterfac
     protected function chart(Tree $tree, array $xrefs): ResponseInterface
     {
         /** @var Individual[] $individuals */
-        $individuals = array_map(static function (string $xref) use ($tree): ?Individual {
-            return Registry::individualFactory()->make($xref, $tree);
-        }, $xrefs);
+        $individuals = array_map(static fn (string $xref): Individual|null => Registry::individualFactory()->make($xref, $tree), $xrefs);
 
-        $individuals = array_filter($individuals, static function (?Individual $individual): bool {
-            return $individual instanceof Individual && $individual->canShow();
-        });
+        $individuals = array_filter($individuals, static fn (Individual|null $individual): bool => $individual instanceof Individual && $individual->canShow());
 
         // Sort the array in order of birth year
         usort($individuals, Individual::birthDateComparator());

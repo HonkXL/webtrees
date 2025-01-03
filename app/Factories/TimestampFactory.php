@@ -26,7 +26,7 @@ use Fisharebest\Webtrees\Contracts\UserInterface;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\Timestamp;
-use LogicException;
+use InvalidArgumentException;
 
 use function date;
 use function date_create_from_format;
@@ -43,7 +43,7 @@ class TimestampFactory implements TimestampFactoryInterface
      *
      * @return TimestampInterface
      */
-    public function make(int $timestamp, UserInterface $user = null): TimestampInterface
+    public function make(int $timestamp, UserInterface|null $user = null): TimestampInterface
     {
         $user     ??= Auth::user();
         $timezone = $user->getPreference(UserInterface::PREF_TIME_ZONE, Site::getPreference('TIMEZONE'));
@@ -59,13 +59,13 @@ class TimestampFactory implements TimestampFactoryInterface
      *
      * @return TimestampInterface
      */
-    public function fromString(?string $string, string $format = 'Y-m-d H:i:s', UserInterface $user = null): TimestampInterface
+    public function fromString(string|null $string, string $format = 'Y-m-d H:i:s', UserInterface|null $user = null): TimestampInterface
     {
         $string    ??= date($format);
         $timestamp = date_create_from_format($format, $string);
 
         if ($timestamp === false) {
-            throw new LogicException('date/time "' . $string . '" does not match pattern "' . $format . '"');
+            throw new InvalidArgumentException('date/time "' . $string . '" does not match pattern "' . $format . '"');
         }
 
         return $this->make($timestamp->getTimestamp(), $user);
@@ -76,7 +76,7 @@ class TimestampFactory implements TimestampFactoryInterface
      *
      * @return TimestampInterface
      */
-    public function now(UserInterface $user = null): TimestampInterface
+    public function now(UserInterface|null $user = null): TimestampInterface
     {
         return $this->make(time(), $user);
     }

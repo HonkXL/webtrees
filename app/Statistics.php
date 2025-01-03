@@ -63,7 +63,6 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
 use ReflectionNamedType;
-use stdClass;
 
 use function count;
 use function in_array;
@@ -178,17 +177,13 @@ class Statistics implements
             $public_methods = $class->getMethods(ReflectionMethod::IS_PUBLIC);
 
             $examples = Collection::make($public_methods)
-                ->filter(static function (ReflectionMethod $method): bool {
-                    return !in_array($method->getName(), ['embedTags', 'getAllTagsTable'], true);
-                })
+                ->filter(static fn (ReflectionMethod $method): bool => !in_array($method->getName(), ['embedTags', 'getAllTagsTable'], true))
                 ->filter(static function (ReflectionMethod $method): bool {
                     $type = $method->getReturnType();
 
                     return $type instanceof ReflectionNamedType && $type->getName() === 'string';
                 })
-                ->sort(static function (ReflectionMethod $x, ReflectionMethod $y): int {
-                    return $x->getName() <=> $y->getName();
-                })
+                ->sort(static fn (ReflectionMethod $x, ReflectionMethod $y): int => $x->getName() <=> $y->getName())
                 ->map(function (ReflectionMethod $method): string {
                     $tag = $method->getName();
 
@@ -320,8 +315,8 @@ class Statistics implements
      * @return string
      */
     public function chartIndisWithSources(
-        string $color_from = null,
-        string $color_to = null
+        string|null $color_from = null,
+        string|null $color_to = null
     ): string {
         return $this->individual_repository->chartIndisWithSources($color_from, $color_to);
     }
@@ -373,8 +368,8 @@ class Statistics implements
      * @return string
      */
     public function chartFamsWithSources(
-        string $color_from = null,
-        string $color_to = null
+        string|null $color_from = null,
+        string|null $color_to = null
     ): string {
         return $this->individual_repository->chartFamsWithSources($color_from, $color_to);
     }
@@ -585,9 +580,9 @@ class Statistics implements
      * @return string
      */
     public function chartSex(
-        string $color_female = null,
-        string $color_male = null,
-        string $color_unknown = null
+        string|null $color_female = null,
+        string|null $color_male = null,
+        string|null $color_unknown = null
     ): string {
         return $this->individual_repository->chartSex($color_female, $color_male, $color_unknown);
     }
@@ -630,7 +625,7 @@ class Statistics implements
      *
      * @return string
      */
-    public function chartMortality(string $color_living = null, string $color_dead = null): string
+    public function chartMortality(string|null $color_living = null, string|null $color_dead = null): string
     {
         return $this->individual_repository->chartMortality($color_living, $color_dead);
     }
@@ -801,7 +796,7 @@ class Statistics implements
      *
      * @return string
      */
-    public function chartMedia(string $color_from = null, string $color_to = null): string
+    public function chartMedia(string|null $color_from = null, string|null $color_to = null): string
     {
         return $this->media_repository->chartMedia($color_from, $color_to);
     }
@@ -953,7 +948,7 @@ class Statistics implements
      *
      * @return string
      */
-    public function statsBirth(string $color_from = null, string $color_to = null): string
+    public function statsBirth(string|null $color_from = null, string|null $color_to = null): string
     {
         return $this->individual_repository->statsBirth($color_from, $color_to);
     }
@@ -1050,7 +1045,7 @@ class Statistics implements
      *
      * @return string
      */
-    public function statsDeath(string $color_from = null, string $color_to = null): string
+    public function statsDeath(string|null $color_from = null, string|null $color_to = null): string
     {
         return $this->individual_repository->statsDeath($color_from, $color_to);
     }
@@ -1063,7 +1058,7 @@ class Statistics implements
      * @param int    $year1
      * @param int    $year2
      *
-     * @return array<array<stdClass>>
+     * @return array<array<object>>
      */
     public function statsAgeQuery(string $related = 'BIRT', string $sex = 'BOTH', int $year1 = -1, int $year2 = -1): array
     {
@@ -1472,7 +1467,7 @@ class Statistics implements
      *
      * @return string
      */
-    public function statsMarr(string $color_from = null, string $color_to = null): string
+    public function statsMarr(string|null $color_from = null, string|null $color_to = null): string
     {
         return $this->family_repository->statsMarr($color_from, $color_to);
     }
@@ -1547,7 +1542,7 @@ class Statistics implements
      *
      * @return string
      */
-    public function statsDiv(string $color_from = null, string $color_to = null): string
+    public function statsDiv(string|null $color_from = null, string|null $color_to = null): string
     {
         return $this->family_repository->statsDiv($color_from, $color_to);
     }
@@ -1661,7 +1656,7 @@ class Statistics implements
      * @param int    $year1
      * @param int    $year2
      *
-     * @return array<stdClass>
+     * @return array<object>
      */
     public function statsMarrAgeQuery(string $sex, int $year1 = -1, int $year2 = -1): array
     {
@@ -1982,8 +1977,8 @@ class Statistics implements
      * @return string
      */
     public function chartLargestFamilies(
-        string $color_from = null,
-        string $color_to = null,
+        string|null $color_from = null,
+        string|null $color_to = null,
         string $total = '10'
     ): string {
         return $this->family_repository->chartLargestFamilies($color_from, $color_to, (int) $total);
@@ -2009,7 +2004,7 @@ class Statistics implements
      * @param int $year1
      * @param int $year2
      *
-     * @return array<stdClass>
+     * @return array<object>
      */
     public function statsChildrenQuery(int $year1 = -1, int $year2 = -1): array
     {
@@ -2193,8 +2188,8 @@ class Statistics implements
      * @return string
      */
     public function chartCommonSurnames(
-        string $color_from = null,
-        string $color_to = null,
+        string|null $color_from = null,
+        string|null $color_to = null,
         string $number_of_surnames = '10'
     ): string {
         return $this->individual_repository
@@ -2429,8 +2424,8 @@ class Statistics implements
      * @return string
      */
     public function chartCommonGiven(
-        string $color_from = null,
-        string $color_to = null,
+        string|null $color_from = null,
+        string|null $color_to = null,
         string $maxtoshow = '7'
     ): string {
         return $this->individual_repository->chartCommonGiven($color_from, $color_to, (int) $maxtoshow);
@@ -2555,7 +2550,7 @@ class Statistics implements
      *
      * @return string
      */
-    public function latestUserRegDate(string $format = null): string
+    public function latestUserRegDate(string|null $format = null): string
     {
         return $this->latest_user_repository->latestUserRegDate($format);
     }
@@ -2565,7 +2560,7 @@ class Statistics implements
      *
      * @return string
      */
-    public function latestUserRegTime(string $format = null): string
+    public function latestUserRegTime(string|null $format = null): string
     {
         return $this->latest_user_repository->latestUserRegTime($format);
     }
@@ -2576,7 +2571,7 @@ class Statistics implements
      *
      * @return string
      */
-    public function latestUserLoggedin(string $yes = null, string $no = null): string
+    public function latestUserLoggedin(string|null $yes = null, string|null $no = null): string
     {
         return $this->latest_user_repository->latestUserLoggedin($yes, $no);
     }
@@ -2800,14 +2795,12 @@ class Statistics implements
      *
      * @return string|null
      */
-    public function callBlock(string $block = '', ...$params): ?string
+    public function callBlock(string $block = '', ...$params): string|null
     {
         /** @var ModuleBlockInterface|null $module */
         $module = $this->module_service
             ->findByComponent(ModuleBlockInterface::class, $this->tree, Auth::user())
-            ->first(static function (ModuleInterface $module) use ($block): bool {
-                return $module->name() === $block && $module->name() !== 'html';
-            });
+            ->first(static fn (ModuleInterface $module): bool => $module->name() === $block && $module->name() !== 'html');
 
         if ($module === null) {
             return '';

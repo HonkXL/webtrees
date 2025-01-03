@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class LinkSpouseToIndividualAction
- *
- * @covers Fisharebest\Webtrees\Http\RequestHandlers\LinkSpouseToIndividualAction
- */
+#[CoversClass(LinkSpouseToIndividualAction::class)]
 class LinkSpouseToIndividualActionTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\LinkSpouseToIndividualAction::class));
+        self::assertTrue(class_exists(LinkSpouseToIndividualAction::class));
     }
 }

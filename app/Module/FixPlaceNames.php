@@ -59,11 +59,6 @@ class FixPlaceNames extends AbstractModule implements ModuleDataFixInterface
         return I18N::translate('Update place names');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of a “Data fix” module */
@@ -91,7 +86,7 @@ class FixPlaceNames extends AbstractModule implements ModuleDataFixInterface
      *
      * @return Collection<int,string>|null
      */
-    protected function familiesToFix(Tree $tree, array $params): ?Collection
+    protected function familiesToFix(Tree $tree, array $params): Collection|null
     {
         if ($params['search-for'] === '' || $params['replace-with'] === '') {
             return null;
@@ -113,7 +108,7 @@ class FixPlaceNames extends AbstractModule implements ModuleDataFixInterface
      *
      * @return Collection<int,string>|null
      */
-    protected function individualsToFix(Tree $tree, array $params): ?Collection
+    protected function individualsToFix(Tree $tree, array $params): Collection|null
     {
         if ($params['search-for'] === '' || $params['replace-with'] === '') {
             return null;

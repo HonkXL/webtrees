@@ -17,34 +17,23 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Http\RequestHandlers;
+namespace Fisharebest\Webtrees\Http\Exceptions;
 
-use Fisharebest\Webtrees\Http\ViewResponseTrait;
+use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\I18N;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * Import custom thumbnails from webtrees 1.x.
+ * Application level exceptions.
  */
-class ImportThumbnailsPage implements RequestHandlerInterface
+class HttpGoneException extends HttpException
 {
-    use ViewResponseTrait;
-
     /**
-     * Import custom thumbnails from webtrees 1.x.
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
+     * @param string|null $message
      */
-    public function handle(ServerRequestInterface $request): ResponseInterface
+    public function __construct(string|null $message = null)
     {
-        $this->layout = 'layouts/administration';
+        $message ??= I18N::translate('This page has been deleted.');
 
-        return $this->viewResponse('admin/webtrees1-thumbnails', [
-            'title' => I18N::translate('Import custom thumbnails from webtrees version 1'),
-        ]);
+        parent::__construct($message, StatusCodeInterface::STATUS_GONE);
     }
 }

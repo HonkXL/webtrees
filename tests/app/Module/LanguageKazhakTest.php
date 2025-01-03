@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class LanguageKazhak
- *
- * @covers Fisharebest\Webtrees\Module\LanguageKazhak
- */
+#[CoversClass(LanguageKazhak::class)]
 class LanguageKazhakTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Module\LanguageKazhak::class));
+        self::assertTrue(class_exists(LanguageKazhak::class));
     }
 }

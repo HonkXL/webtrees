@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class AddChildToFamilyAction
- *
- * @covers Fisharebest\Webtrees\Http\RequestHandlers\AddChildToFamilyAction
- */
+#[CoversClass(AddChildToFamilyAction::class)]
 class AddChildToFamilyActionTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\AddChildToFamilyAction::class));
+        self::assertTrue(class_exists(AddChildToFamilyAction::class));
     }
 }

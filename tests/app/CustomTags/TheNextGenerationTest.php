@@ -17,26 +17,16 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Http\RequestHandlers;
+namespace Fisharebest\Webtrees\CustomTags;
 
-use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test ImportThumbnailsData class.
- *
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\ImportThumbnailsPage
- */
-class ImportThumbnailsPageTest extends TestCase
+#[CoversClass(TheNextGeneration::class)]
+class TheNextGenerationTest extends TestCase
 {
-    protected static bool $uses_database = true;
-
-    public function testWebtrees1Thumbnails(): void
+    public function testClass(): void
     {
-        $handler  = new ImportThumbnailsPage();
-        $request  = self::createRequest();
-        $response = $handler->handle($request);
-
-        self::assertSame(StatusCodeInterface::STATUS_OK, $response->getStatusCode());
+        self::assertTrue(class_exists(TheNextGeneration::class));
     }
 }

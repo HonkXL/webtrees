@@ -55,11 +55,6 @@ class WelcomeBlockModule extends AbstractModule implements ModuleBlockInterface
         return I18N::translate('Home page');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Home page” module */
@@ -84,9 +79,7 @@ class WelcomeBlockModule extends AbstractModule implements ModuleBlockInterface
 
         $pedigree_chart = $this->module_service
             ->findByComponent(ModuleChartInterface::class, $tree, Auth::user())
-            ->first(static function (ModuleInterface $module): bool {
-                return $module instanceof PedigreeChartModule;
-            });
+            ->first(static fn (ModuleInterface $module): bool => $module instanceof PedigreeChartModule);
 
         if ($pedigree_chart instanceof PedigreeChartModule) {
             $links[] = [

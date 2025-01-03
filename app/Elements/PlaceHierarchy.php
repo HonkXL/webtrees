@@ -38,7 +38,7 @@ use function trim;
  */
 class PlaceHierarchy extends AbstractElement
 {
-    protected const MAXIMUM_LENGTH = 120;
+    protected const int MAXIMUM_LENGTH = 120;
 
     /**
      * Convert a value to a canonical form.
@@ -50,7 +50,7 @@ class PlaceHierarchy extends AbstractElement
     public function canonical(string $value): string
     {
         $value = parent::canonical($value);
-        $value = preg_replace('/[, ]+/', ', ', $value);
+        $value = preg_replace('/[, ]*,[, ]*/', ', ', $value);
 
         return trim($value, ', ');
     }

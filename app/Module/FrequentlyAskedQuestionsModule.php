@@ -70,11 +70,6 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
         return I18N::translate('FAQ');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “FAQ” module */
@@ -98,7 +93,7 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
      *
      * @return Menu|null
      */
-    public function getMenu(Tree $tree): ?Menu
+    public function getMenu(Tree $tree): Menu|null
     {
         if ($this->faqsExist($tree, I18N::languageTag())) {
             return new Menu($this->title(), route('module', [
@@ -310,9 +305,7 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
         }
 
         $gedcom_ids = $this->tree_service->all()
-            ->mapWithKeys(static function (Tree $tree): array {
-                return [$tree->id() => $tree->title()];
-            })
+            ->mapWithKeys(static fn (Tree $tree): array => [$tree->id() => $tree->title()])
             ->all();
 
         $gedcom_ids = ['' => I18N::translate('All')] + $gedcom_ids;
@@ -364,7 +357,7 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
                 'block_order' => $block_order,
             ]);
 
-            $block_id = (int) DB::connection()->getPdo()->lastInsertId();
+            $block_id = DB::lastInsertId();
         }
 
         $this->setBlockSetting($block_id, 'faqbody', $body);
@@ -390,9 +383,7 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
 
         // Filter foreign languages.
         $faqs = $this->faqsForTree($tree)
-            ->filter(static function (object $faq): bool {
-                return $faq->languages === '' || in_array(I18N::languageTag(), explode(',', $faq->languages), true);
-            });
+            ->filter(static fn (object $faq): bool => $faq->languages === '' || in_array(I18N::languageTag(), explode(',', $faq->languages), true));
 
         return $this->viewResponse('modules/faq/show', [
             'faqs'  => $faqs,
@@ -452,9 +443,7 @@ class FrequentlyAskedQuestionsModule extends AbstractModule implements ModuleCon
             })
             ->select(['setting_value AS languages'])
             ->get()
-            ->filter(static function (object $faq) use ($language): bool {
-                return $faq->languages === '' || in_array($language, explode(',', $faq->languages), true);
-            })
+            ->filter(static fn (object $faq): bool => $faq->languages === '' || in_array($language, explode(',', $faq->languages), true))
             ->isNotEmpty();
     }
 }

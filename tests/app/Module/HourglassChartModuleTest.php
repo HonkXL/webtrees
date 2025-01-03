@@ -20,12 +20,9 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class HourglassChartModule
- *
- * @covers \Fisharebest\Webtrees\Module\HourglassChartModule
- */
+#[CoversClass(HourglassChartModule::class)]
 class HourglassChartModuleTest extends TestCase
 {
     /**

@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Services;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class GedcomService
- *
- * @covers Fisharebest\Webtrees\Services\GedcomService
- */
+#[CoversClass(GedcomService::class)]
 class GedcomServiceTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Services\GedcomService::class));
+        self::assertTrue(class_exists(GedcomService::class));
     }
 }

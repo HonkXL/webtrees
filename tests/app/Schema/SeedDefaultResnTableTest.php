@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Schema;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class SeedDefaultResnTable
- *
- * @covers Fisharebest\Webtrees\Schema\SeedDefaultResnTable
- */
+#[CoversClass(SeedDefaultResnTable::class)]
 class SeedDefaultResnTableTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Schema\SeedDefaultResnTable::class));
+        self::assertTrue(class_exists(SeedDefaultResnTable::class));
     }
 }

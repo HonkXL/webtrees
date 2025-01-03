@@ -27,20 +27,19 @@ use Fisharebest\Webtrees\Module\LanguageEnglishUnitedStates;
 use Fisharebest\Webtrees\Module\LanguageFrench;
 use Fisharebest\Webtrees\Module\LanguageSlovakian;
 use Fisharebest\Webtrees\Module\ModuleLanguageInterface;
+use Fisharebest\Webtrees\Module\ModuleLanguageTrait;
 use Fisharebest\Webtrees\Services\RelationshipService;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversTrait;
 
 use function array_reverse;
 
-/**
- * Test the user functions
- *
- * @covers \Fisharebest\Webtrees\Relationship
- * @covers \Fisharebest\Webtrees\Services\RelationshipService
- * @covers \Fisharebest\Webtrees\Module\LanguageEnglishGreatBritain
- * @covers \Fisharebest\Webtrees\Module\LanguageEnglishUnitedStates
- * @covers \Fisharebest\Webtrees\Module\LanguageFrench
- * @covers \Fisharebest\Webtrees\Module\ModuleLanguageTrait
- */
+#[CoversClass(Relationship::class)]
+#[CoversClass(RelationshipService::class)]
+#[CoversClass(LanguageEnglishGreatBritain::class)]
+#[CoversClass(LanguageEnglishUnitedStates::class)]
+#[CoversClass(LanguageFrench::class)]
+#[CoversTrait(ModuleLanguageTrait::class)]
 class RelationshipNamesTest extends TestCase
 {
     protected static bool $uses_database = true;
@@ -74,8 +73,8 @@ class RelationshipNamesTest extends TestCase
         //
         $tree = $this->createMock(Tree::class);
 
-        $individual_factory = $this->createStub(IndividualFactory::class);
-        $family_factory     = $this->createStub(FamilyFactory::class);
+        $individual_factory = $this->createMock(IndividualFactory::class);
+        $family_factory     = $this->createMock(FamilyFactory::class);
 
         Registry::familyFactory($family_factory);
         Registry::individualFactory($individual_factory);
@@ -121,45 +120,45 @@ class RelationshipNamesTest extends TestCase
         $i39mo = new Individual('i39mo', "0 @i39o@ INDI\n1 SEX M\n1 FAMC @f14d@\n2 PEDI foster", null, $tree);
 
         $individual_factory->method('make')->willReturnMap([
-            'i1m'   => $i1m,
-            'i2f'   => $i2f,
-            'i3m'   => $i3m,
-            'i4f'   => $i4f,
-            'i5u'   => $i5u,
-            'i6m'   => $i6m,
-            'i7ma'  => $i7ma,
-            'i8f'   => $i8f,
-            'i9u'   => $i9u,
-            'i10f'  => $i10f,
-            'i11m'  => $i11m,
-            'i12f'  => $i12f,
-            'i13m'  => $i13m,
-            'i14f'  => $i14f,
-            'i15u'  => $i15u,
-            'i16m'  => $i16m,
-            'i17f'  => $i17f,
-            'i18m'  => $i18m,
-            'i19f'  => $i19f,
-            'i20m'  => $i20m,
-            'i21f'  => $i21f,
-            'i22m'  => $i22m,
-            'i23f'  => $i23f,
-            'i24m'  => $i24m,
-            'i25f'  => $i25f,
-            'i26f'  => $i26f,
-            'i27m'  => $i27m,
-            'i28u'  => $i28u,
-            'i29m'  => $i29m,
-            'i30m'  => $i30m,
-            'i31m'  => $i31m,
-            'i32f'  => $i32f,
-            'i33f'  => $i33f,
-            'i34f'  => $i34f,
-            'i35m'  => $i35m,
-            'i36f'  => $i36f,
-            'i37f'  => $i37f,
-            'i38f'  => $i38f,
-            'i39mo' => $i39mo
+            ['i1m', $i1m],
+            ['i2f', $i2f],
+            ['i3m', $i3m],
+            ['i4f', $i4f],
+            ['i5u', $i5u],
+            ['i6m', $i6m],
+            ['i7ma', $i7ma],
+            ['i8f', $i8f],
+            ['i9u', $i9u],
+            ['i10f', $i10f],
+            ['i11m', $i11m],
+            ['i12f', $i12f],
+            ['i13m', $i13m],
+            ['i14f', $i14f],
+            ['i15u', $i15u],
+            ['i16m', $i16m],
+            ['i17f', $i17f],
+            ['i18m', $i18m],
+            ['i19f', $i19f],
+            ['i20m', $i20m],
+            ['i21f', $i21f],
+            ['i22m', $i22m],
+            ['i23f', $i23f],
+            ['i24m', $i24m],
+            ['i25f', $i25f],
+            ['i26f', $i26f],
+            ['i27m', $i27m],
+            ['i28u', $i28u],
+            ['i29m', $i29m],
+            ['i30m', $i30m],
+            ['i31m', $i31m],
+            ['i32f', $i32f],
+            ['i33f', $i33f],
+            ['i34f', $i34f],
+            ['i35m', $i35m],
+            ['i36f', $i36f],
+            ['i37f', $i37f],
+            ['i38f', $i38f],
+            ['i39mo', $i39mo],
         ]);
 
         $f1m  = new Family('f1m', "0 @f1m@ FAM\n1 MARR Y\n1 HUSB @i1m@\n1 WIFE @i2f@\n1 CHIL @i3m@\n1 CHIL @i4f@\n1 CHIL @i5u@", null, $tree);
@@ -181,23 +180,23 @@ class RelationshipNamesTest extends TestCase
         $f17  = new Family('f17', "0 @f17@ FAM\n1 HUSB @i35m@\n1 CHIL @i36f@", null, $tree);
 
         $family_factory->method('make')->willReturnMap([
-            'f1m'  => $f1m,
-            'f2d'  => $f2d,
-            'f3e'  => $f3e,
-            'f4m'  => $f4m,
-            'f5m'  => $f5m,
-            'f6'   => $f6,
-            'f7'   => $f7,
-            'f8'   => $f8,
-            'f9'   => $f9,
-            'f10'  => $f10,
-            'f11m' => $f11m,
-            'f12'  => $f12,
-            'f13m' => $f13m,
-            'f14d' => $f14d,
-            'f15'  => $f15,
-            'f16'  => $f16,
-            'f17'  => $f17
+            ['f1m', $f1m],
+            ['f2d', $f2d],
+            ['f3e', $f3e],
+            ['f4m', $f4m],
+            ['f5m', $f5m],
+            ['f6', $f6],
+            ['f7', $f7],
+            ['f8', $f8],
+            ['f9', $f9],
+            ['f10', $f10],
+            ['f11m', $f11m],
+            ['f12', $f12],
+            ['f13m', $f13m],
+            ['f14d', $f14d],
+            ['f15', $f15],
+            ['f16', $f16],
+            ['f17', $f17],
         ]);
 
         ///////////////////////////////////////////////////////////////////////
@@ -378,9 +377,7 @@ class RelationshipNamesTest extends TestCase
     }
 
     /**
-     * @param string                   $expected
      * @param array<Individual|Family> $nodes
-     * @param ModuleLanguageInterface  $language
      */
     private static function assertRelationship(string $expected, array $nodes, ModuleLanguageInterface $language): void
     {
@@ -396,10 +393,7 @@ class RelationshipNamesTest extends TestCase
     /**
      * Test a relationship name in both directions
      *
-     * @param string                   $fwd
-     * @param string                   $rev
      * @param array<Individual|Family> $nodes
-     * @param ModuleLanguageInterface  $language
      */
     private static function assertRelationships(string $fwd, string $rev, array $nodes, ModuleLanguageInterface $language): void
     {

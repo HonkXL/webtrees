@@ -50,7 +50,7 @@ use const STREAM_FILTER_READ;
 class TreeService
 {
     // The most likely surname tradition for a given language.
-    private const DEFAULT_SURNAME_TRADITIONS = [
+    private const array DEFAULT_SURNAME_TRADITIONS = [
         'es'    => 'spanish',
         'is'    => 'icelandic',
         'lt'    => 'lithuanian',
@@ -133,9 +133,7 @@ class TreeService
 
             return $query
                 ->get()
-                ->mapWithKeys(static function (object $row): array {
-                    return [$row->tree_name => Tree::rowMapper()($row)];
-                });
+                ->mapWithKeys(static fn (object $row): array => [$row->tree_name => Tree::rowMapper()($row)]);
         });
     }
 
@@ -148,9 +146,7 @@ class TreeService
      */
     public function find(int $id): Tree
     {
-        $tree = $this->all()->first(static function (Tree $tree) use ($id): bool {
-            return $tree->id() === $id;
-        });
+        $tree = $this->all()->first(static fn (Tree $tree): bool => $tree->id() === $id);
 
         if ($tree instanceof Tree) {
             return $tree;
@@ -166,9 +162,7 @@ class TreeService
      */
     public function titles(): array
     {
-        return $this->all()->map(static function (Tree $tree): string {
-            return $tree->title();
-        })->all();
+        return $this->all()->map(static fn (Tree $tree): string => $tree->title())->all();
     }
 
     /**
@@ -183,7 +177,7 @@ class TreeService
             'gedcom_name' => $name,
         ]);
 
-        $tree_id = (int) DB::connection()->getPdo()->lastInsertId();
+        $tree_id = DB::lastInsertId();
 
         $tree = new Tree($tree_id, $name, $title);
 
@@ -191,7 +185,7 @@ class TreeService
         $tree->setPreference('title', $title);
 
         // Set preferences from default tree
-        (new Builder(DB::connection()))->from('gedcom_setting')->insertUsing(
+        DB::query()->from('gedcom_setting')->insertUsing(
             ['gedcom_id', 'setting_name', 'setting_value'],
             static function (Builder $query) use ($tree_id): void {
                 $query
@@ -201,7 +195,7 @@ class TreeService
             }
         );
 
-        (new Builder(DB::connection()))->from('default_resn')->insertUsing(
+        DB::query()->from('default_resn')->insertUsing(
             ['gedcom_id', 'tag_type', 'resn'],
             static function (Builder $query) use ($tree_id): void {
                 $query

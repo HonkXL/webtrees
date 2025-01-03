@@ -50,13 +50,11 @@ class BritishPrimeMinisters extends AbstractModule implements ModuleHistoricEven
     }
 
     /**
-     * All events provided by this module.
-     *
      * @return Collection<int,string>
      */
-    public function historicEventsAll(): Collection
+    public function historicEventsAll(string $language_tag): Collection
     {
-        switch (I18N::languageTag()) {
+        switch ($language_tag) {
             case 'en-AU':
             case 'en-GB':
             case 'en-US':
@@ -134,7 +132,10 @@ class BritishPrimeMinisters extends AbstractModule implements ModuleHistoricEven
                     "1 EVEN Gordon Brown\n2 TYPE Prime Minister of the United Kingdom\n2 DATE FROM 27 JUN 2007 TO 11 MAY 2010",
                     "1 EVEN David Cameron\n2 TYPE Prime Minister of the United Kingdom\n2 DATE FROM 11 MAY 2010 TO 13 JUL 2016",
                     "1 EVEN Theresa May\n2 TYPE Prime Minister of the United Kingdom\n2 DATE FROM 13 JUL 2016 TO 24 JUL 2019",
-                    "1 EVEN Boris Johnson\n2 TYPE Prime Minister of the United Kingdom\n2 DATE FROM 24 JUL 2019",
+                    "1 EVEN Boris Johnson\n2 TYPE Prime Minister of the United Kingdom\n2 DATE FROM 24 JUL 2019 TO 06 SEP 2022",
+                    "1 EVEN Liz Truss\n2 TYPE Prime Minister of the United Kingdom\n2 DATE FROM 06 SEP 2022 TO 25 OCT 2022",
+                    "1 EVEN Rishi Sunak\n2 TYPE Prime Minister of the United Kingdom\n2 DATE FROM 25 OCT 2022 TO 05 JUL 2024",
+                    "1 EVEN Keir Starmer\n2 TYPE Prime Minister of the United Kingdom\n2 DATE FROM 05 JUL 2024",
                 ]);
 
             default:

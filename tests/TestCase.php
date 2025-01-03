@@ -54,9 +54,6 @@ use function substr;
 
 use const UPLOAD_ERR_OK;
 
-/**
- * Base class for unit tests
- */
 class TestCase extends \PHPUnit\Framework\TestCase
 {
     public static ?object $mock_functions = null;
@@ -68,12 +65,19 @@ class TestCase extends \PHPUnit\Framework\TestCase
      */
     private static function createTestDatabase(): void
     {
-        $capsule = new DB();
-        $capsule->addConnection([
-            'driver'   => 'sqlite',
-            'database' => ':memory:',
-        ]);
-        $capsule->setAsGlobal();
+        DB::connect(
+            driver: DB::SQLITE,
+            host: '',
+            port: '',
+            database: ':memory:',
+            username: '',
+            password: '',
+            prefix: 'wt_',
+            key: '',
+            certificate: '',
+            ca: '',
+            verify_certificate: false,
+        );
 
         // Create tables
         $migration_service = new MigrationService();
@@ -86,13 +90,10 @@ class TestCase extends \PHPUnit\Framework\TestCase
     /**
      * Create a request and bind it into the container.
      *
-     * @param string                       $method
      * @param array<string>                $query
      * @param array<string>                $params
      * @param array<UploadedFileInterface> $files
      * @param array<string|Tree>           $attributes
-     *
-     * @return ServerRequestInterface
      */
     protected static function createRequest(
         string $method = RequestMethodInterface::METHOD_GET,
@@ -147,7 +148,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
         Registry::container()->set(RouterContainer::class, $router_container);
 
         if (static::$uses_database) {
-            static::createTestDatabase();
+            self::createTestDatabase();
 
             // This is normally set in middleware.
             (new Gedcom())->registerTags(Registry::elementFactory(), true);

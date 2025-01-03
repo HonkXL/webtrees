@@ -47,10 +47,10 @@ class ShareAnniversaryModule extends AbstractModule implements ModuleShareInterf
 {
     use ModuleShareTrait;
 
-    protected const INDIVIDUAL_EVENTS = ['BIRT', 'DEAT'];
-    protected const FAMILY_EVENTS     = ['MARR'];
+    protected const array INDIVIDUAL_EVENTS = ['BIRT', 'DEAT'];
+    protected const array FAMILY_EVENTS     = ['MARR'];
 
-    protected const ROUTE_URL = '/tree/{tree}/anniversary-ics/{xref}/{fact_id}';
+    protected const string ROUTE_URL = '/tree/{tree}/anniversary-ics/{xref}/{fact_id}';
 
     /**
      * Initialization.
@@ -73,11 +73,6 @@ class ShareAnniversaryModule extends AbstractModule implements ModuleShareInterf
         return I18N::translate('Share the anniversary of an event');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         return I18N::translate('Download a .ICS file containing an anniversary');
@@ -142,13 +137,13 @@ class ShareAnniversaryModule extends AbstractModule implements ModuleShareInterf
         $fact = $record->facts()->first(fn (Fact $fact): bool => $fact->id() === $fact_id);
 
         if ($fact instanceof Fact) {
-            $date             = $fact->date()->minimumDate()->format('%Y%m%d');
-            $vcalendar        = new VCalendar();
-            $vevent           = $vcalendar->add('VEVENT');
-            $dtstart          = $vevent->add('DTSTART', $date);
-            $dtstart['VALUE'] = 'DATE';
-            $vevent->add('RRULE', 'FREQ=YEARLY');
-            $vevent->add('SUMMARY', strip_tags($record->fullName()) . ' — ' . $fact->label());
+            $vcalendar = new VCalendar([
+                'VEVENT' => [
+                    'DTSTART' => $fact->date()->minimumDate()->format('%Y%m%d'),
+                    'RRULE'   => 'FREQ=YEARLY',
+                    'SUMMARY' => strip_tags($record->fullName()) . ' — ' . $fact->label(),
+                ],
+            ]);
 
             return response($vcalendar->serialize())
                 ->withHeader('content-type', 'text/calendar')

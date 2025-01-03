@@ -40,7 +40,7 @@ class CompactTreeChartModule extends AbstractModule implements ModuleChartInterf
 {
     use ModuleChartTrait;
 
-    protected const ROUTE_URL = '/tree/{tree}/compact/{xref}';
+    protected const string ROUTE_URL = '/tree/{tree}/compact/{xref}';
 
     private ChartService $chart_service;
 
@@ -75,11 +75,6 @@ class CompactTreeChartModule extends AbstractModule implements ModuleChartInterf
         return I18N::translate('Compact tree');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “CompactTreeChart” module */
@@ -98,12 +93,8 @@ class CompactTreeChartModule extends AbstractModule implements ModuleChartInterf
 
     /**
      * Return a menu item for this chart - for use in individual boxes.
-     *
-     * @param Individual $individual
-     *
-     * @return Menu|null
      */
-    public function chartBoxMenu(Individual $individual): ?Menu
+    public function chartBoxMenu(Individual $individual): Menu|null
     {
         return $this->chartMenu($individual);
     }

@@ -22,66 +22,63 @@ namespace Fisharebest\Webtrees\Http\RequestHandlers;
 use Fig\Http\Message\RequestMethodInterface;
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Factories\IndividualFactory;
-use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
+use Fisharebest\Webtrees\Http\Exceptions\HttpGoneException;
 use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\Module\HourglassChartModule;
+use Fisharebest\Webtrees\Module\ModuleChartInterface;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\RedirectHourGlassPhp
- */
+#[CoversClass(RedirectHourGlassPhp::class)]
 class RedirectHourGlassPhpTest extends TestCase
 {
     protected static bool $uses_database = true;
 
     public function testRedirect(): void
     {
-        $tree = $this->createStub(Tree::class);
+        $tree = $this->createMock(Tree::class);
         $tree
             ->method('name')
             ->willReturn('tree1');
 
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
             ->willReturn(new Collection(['tree1' => $tree]));
 
-        $individual = $this->createStub(Individual::class);
+        $individual = $this->createMock(Individual::class);
 
-        $individual_factory = $this->createStub(IndividualFactory::class);
+        $individual_factory = $this->createMock(IndividualFactory::class);
         $individual_factory
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('make')
             ->with('X123', $tree)
             ->willReturn($individual);
 
         Registry::individualFactory($individual_factory);
 
-        $module = $this->createStub(HourglassChartModule::class);
+        $module = $this->createMock(HourglassChartModule::class);
         $module
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('chartUrl')
             ->willReturn('https://www.example.com');
 
-        $module_service = $this->createStub(ModuleService::class);
+        $module_service = $this->createMock(ModuleService::class);
         $module_service
-            ->expects(self::once())
-            ->method('findByInterface')
-            ->with(HourglassChartModule::class)
+            ->expects($this->once())
+            ->method('findByComponent')
+            ->with(ModuleChartInterface::class)
             ->willReturn(new Collection([$module]));
 
         $handler = new RedirectHourGlassPhp($module_service, $tree_service);
 
-        $request = self::createRequest(
-            RequestMethodInterface::METHOD_GET,
-            ['ged' => 'tree1', 'rootid' => 'X123']
-        );
+        $request = self::createRequest(RequestMethodInterface::METHOD_GET, ['ged' => 'tree1', 'rootid' => 'X123']);
 
         $response = $handler->handle($request);
 
@@ -91,57 +88,44 @@ class RedirectHourGlassPhpTest extends TestCase
 
     public function testModuleDisabled(): void
     {
-        $module_service = $this->createStub(ModuleService::class);
+        $module_service = $this->createMock(ModuleService::class);
         $module_service
-            ->expects(self::once())->method('findByInterface')
-            ->with(HourglassChartModule::class)
+            ->expects($this->once())->method('findByComponent')
+            ->with(ModuleChartInterface::class)
             ->willReturn(new Collection());
 
-        $tree = $this->createStub(Tree::class);
+        $tree = $this->createMock(Tree::class);
 
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
-            ->willReturn(new Collection([$tree]));
+            ->willReturn(new Collection(['tree1' => $tree]));
 
         $handler = new RedirectHourGlassPhp($module_service, $tree_service);
 
-        $request = self::createRequest(
-            RequestMethodInterface::METHOD_GET,
-            ['ged' => 'tree1', 'rootid' => 'X123']
-        );
+        $request = self::createRequest(RequestMethodInterface::METHOD_GET, ['ged' => 'tree1', 'rootid' => 'X123']);
 
-        $this->expectException(HttpNotFoundException::class);
+        $this->expectException(HttpGoneException::class);
 
         $handler->handle($request);
     }
 
     public function testNoSuchTree(): void
     {
-        $module = $this->createStub(HourglassChartModule::class);
+        $module_service = $this->createMock(ModuleService::class);
 
-        $module_service  = $this->createStub(ModuleService::class);
-        $module_service
-            ->expects(self::once())
-            ->method('findByInterface')
-            ->with(HourglassChartModule::class)
-            ->willReturn(new Collection([$module]));
-
-        $tree_service = $this->createStub(TreeService::class);
+        $tree_service = $this->createMock(TreeService::class);
         $tree_service
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('all')
             ->willReturn(new Collection([]));
 
         $handler = new RedirectHourGlassPhp($module_service, $tree_service);
 
-        $request = self::createRequest(
-            RequestMethodInterface::METHOD_GET,
-            ['ged' => 'tree1', 'rootid' => 'X123']
-        );
+        $request = self::createRequest(RequestMethodInterface::METHOD_GET, ['ged' => 'tree1', 'rootid' => 'X123']);
 
-        $this->expectException(HttpNotFoundException::class);
+        $this->expectException(HttpGoneException::class);
 
         $handler->handle($request);
     }

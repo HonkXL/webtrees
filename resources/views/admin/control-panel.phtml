@@ -10,7 +10,6 @@ use Fisharebest\Webtrees\Http\RequestHandlers\ControlPanel;
 use Fisharebest\Webtrees\Http\RequestHandlers\CreateTreePage;
 use Fisharebest\Webtrees\Http\RequestHandlers\EmailPreferencesPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\FixLevel0MediaPage;
-use Fisharebest\Webtrees\Http\RequestHandlers\ImportThumbnailsPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ManageMediaPage;
 use Fisharebest\Webtrees\Http\RequestHandlers\ManageTrees;
 use Fisharebest\Webtrees\Http\RequestHandlers\MapDataList;
@@ -504,22 +503,20 @@ use Illuminate\Support\Collection;
     <div class="card-body">
         <dl class="row">
             <?php foreach ([I18N::translate('Administrators') => $administrators, I18N::translate('Managers') => $managers, I18N::translate('Moderators') => $moderators, I18N::translate('Not verified by the user') => $unverified, I18N::translate('Not approved by an administrator') => $unapproved] as $label => $list) : ?>
-                <?php if (!empty($list)) : ?>
-                    <dt class="col-sm-6">
-                        <?= $label ?>
-                    </dt>
-                    <dd class="col-sm-6">
-                        <?php foreach ($list as $n => $user) : ?>
-                            <?= $n ? I18N::$list_separator : '' ?>
-                            <a href="<?= e(route(UserEditPage::class, ['user_id' => $user->id()])) ?>" dir="auto">
-                                <?= e($user->realName()) ?>
-                            </a>
-                        <?php endforeach ?>
-                        <?php if ($list->isEmpty()) : ?>
+                <dt class="col-sm-6">
+                    <?= $label ?>
+                </dt>
+                <dd class="col-sm-6">
+                    <?php foreach ($list as $n => $user) : ?>
+                        <?= $n ? I18N::$list_separator : '' ?>
+                        <a href="<?= e(route(UserEditPage::class, ['user_id' => $user->id()])) ?>" dir="auto">
+                            <?= e($user->realName()) ?>
+                        </a>
+                    <?php endforeach ?>
+                    <?php if ($list->isEmpty()) : ?>
                         —
-                        <?php endif ?>
-                    </dd>
-                <?php endif ?>
+                    <?php endif ?>
+                </dd>
             <?php endforeach ?>
         </dl>
 
@@ -819,12 +816,6 @@ use Illuminate\Support\Collection;
                 <span class="fa-li"><?= view('icons/link') ?></span>
                 <a href="<?= e(route(FixLevel0MediaPage::class)) ?>">
                     <?= I18N::translate('Link media objects to facts and events') ?>
-                </a>
-            </li>
-            <li>
-                <span class="fa-li"><?= view('icons/upload') ?></span>
-                <a href="<?= e(route(ImportThumbnailsPage::class)) ?>">
-                    <?= I18N::translate('Import custom thumbnails from webtrees version 1') ?>
                 </a>
             </li>
         </ul>

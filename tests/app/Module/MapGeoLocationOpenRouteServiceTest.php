@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Module;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class MapGeoLocationOpenRouteService
- *
- * @covers Fisharebest\Webtrees\Module\MapGeoLocationOpenRouteService
- */
+#[CoversClass(MapGeoLocationOpenRouteService::class)]
 class MapGeoLocationOpenRouteServiceTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Module\MapGeoLocationOpenRouteService::class));
+        self::assertTrue(class_exists(MapGeoLocationOpenRouteService::class));
     }
 }

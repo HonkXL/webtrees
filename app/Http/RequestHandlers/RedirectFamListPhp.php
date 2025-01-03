@@ -20,8 +20,10 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fig\Http\Message\StatusCodeInterface;
-use Fisharebest\Webtrees\Http\Exceptions\HttpNotFoundException;
+use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Http\Exceptions\HttpGoneException;
 use Fisharebest\Webtrees\Module\FamilyListModule;
+use Fisharebest\Webtrees\Module\ModuleListInterface;
 use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Services\ModuleService;
 use Fisharebest\Webtrees\Services\TreeService;
@@ -37,52 +39,39 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class RedirectFamListPhp implements RequestHandlerInterface
 {
-    private ModuleService $module_service;
-
-    private TreeService $tree_service;
-
-    /**
-     * @param ModuleService $module_service
-     * @param TreeService   $tree_service
-     */
-    public function __construct(ModuleService $module_service, TreeService $tree_service)
-    {
-        $this->module_service = $module_service;
-        $this->tree_service   = $tree_service;
+    public function __construct(
+        private readonly ModuleService $module_service,
+        private readonly TreeService $tree_service,
+    ) {
     }
 
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $ged                 = Validator::queryParams($request)->string('ged', Site::getPreference('DEFAULT_GEDCOM'));
-        $alpha               = Validator::queryParams($request)->string('alpha', '');
-        $falpha              = Validator::queryParams($request)->string('falpha', '');
-        $show                = Validator::queryParams($request)->string('show', '');
-        $show_all            = Validator::queryParams($request)->string('show_all', '');
-        $show_all_firstnames = Validator::queryParams($request)->string('show_all_firstnames', '');
-        $show_marnm          = Validator::queryParams($request)->string('show_marnm', '');
-        $surname             = Validator::queryParams($request)->string('', '');
-        $tree                = $this->tree_service->all()->get($ged);
-        $module              = $this->module_service->findByInterface(FamilyListModule::class)->first();
+        $ged  = Validator::queryParams($request)->string('ged', Site::getPreference('DEFAULT_GEDCOM'));
+        $tree = $this->tree_service->all()->get($ged);
 
-        if ($tree instanceof Tree && $module instanceof FamilyListModule) {
-            $url = $module->listUrl($tree, [
-                'alpha'               => $alpha,
-                'falpha'              => $falpha,
-                'show'                => $show,
-                'show_all'            => $show_all,
-                'show_all_firstnames' => $show_all_firstnames,
-                'show_marnm'          => $show_marnm,
-                'surname'             => $surname,
-            ]);
+        if ($tree instanceof Tree) {
+            $module = $this->module_service
+                ->findByComponent(ModuleListInterface::class, $tree, Auth::user())
+                ->first(static fn (ModuleListInterface $module): bool => $module instanceof FamilyListModule);
 
-            return Registry::responseFactory()->redirectUrl($url, StatusCodeInterface::STATUS_MOVED_PERMANENTLY);
+            if ($module instanceof FamilyListModule) {
+                $url = $module->listUrl($tree, [
+                    'alpha'               => Validator::queryParams($request)->string('alpha', ''),
+                    'falpha'              => Validator::queryParams($request)->string('falpha', ''),
+                    'show'                => Validator::queryParams($request)->string('show', ''),
+                    'show_all'            => Validator::queryParams($request)->string('show_all', ''),
+                    'show_all_firstnames' => Validator::queryParams($request)->string('show_all_firstnames', ''),
+                    'show_marnm'          => Validator::queryParams($request)->string('show_marnm', ''),
+                    'surname'             => Validator::queryParams($request)->string('', ''),
+                ]);
+
+                return Registry::responseFactory()
+                    ->redirectUrl($url, StatusCodeInterface::STATUS_MOVED_PERMANENTLY)
+                    ->withHeader('Link', '<' . $url . '>; rel="canonical"');
+            }
         }
 
-        throw new HttpNotFoundException();
+        throw new HttpGoneException();
     }
 }

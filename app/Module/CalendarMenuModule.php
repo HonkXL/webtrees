@@ -42,11 +42,6 @@ class CalendarMenuModule extends AbstractModule implements ModuleMenuInterface
         return I18N::translate('Calendar');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Calendar” module */
@@ -65,12 +60,8 @@ class CalendarMenuModule extends AbstractModule implements ModuleMenuInterface
 
     /**
      * A menu, to be added to the main application menu.
-     *
-     * @param Tree $tree
-     *
-     * @return Menu|null
      */
-    public function getMenu(Tree $tree): ?Menu
+    public function getMenu(Tree $tree): Menu|null
     {
         $submenu = [
             $this->calendarDayMenu($tree),

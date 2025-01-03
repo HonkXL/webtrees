@@ -42,19 +42,19 @@ class HourglassChartModule extends AbstractModule implements ModuleChartInterfac
 {
     use ModuleChartTrait;
 
-    protected const ROUTE_URL = '/tree/{tree}/hourglass-{generations}-{spouses}/{xref}';
+    protected const string ROUTE_URL = '/tree/{tree}/hourglass-{generations}-{spouses}/{xref}';
 
     // Defaults
-    public const    DEFAULT_GENERATIONS = '3';
-    public const    DEFAULT_SPOUSES     = false;
-    protected const DEFAULT_PARAMETERS  = [
+    public const    string DEFAULT_GENERATIONS = '3';
+    public const    bool   DEFAULT_SPOUSES     = false;
+    protected const array  DEFAULT_PARAMETERS  = [
         'generations' => self::DEFAULT_GENERATIONS,
         'spouses'     => self::DEFAULT_SPOUSES,
     ];
 
     // Limits
-    protected const MINIMUM_GENERATIONS = 2;
-    protected const MAXIMUM_GENERATIONS = 10;
+    protected const int MINIMUM_GENERATIONS = 2;
+    protected const int MAXIMUM_GENERATIONS = 10;
 
     /**
      * Initialization.
@@ -79,11 +79,6 @@ class HourglassChartModule extends AbstractModule implements ModuleChartInterfac
         return I18N::translate('Hourglass chart');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “HourglassChart” module */
@@ -107,7 +102,7 @@ class HourglassChartModule extends AbstractModule implements ModuleChartInterfac
      *
      * @return Menu|null
      */
-    public function chartBoxMenu(Individual $individual): ?Menu
+    public function chartBoxMenu(Individual $individual): Menu|null
     {
         return $this->chartMenu($individual);
     }
@@ -234,9 +229,7 @@ class HourglassChartModule extends AbstractModule implements ModuleChartInterfac
         $individual = Registry::individualFactory()->make($xref, $tree);
         $individual = Auth::checkIndividualAccess($individual, false, true);
 
-        $children = $individual->spouseFamilies()->map(static function (Family $family): Collection {
-            return $family->children();
-        })->flatten();
+        $children = $individual->spouseFamilies()->map(static fn (Family $family): Collection => $family->children())->flatten();
 
         return response(view('modules/hourglass-chart/children', [
             'children'    => $children,

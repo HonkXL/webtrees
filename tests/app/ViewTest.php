@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class View
- *
- * @covers Fisharebest\Webtrees\View
- */
+#[CoversClass(View::class)]
 class ViewTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\View::class));
+        self::assertTrue(class_exists(View::class));
     }
 }

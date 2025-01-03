@@ -27,7 +27,7 @@ use Fisharebest\Webtrees\Gedcom;
 class GedcomService
 {
     // Some applications, such as FTM, use GEDCOM tag names instead of the tags.
-    private const TAG_NAMES = [
+    private const array TAG_NAMES = [
         'ABBREVIATION'      => 'ABBR',
         'ADDRESS'           => 'ADDR',
         'ADDRESS1'          => 'ADR1',
@@ -152,7 +152,7 @@ class GedcomService
     ];
 
     // Custom GEDCOM tags used by other applications, with direct synonyms
-    private const TAG_SYNONYMS = [
+    private const array TAG_SYNONYMS = [
         // Convert PhpGedView tag to webtrees
         '_PGVU'     => '_WT_USER',
         '_PGV_OBJS' => '_WT_OBJE_SORT',
@@ -174,34 +174,17 @@ class GedcomService
         return $tag;
     }
 
-    /**
-     * @param string $text
-     *
-     * @return float|null
-     */
-    public function readLatitude(string $text): ?float
+    public function readLatitude(string $text): float|null
     {
         return $this->readDegrees($text, Gedcom::LATITUDE_NORTH, Gedcom::LATITUDE_SOUTH);
     }
 
-    /**
-     * @param string $text
-     *
-     * @return float|null
-     */
-    public function readLongitude(string $text): ?float
+    public function readLongitude(string $text): float|null
     {
         return $this->readDegrees($text, Gedcom::LONGITUDE_EAST, Gedcom::LONGITUDE_WEST);
     }
 
-    /**
-     * @param string $text
-     * @param string $positive
-     * @param string $negative
-     *
-     * @return float|null
-     */
-    private function readDegrees(string $text, string $positive, string $negative): ?float
+    private function readDegrees(string $text, string $positive, string $negative): float|null
     {
         $text       = trim($text);
         $hemisphere = substr($text, 0, 1);

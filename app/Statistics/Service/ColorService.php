@@ -37,7 +37,7 @@ class ColorService
      * @param string $endColor   The end color
      * @param int    $steps      The number of steps to interpolate
      *
-     * @return array<string>
+     * @return array<int,string>
      */
     public function interpolateRgb(string $startColor, string $endColor, int $steps): array
     {
@@ -88,8 +88,6 @@ class ColorService
      */
     private function hexToRgb(string $hex): array
     {
-        return array_map(static function (string $hex): int {
-            return (int) hexdec($hex);
-        }, str_split(ltrim($hex, '#'), 2));
+        return array_map(static fn (string $hex): int => (int) hexdec($hex), str_split(ltrim($hex, '#'), 2));
     }
 }

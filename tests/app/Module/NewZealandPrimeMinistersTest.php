@@ -17,30 +17,25 @@
 
 declare(strict_types=1);
 
-namespace Fisharebest\Webtrees\Http\Middleware;
+namespace Fisharebest\Webtrees\Module;
 
-use Fig\Http\Message\StatusCodeInterface;
+use Fisharebest\Webtrees\Fact;
+use Fisharebest\Webtrees\Individual;
 use Fisharebest\Webtrees\TestCase;
-use Psr\Http\Server\RequestHandlerInterface;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-use function response;
-
-/**
- * Test the NoRouteFound middleware.
- *
- * @covers \Fisharebest\Webtrees\Http\Middleware\NoRouteFound
- */
-class NoRouteFoundTest extends TestCase
+#[CoversClass(NewZealandPrimeMinisters::class)]
+class NewZealandPrimeMinistersTest extends TestCase
 {
-    public function testMiddleware(): void
+    public function testEventsHaveValidDate(): void
     {
-        $handler = $this->createMock(RequestHandlerInterface::class);
-        $handler->method('handle')->willReturn(response());
+        $module = new NewZealandPrimeMinisters();
 
-        $request    = self::createRequest();
-        $middleware = new NoRouteFound();
-        $response   = $middleware->process($request, $handler);
+        $individual = $this->createMock(Individual::class);
 
-        self::assertSame(StatusCodeInterface::STATUS_FOUND, $response->getStatusCode());
+        foreach ($module->historicEventsAll(language_tag: 'en-AU') as $gedcom) {
+            $fact = new Fact(gedcom: $gedcom, parent: $individual, id: 'test');
+            self::assertTrue($fact->date()->isOK(), 'No date found in: ' . $gedcom);
+        }
     }
 }

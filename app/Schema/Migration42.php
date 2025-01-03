@@ -35,7 +35,7 @@ use Illuminate\Database\Schema\Blueprint;
  */
 class Migration42 implements MigrationInterface
 {
-    private const COMPONENT_TO_INTERFACE = [
+    private const array COMPONENT_TO_INTERFACE = [
         'block'   => ModuleBlockInterface::class,
         'chart'   => ModuleChartInterface::class,
         'list'    => ModuleListInterface::class,
@@ -46,11 +46,6 @@ class Migration42 implements MigrationInterface
         'theme'   => ModuleThemeInterface::class,
     ];
 
-    /**
-     * Upgrade to the next version
-     *
-     * @return void
-     */
     public function upgrade(): void
     {
         // doctrine/dbal cannot modify tables containing ENUM fields
@@ -66,8 +61,8 @@ class Migration42 implements MigrationInterface
             $table->tinyInteger('access_level');
 
             // Default constraint names are too long for MySQL.
-            $key1 = DB::connection()->getTablePrefix() . $table->getTable() . '_ix1';
-            $key2 = DB::connection()->getTablePrefix() . $table->getTable() . '_ix2';
+            $key1 = DB::prefix($table->getTable() . '_ix1');
+            $key2 = DB::prefix($table->getTable() . '_ix2');
 
             $table->unique(['gedcom_id', 'module_name', 'interface'], $key1);
             $table->unique(['module_name', 'gedcom_id', 'interface'], $key2);

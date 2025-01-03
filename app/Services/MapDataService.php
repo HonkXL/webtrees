@@ -40,10 +40,10 @@ use function round;
 class MapDataService
 {
     // Location of files to import
-    public const PLACES_FOLDER = 'places/';
+    public const string PLACES_FOLDER = 'places/';
 
     // Format of CSV files
-    public const CSV_SEPARATOR = ';';
+    public const string CSV_SEPARATOR = ';';
 
     /**
      * @param int $id
@@ -124,9 +124,7 @@ class MapDataService
                 'p8.p_place AS part_8',
             ])
             ->get()
-            ->map(static function (object $row): string {
-                return implode(Gedcom::PLACE_SEPARATOR, array_filter((array) $row));
-            });
+            ->map(static fn (object $row): string => implode(Gedcom::PLACE_SEPARATOR, array_filter((array) $row)));
 
         $all_locations = DB::table('place_location AS p0')
             ->leftJoin('place_location AS p1', 'p1.id', '=', 'p0.parent_id')
@@ -149,9 +147,7 @@ class MapDataService
                 'p8.place AS part_8',
             ])
             ->get()
-            ->map(static function (object $row): string {
-                return implode(Gedcom::PLACE_SEPARATOR, array_filter((array) $row));
-            });
+            ->map(static fn (object $row): string => implode(Gedcom::PLACE_SEPARATOR, array_filter((array) $row)));
 
         $missing = $all_places->diff($all_locations);
 
@@ -179,7 +175,7 @@ class MapDataService
      *
      * @return void
      */
-    public function deleteUnusedLocations(?int $parent_location_id, array $parent_place_ids): void
+    public function deleteUnusedLocations(int|null $parent_location_id, array $parent_place_ids): void
     {
         if ($parent_location_id === null) {
             $location_query = DB::table('place_location')
@@ -216,9 +212,9 @@ class MapDataService
      *
      * @return Collection<int,object>
      */
-    public function getPlaceListLocation(?int $parent_id): Collection
+    public function getPlaceListLocation(int|null $parent_id): Collection
     {
-        $prefix = DB::connection()->getTablePrefix();
+        $prefix = DB::prefix();
 
         $expression =
             $prefix . 'p1.place IS NOT NULL AND ' . $prefix . 'p1.latitude IS NULL OR ' .
@@ -252,7 +248,6 @@ class MapDataService
 
         return $query
             ->groupBy(['p0.id'])
-            ->orderBy('p0.place')
             ->select([
                 'p0.*',
                 new Expression('COUNT(' . $prefix . 'p1.id) AS child_count'),
@@ -265,7 +260,8 @@ class MapDataService
                 $row->key         = mb_strtolower($row->place);
 
                 return $row;
-            });
+            })
+            ->sort(static fn (object $x, object $y): int => I18N::comparator()($x->place, $y->place));
     }
 
     /**

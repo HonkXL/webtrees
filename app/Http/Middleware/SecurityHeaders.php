@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace Fisharebest\Webtrees\Http\Middleware;
 
+use Fisharebest\Webtrees\Validator;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -29,7 +30,7 @@ use Psr\Http\Server\RequestHandlerInterface;
  */
 class SecurityHeaders implements MiddlewareInterface
 {
-    private const SECURITY_HEADERS = [
+    private const array SECURITY_HEADERS = [
         'Permissions-Policy'     => 'browsing-topics=()',
         'Referrer-Policy'        => 'same-origin',
         'X-Content-Type-Options' => 'nosniff',
@@ -52,6 +53,12 @@ class SecurityHeaders implements MiddlewareInterface
             if ($response->getHeader($header_name) === []) {
                 $response = $response->withHeader($header_name, $header_value);
             }
+        }
+
+        $base_url = Validator::attributes($request)->string('base_url');
+
+        if (str_starts_with($base_url, 'https://') && $response->getHeader('Strict-Transport-Security') === []) {
+            $response = $response->withHeader('Strict-Transport-Security', 'max-age=31536000');
         }
 
         return $response;

@@ -25,15 +25,12 @@ use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Submission;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\Tree;
+use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Http\Message\ServerRequestInterface;
 
-/**
- * Test harness for the class XrefSubmission
- *
- * @covers \Fisharebest\Webtrees\Elements\AbstractElement
- * @covers \Fisharebest\Webtrees\Elements\AbstractXrefElement
- * @covers \Fisharebest\Webtrees\Elements\XrefSubmission
- */
+#[CoversClass(AbstractElement::class)]
+#[CoversClass(AbstractXrefElement::class)]
+#[CoversClass(XrefSubmission::class)]
 class XrefSubmissionTest extends TestCase
 {
     public function testEdit(): void
@@ -44,7 +41,7 @@ class XrefSubmissionTest extends TestCase
 
         $factory = $this->createMock(SubmissionFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn(null);
 
@@ -77,11 +74,11 @@ class XrefSubmissionTest extends TestCase
 
         $record = $this->createMock(Submission::class);
 
-        $record->expects(self::once())
+        $record->expects($this->once())
             ->method('fullName')
             ->willReturn('Full Name');
 
-        $record->expects(self::once())
+        $record->expects($this->once())
             ->method('url')
             ->willReturn('https://url');
 
@@ -89,10 +86,9 @@ class XrefSubmissionTest extends TestCase
 
         $factory = $this->createMock(SubmissionFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn($record);
-
 
         Registry::submissionFactory($factory);
 
@@ -116,7 +112,7 @@ class XrefSubmissionTest extends TestCase
 
         $factory = $this->createMock(SubmissionFactory::class);
 
-        $factory->expects(self::once())
+        $factory->expects($this->once())
             ->method('make')
             ->willReturn(null);
 

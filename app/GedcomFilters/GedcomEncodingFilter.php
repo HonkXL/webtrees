@@ -26,17 +26,17 @@ use const PSFS_PASS_ON;
  *
  * These properties are created after the class is instantiated.
  *
- * @property string   $filtername
- * @property array    $params
- * @property resource $stream
+ * @property string               $filtername
+ * @property array<string,string> $params
+ * @property resource             $stream
  */
 class GedcomEncodingFilter extends php_user_filter
 {
     private string $data = '';
 
-    private ?EncodingInterface $src_encoding = null;
+    private EncodingInterface|null $src_encoding = null;
 
-    private ?EncodingInterface $dst_encoding = null;
+    private EncodingInterface|null $dst_encoding = null;
 
     /**
      * Initialization

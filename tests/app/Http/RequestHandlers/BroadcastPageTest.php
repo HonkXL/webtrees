@@ -24,17 +24,16 @@ use Fisharebest\Webtrees\Http\Exceptions\HttpBadRequestException;
 use Fisharebest\Webtrees\Services\MessageService;
 use Fisharebest\Webtrees\TestCase;
 use Illuminate\Support\Collection;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\BroadcastPage
- */
+#[CoversClass(BroadcastPage::class)]
 class BroadcastPageTest extends TestCase
 {
     protected static bool $uses_database = true;
 
     public function testMissingParameterTo(): void
     {
-        $message_service = $this->createStub(MessageService::class);
+        $message_service = $this->createMock(MessageService::class);
         $message_service->method('recipientTypes')->willReturn(['foo' => 'FOO']);
 
         $request = self::createRequest()
@@ -48,7 +47,7 @@ class BroadcastPageTest extends TestCase
     }
     public function testHandler(): void
     {
-        $message_service = $this->createStub(MessageService::class);
+        $message_service = $this->createMock(MessageService::class);
         $message_service->method('recipientTypes')->willReturn(['foo' => 'FOO', 'bar' => 'BAR']);
         $message_service->method('recipientUsers')->willReturn(new Collection());
 

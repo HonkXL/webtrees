@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Elements;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class LdsInitiatory
- *
- * @covers Fisharebest\Webtrees\Elements\LdsInitiatory
- */
+#[CoversClass(LdsInitiatory::class)]
 class LdsInitiatoryTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Elements\LdsInitiatory::class));
+        self::assertTrue(class_exists(LdsInitiatory::class));
     }
 }

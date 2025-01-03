@@ -47,7 +47,7 @@ use function substr;
  */
 class RelationshipService
 {
-    private const COMPONENTS = [
+    private const array COMPONENTS = [
         'CHIL' => [
             'CHIL' => Relationship::SIBLINGS,
             'HUSB' => Relationship::PARENTS,
@@ -222,9 +222,7 @@ class RelationshipService
         $relationships = $this->matchRelationships($nodes, $pattern, $relationships);
 
         // Reduce the genitive-nominative chain to a single string.
-        return array_reduce($relationships, static function (array $carry, array $item): array {
-            return [sprintf($carry[1], $item[0]), sprintf($carry[1], $item[1])];
-        }, [0 => '', 1 => '%s'])[0];
+        return array_reduce($relationships, static fn (array $carry, array $item): array => [sprintf($carry[1], $item[0]), sprintf($carry[1], $item[1])], [0 => '', 1 => '%s'])[0];
     }
 
     /**
@@ -325,7 +323,7 @@ class RelationshipService
      *
      * @deprecated This code was originally Functions::getRelationshipNameFromPath
      */
-    public function legacyNameAlgorithm(string $path, Individual $person1 = null, Individual $person2 = null): string
+    public function legacyNameAlgorithm(string $path, Individual|null $person1 = null, Individual|null $person2 = null): string
     {
         // The path does not include the starting person. In some languages, the
         // translation for a man’s (relative) is different from a woman’s (relative),

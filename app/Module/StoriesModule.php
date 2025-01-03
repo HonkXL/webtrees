@@ -63,11 +63,6 @@ class StoriesModule extends AbstractModule implements ModuleConfigInterface, Mod
     /** @var int The default access level for this module.  It can be changed in the control panel. */
     protected int $access_level = Auth::PRIV_HIDE;
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Stories” module */
@@ -184,7 +179,7 @@ class StoriesModule extends AbstractModule implements ModuleConfigInterface, Mod
      *
      * @return Menu|null
      */
-    public function getMenu(Tree $tree): ?Menu
+    public function getMenu(Tree $tree): Menu|null
     {
         return new Menu($this->title(), route('module', [
             'module' => $this->name(),
@@ -240,9 +235,8 @@ class StoriesModule extends AbstractModule implements ModuleConfigInterface, Mod
             $story->languages  = $this->getBlockSetting($block_id, 'languages');
         }
 
-        $tree_names = $this->tree_service->all()->map(static function (Tree $tree): string {
-            return $tree->title();
-        });
+        $tree_names = $this->tree_service->all()
+            ->map(static fn (Tree $tree): string => $tree->title());
 
         return $this->viewResponse('modules/stories/config', [
             'module'     => $this->name(),
@@ -345,7 +339,7 @@ class StoriesModule extends AbstractModule implements ModuleConfigInterface, Mod
                 'block_order' => 0,
             ]);
 
-            $block_id = (int) DB::connection()->getPdo()->lastInsertId();
+            $block_id = DB::lastInsertId();
         }
 
         $this->setBlockSetting($block_id, 'story_body', $story_body);
@@ -404,13 +398,11 @@ class StoriesModule extends AbstractModule implements ModuleConfigInterface, Mod
                 $story->languages  = $this->getBlockSetting($block_id, 'languages');
 
                 return $story;
-            })->filter(static function (object $story): bool {
+            })
                 // Filter non-existent and private individuals.
-                return $story->individual instanceof Individual && $story->individual->canShow();
-            })->filter(static function (object $story): bool {
+            ->filter(static fn (object $story): bool => $story->individual instanceof Individual && $story->individual->canShow())
                 // Filter foreign languages.
-                return $story->languages === '' || in_array(I18N::languageTag(), explode(',', $story->languages), true);
-            });
+            ->filter(static fn (object $story): bool => $story->languages === '' || in_array(I18N::languageTag(), explode(',', $story->languages), true));
 
         return $this->viewResponse('modules/stories/list', [
             'stories' => $stories,

@@ -106,9 +106,7 @@ trait ModuleDataFixTrait
 
         return $records
             ->unique()
-            ->sort(static function (object $x, object $y) {
-                return $x->xref <=> $y->xref;
-            });
+            ->sort(static fn (object $x, object $y) => $x->xref <=> $y->xref);
     }
 
     /**
@@ -157,7 +155,7 @@ trait ModuleDataFixTrait
      *
      * @return Collection<int,string>|null
      */
-    protected function familiesToFix(Tree $tree, array $params): ?Collection
+    protected function familiesToFix(Tree $tree, array $params): Collection|null
     {
         return null;
     }
@@ -188,7 +186,7 @@ trait ModuleDataFixTrait
      *
      * @return Collection<int,string>|null
      */
-    protected function individualsToFix(Tree $tree, array $params): ?Collection
+    protected function individualsToFix(Tree $tree, array $params): Collection|null
     {
         return null;
     }
@@ -219,7 +217,7 @@ trait ModuleDataFixTrait
      *
      * @return Collection<int,string>|null
      */
-    protected function locationsToFix(Tree $tree, array $params): ?Collection
+    protected function locationsToFix(Tree $tree, array $params): Collection|null
     {
         return null;
     }
@@ -251,7 +249,7 @@ trait ModuleDataFixTrait
      *
      * @return Collection<int,string>|null
      */
-    protected function mediaToFix(Tree $tree, array $params): ?Collection
+    protected function mediaToFix(Tree $tree, array $params): Collection|null
     {
         return null;
     }
@@ -282,7 +280,7 @@ trait ModuleDataFixTrait
      *
      * @return Collection<int,string>|null
      */
-    protected function notesToFix(Tree $tree, array $params): ?Collection
+    protected function notesToFix(Tree $tree, array $params): Collection|null
     {
         return null;
     }
@@ -314,7 +312,7 @@ trait ModuleDataFixTrait
      *
      * @return Collection<int,string>|null
      */
-    protected function repositoriesToFix(Tree $tree, array $params): ?Collection
+    protected function repositoriesToFix(Tree $tree, array $params): Collection|null
     {
         return null;
     }
@@ -346,7 +344,7 @@ trait ModuleDataFixTrait
      *
      * @return Collection<int,string>|null
      */
-    protected function sourcesToFix(Tree $tree, array $params): ?Collection
+    protected function sourcesToFix(Tree $tree, array $params): Collection|null
     {
         return null;
     }
@@ -377,7 +375,7 @@ trait ModuleDataFixTrait
      *
      * @return Collection<int,string>|null
      */
-    protected function submittersToFix(Tree $tree, array $params): ?Collection
+    protected function submittersToFix(Tree $tree, array $params): Collection|null
     {
         return null;
     }
@@ -424,8 +422,6 @@ trait ModuleDataFixTrait
 
         return $records
             ->concat($pending)
-            ->map(static function (string $xref) use ($type): object {
-                return (object) ['xref' => $xref, 'type' => $type];
-            });
+            ->map(static fn (string $xref): object => (object) ['xref' => $xref, 'type' => $type]);
     }
 }

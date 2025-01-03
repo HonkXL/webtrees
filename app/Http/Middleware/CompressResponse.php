@@ -41,7 +41,7 @@ use function strtr;
 class CompressResponse implements MiddlewareInterface
 {
     // Non-text responses that will benefit from compression.
-    protected const MIME_TYPES = [
+    protected const array MIME_TYPES = [
         'application/javascript',
         'application/json',
         'application/pdf',
@@ -100,12 +100,7 @@ class CompressResponse implements MiddlewareInterface
         return $response;
     }
 
-    /**
-     * @param RequestInterface $request
-     *
-     * @return string|null
-     */
-    protected function compressionMethod(RequestInterface $request): ?string
+    protected function compressionMethod(RequestInterface $request): string|null
     {
         $accept_encoding = strtolower($request->getHeaderLine('accept-encoding'));
         $zlib_available  = extension_loaded('zlib');

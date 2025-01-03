@@ -23,16 +23,15 @@ use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\GuestUser;
 use Fisharebest\Webtrees\TestCase;
 use Fisharebest\Webtrees\User;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * @covers \Fisharebest\Webtrees\Http\RequestHandlers\SelectTheme
- */
+#[CoversClass(SelectTheme::class)]
 class SelectThemeTest extends TestCase
 {
     public function testSelectThemeForGuest(): void
     {
         $user = $this->createMock(GuestUser::class);
-        $user->expects(self::once())->method('setPreference')->with('theme', 'FOO');
+        $user->expects($this->once())->method('setPreference')->with('theme', 'FOO');
 
         $request = self::createRequest()
             ->withAttribute('theme', 'FOO')
@@ -47,7 +46,7 @@ class SelectThemeTest extends TestCase
     public function testSelectThemeForUser(): void
     {
         $user = $this->createMock(User::class);
-        $user->expects(self::once())->method('setPreference')->with('theme', 'FOO');
+        $user->expects($this->once())->method('setPreference')->with('theme', 'FOO');
 
         $request = self::createRequest()
             ->withAttribute('user', $user)

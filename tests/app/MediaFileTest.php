@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class MediaFile
- *
- * @covers Fisharebest\Webtrees\MediaFile
- */
+#[CoversClass(MediaFile::class)]
 class MediaFileTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\MediaFile::class));
+        self::assertTrue(class_exists(MediaFile::class));
     }
 }

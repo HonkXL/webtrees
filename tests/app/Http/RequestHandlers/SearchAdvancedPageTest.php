@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Http\RequestHandlers;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class SearchAdvancedPage
- *
- * @covers Fisharebest\Webtrees\Http\RequestHandlers\SearchAdvancedPage
- */
+#[CoversClass(SearchAdvancedPage::class)]
 class SearchAdvancedPageTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Http\RequestHandlers\SearchAdvancedPage::class));
+        self::assertTrue(class_exists(SearchAdvancedPage::class));
     }
 }

@@ -20,16 +20,13 @@ declare(strict_types=1);
 namespace Fisharebest\Webtrees\Report;
 
 use Fisharebest\Webtrees\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-/**
- * Test harness for the class ReportPdfCell
- *
- * @covers Fisharebest\Webtrees\Report\ReportPdfCell
- */
+#[CoversClass(ReportPdfCell::class)]
 class ReportPdfCellTest extends TestCase
 {
     public function testClass(): void
     {
-        $this->assertTrue(class_exists(\Fisharebest\Webtrees\Report\ReportPdfCell::class));
+        self::assertTrue(class_exists(ReportPdfCell::class));
     }
 }

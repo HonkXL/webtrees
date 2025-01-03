@@ -33,18 +33,12 @@ use function preg_match;
  */
 class SharedNoteFactory extends AbstractGedcomRecordFactory implements SharedNoteFactoryInterface
 {
-    private const TYPE_CHECK_REGEX = '/^0 @[^@]+@ ' . SharedNote::RECORD_TYPE . '/';
+    private const string TYPE_CHECK_REGEX = '/^0 @[^@]+@ ' . SharedNote::RECORD_TYPE . '/';
 
     /**
      * Create a note.
-     *
-     * @param string      $xref
-     * @param Tree        $tree
-     * @param string|null $gedcom
-     *
-     * @return SharedNote|null
      */
-    public function make(string $xref, Tree $tree, string $gedcom = null): ?SharedNote
+    public function make(string $xref, Tree $tree, string|null $gedcom = null): SharedNote|null
     {
         return Registry::cache()->array()->remember(self::class . $xref . '@' . $tree->id(), function () use ($xref, $tree, $gedcom) {
             $gedcom ??= $this->gedcom($xref, $tree);
@@ -83,7 +77,7 @@ class SharedNoteFactory extends AbstractGedcomRecordFactory implements SharedNot
      *
      * @return SharedNote
      */
-    public function new(string $xref, string $gedcom, ?string $pending, Tree $tree): SharedNote
+    public function new(string $xref, string $gedcom, string|null $pending, Tree $tree): SharedNote
     {
         return new SharedNote($xref, $gedcom, $pending, $tree);
     }
@@ -96,7 +90,7 @@ class SharedNoteFactory extends AbstractGedcomRecordFactory implements SharedNot
      *
      * @return string|null
      */
-    protected function gedcom(string $xref, Tree $tree): ?string
+    protected function gedcom(string $xref, Tree $tree): string|null
     {
         return DB::table('other')
             ->where('o_id', '=', $xref)

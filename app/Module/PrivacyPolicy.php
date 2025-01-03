@@ -65,11 +65,6 @@ class PrivacyPolicy extends AbstractModule implements ModuleFooterInterface
         return I18N::translate('Privacy policy');
     }
 
-    /**
-     * A sentence describing what this module does.
-     *
-     * @return string
-     */
     public function description(): string
     {
         /* I18N: Description of the “Cookie warning” module */
@@ -138,8 +133,6 @@ class PrivacyPolicy extends AbstractModule implements ModuleFooterInterface
     {
         return $this->module_service
             ->findByComponent(ModuleAnalyticsInterface::class, $tree, $user)
-            ->filter(static function (ModuleAnalyticsInterface $module): bool {
-                return $module->isTracker();
-            });
+            ->filter(static fn (ModuleAnalyticsInterface $module): bool => $module->isTracker());
     }
 }
